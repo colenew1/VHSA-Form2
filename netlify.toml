@@ -1,13 +1,11 @@
 [build]
-  command = "cd backend && npm install serverless-http"
+  command = "npm install"
+  functions = "netlify/functions"
   publish = "frontend"
-  
-[functions]
-  directory = "netlify/functions"
 
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/serve"
+  to = "/.netlify/functions/api/:splat"
   status = 200
 
 [[redirects]]
