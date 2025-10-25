@@ -667,6 +667,9 @@
     const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:8888/api'  // Netlify dev server
       : '/api'; // Use relative URLs for production (Netlify)
+    
+    // Add cache-busting parameter for API calls
+    const CACHE_BUST = `?v=${Date.now()}`;
     let currentStudent = null;
     let schools = [];
     let screeners = [];
@@ -681,7 +684,7 @@
     // Load schools from API
     async function loadSchools() {
       try {
-        const response = await fetch(`${API_BASE}/schools`);
+        const response = await fetch(`${API_BASE}/schools${CACHE_BUST}`);
         const data = await response.json();
         
         // Check if response has error
@@ -718,7 +721,7 @@
     // Load screeners from API
     async function loadScreeners() {
       try {
-        const response = await fetch(`${API_BASE}/screeners`);
+        const response = await fetch(`${API_BASE}/screeners${CACHE_BUST}`);
         const data = await response.json();
         
         // Check if response has error
