@@ -664,9 +664,10 @@
 
   <script>
     // Automatically detect environment and set API base URL
+    // For production, set BACKEND_URL environment variable in Netlify
     const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:3000/api'
-      : '/api'; // Use relative path for production
+      : (window.BACKEND_URL || 'http://localhost:3000/api'); // Fallback for now
     let currentStudent = null;
     let schools = [];
     let screeners = [];
