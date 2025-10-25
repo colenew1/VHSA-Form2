@@ -696,12 +696,6 @@
         const searchSelect = document.getElementById('searchSchool');
         const newSelect = document.getElementById('newStudentSchool');
         
-        // Add "Other" option first
-        const otherOption1 = new Option('Other', 'other');
-        const otherOption2 = new Option('Other', 'other');
-        searchSelect.add(otherOption1);
-        newSelect.add(otherOption2);
-        
         if (Array.isArray(schools)) {
           schools.forEach(school => {
             const option1 = new Option(school.name, school.name);
@@ -710,6 +704,12 @@
             newSelect.add(option2);
           });
         }
+        
+        // Add "Other" option at the bottom
+        const otherOption1 = new Option('Other', 'other');
+        const otherOption2 = new Option('Other', 'other');
+        searchSelect.add(otherOption1);
+        newSelect.add(otherOption2);
       } catch (error) {
         console.error('Error loading schools:', error);
         schools = [];
@@ -753,15 +753,15 @@
               select.add(new Option('Select Screener', ''));
             }
             
-            // Add "Other" to all dropdowns
-            select.add(new Option('Other', 'other'));
-            
-            // Add all screeners from API
+            // Add all screeners from API first
             if (Array.isArray(screeners)) {
               screeners.forEach(screener => {
                 select.add(new Option(screener.name, screener.name));
               });
             }
+            
+            // Add "Other" at the bottom
+            select.add(new Option('Other', 'other'));
           }
         });
       } catch (error) {
