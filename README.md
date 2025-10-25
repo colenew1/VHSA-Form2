@@ -18,7 +18,7 @@ A complete Node.js + Express backend API and HTML frontend for managing school h
 - **Backend**: Node.js, Express.js
 - **Database**: Supabase (PostgreSQL)
 - **Frontend**: HTML5, CSS3, Tailwind CSS (CDN), Vanilla JavaScript
-- **Hosting**: Netlify (frontend)
+- **Hosting**: Netlify (frontend + backend functions)
 
 ## Project Structure
 
