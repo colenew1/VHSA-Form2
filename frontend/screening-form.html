@@ -1534,15 +1534,20 @@
 
     function hideCustomPopup() {
       const modal = document.getElementById('customModal');
-      modal.classList.add('hidden');
+      if (modal) {
+        modal.classList.add('hidden');
+      }
     }
 
     // Close modal when clicking outside
-    document.getElementById('customModal').addEventListener('click', (e) => {
-      if (e.target === e.currentTarget) {
-        hideCustomPopup();
-      }
-    });
+    const customModal = document.getElementById('customModal');
+    if (customModal) {
+      customModal.addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) {
+          hideCustomPopup();
+        }
+      });
+    }
 
     // Close modal with Escape key
     document.addEventListener('keydown', (e) => {

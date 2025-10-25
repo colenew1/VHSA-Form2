@@ -59,11 +59,39 @@ app.options('*', (req, res) => {
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     timestamp: new Date().toISOString(),
     supabase: supabase ? 'connected' : 'not connected'
   });
+});
+
+// Debug endpoint to see all schools in database
+app.get('/api/debug/schools', async (req, res) => {
+  try {
+    if (!supabase) {
+      return res.status(500).json({ error: 'Database not available' });
+    }
+    
+    const { data: schools, error } = await supabase
+      .from('students')
+      .select('school')
+      .order('school');
+    
+    if (error) throw error;
+    
+    // Get unique schools
+    const uniqueSchools = [...new Set(schools.map(s => s.school))];
+    
+    res.json({
+      totalStudents: schools.length,
+      uniqueSchools: uniqueSchools,
+      allSchools: schools.map(s => s.school)
+    });
+  } catch (error) {
+    console.error('Debug schools error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Get schools
@@ -161,12 +189,18 @@ app.get('/api/students/search', async (req, res) => {
       return res.status(400).json({ error: 'lastName and school are required' });
     }
     
+    // Debug: Log the exact query being built
+    console.log('Building query with:', {
+      lastName: `%${lastName}%`,
+      school: `%${school}%`
+    });
+    
     // Use ilike for case-insensitive search with partial matching
     const { data: students, error } = await supabase
       .from('students')
       .select('*')
       .ilike('last_name', `%${lastName}%`)  // Case-insensitive, partial match
-      .ilike('school', school)               // Case-insensitive
+      .ilike('school', `%${school}%`)       // Case-insensitive, partial match for school too
       .order('last_name', { ascending: true });
     
     console.log('Query results:', students?.length || 0, 'students found'); // DEBUG
