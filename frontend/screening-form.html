@@ -851,7 +851,7 @@
       console.log('🔍 Student ID:', studentId);
       
       if (!studentId) {
-        alert('Please enter a student ID');
+        showCustomPopup('warning', 'Missing Student ID', 'Please enter a student ID');
         return;
       }
 
@@ -865,12 +865,12 @@
         
         if (!response.ok) {
           console.error('❌ API Error:', response.status, data);
-          alert(`Error: ${response.status} - ${data.error || 'Unknown error'}`);
+          showCustomPopup('error', 'API Error', `Error: ${response.status} - ${data.error || 'Unknown error'}`);
           return;
         }
         
         if (!data.found) {
-          alert('Student not found. Please check the student ID and try again.');
+          showCustomPopup('warning', 'Student Not Found', 'Student not found. Please check the student ID and try again.');
           return;
         }
         
@@ -878,7 +878,7 @@
         loadStudentData(data.student, data.requiredScreenings);
       } catch (error) {
         console.error('💥 Error searching for student:', error);
-        alert('Error connecting to the database. Please try again later.');
+        showCustomPopup('error', 'Connection Error', 'Error connecting to the database. Please try again later.');
       }
     }
 
@@ -1123,7 +1123,7 @@
     // Submit screening
     async function submitScreening() {
       if (!currentStudent) {
-        alert('Please search for or create a student first');
+        showCustomPopup('warning', 'No Student Selected', 'Please search for or create a student first');
         return;
       }
       
@@ -1140,7 +1140,7 @@
         const hasAnyData = visionData || hearingData || acanthosisData || scoliosisData;
         
         if (!hasAnyData) {
-          alert('Please complete at least one screening section before submitting.');
+          showCustomPopup('warning', 'Incomplete Screening', 'Please complete at least one screening section before submitting.');
           return;
         }
       }
@@ -1188,7 +1188,7 @@
       
       // If any opened sections are incomplete, prevent submission
       if (incompleteSections.length > 0) {
-        alert(`Please complete the following open sections or close them before submitting:\n- ${incompleteSections.join('\n- ')}`);
+        showCustomPopup('warning', 'Incomplete Sections', `Please complete the following open sections or close them before submitting:\n- ${incompleteSections.join('\n- ')}`);
         return;
       }
 
@@ -1204,15 +1204,23 @@
         const result = await response.json();
         
         if (result.success) {
-          alert('✓ Screening results saved successfully!');
-          if (confirm('Screen another student?')) {
-            resetForm();
-          }
+          showCustomPopup('success', 'Success!', 'Screening results saved successfully!', {
+            confirmText: 'Continue',
+            onConfirm: () => {
+              showCustomPopup('info', 'Continue Screening?', 'Would you like to screen another student?', {
+                showCancel: true,
+                confirmText: 'Yes',
+                cancelText: 'No',
+                onConfirm: () => resetForm(),
+                onCancel: () => {}
+              });
+            }
+          });
         } else {
-          alert('Error saving: ' + result.error);
+          showCustomPopup('error', 'Error', 'Error saving: ' + result.error);
         }
       } catch (error) {
-        alert('Error submitting: ' + error.message);
+        showCustomPopup('error', 'Submission Error', 'Error submitting: ' + error.message);
       }
     }
 
@@ -1403,7 +1411,147 @@
       // Scroll to top
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
+    // Custom Popup Functions
+    function showCustomPopup(type, title, message, options = {}) {
+      const modal = document.getElementById('customModal');
+      const modalIcon = document.getElementById('modalIcon');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalMessage = document.getElementById('modalMessage');
+      const modalCancelBtn = document.getElementById('modalCancelBtn');
+      const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+
+      // Set icon based on type
+      modalIcon.className = 'w-8 h-8 mr-3';
+      switch(type) {
+        case 'success':
+          modalIcon.classList.add('modal-success-icon');
+          modalIcon.innerHTML = '✓';
+          break;
+        case 'error':
+          modalIcon.classList.add('modal-error-icon');
+          modalIcon.innerHTML = '✕';
+          break;
+        case 'warning':
+          modalIcon.classList.add('modal-warning-icon');
+          modalIcon.innerHTML = '⚠';
+          break;
+        case 'info':
+        default:
+          modalIcon.classList.add('modal-info-icon');
+          modalIcon.innerHTML = 'ℹ';
+          break;
+      }
+
+      // Set content
+      modalTitle.textContent = title;
+      modalMessage.textContent = message;
+
+      // Handle buttons
+      if (options.showCancel) {
+        modalCancelBtn.classList.remove('hidden');
+        modalCancelBtn.textContent = options.cancelText || 'Cancel';
+        modalCancelBtn.onclick = () => {
+          hideCustomPopup();
+          if (options.onCancel) options.onCancel();
+        };
+      } else {
+        modalCancelBtn.classList.add('hidden');
+      }
+
+      modalConfirmBtn.textContent = options.confirmText || 'OK';
+      modalConfirmBtn.onclick = () => {
+        hideCustomPopup();
+        if (options.onConfirm) options.onConfirm();
+      };
+
+      // Show modal
+      modal.classList.remove('hidden');
+      
+      // Auto-hide after delay if specified
+      if (options.autoHide) {
+        setTimeout(() => {
+          hideCustomPopup();
+        }, options.autoHide);
+      }
+    }
+
+    function hideCustomPopup() {
+      const modal = document.getElementById('customModal');
+      modal.classList.add('hidden');
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('customModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) {
+        hideCustomPopup();
+      }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        hideCustomPopup();
+      }
+    });
   </script>
+
+  <!-- Custom Popup Modal -->
+  <div id="customModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+      <div class="flex items-center mb-4">
+        <div id="modalIcon" class="w-8 h-8 mr-3"></div>
+        <h3 id="modalTitle" class="text-lg font-semibold text-gray-900"></h3>
+      </div>
+      <p id="modalMessage" class="text-gray-700 mb-6"></p>
+      <div class="flex justify-end space-x-3">
+        <button id="modalCancelBtn" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 hidden">
+          Cancel
+        </button>
+        <button id="modalConfirmBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    #customModal {
+      backdrop-filter: blur(4px);
+    }
+    
+    .modal-success-icon {
+      background: #10B981;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-error-icon {
+      background: #EF4444;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-warning-icon {
+      background: #F59E0B;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-info-icon {
+      background: #3B82F6;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
   
 </body>
 </html>
