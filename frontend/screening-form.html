@@ -668,7 +668,7 @@
   <script>
     // Automatically detect environment and set API base URL
     const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-      ? 'http://localhost:8888/api'  // Netlify dev server
+      ? 'http://localhost:3000/api'  // Local Express server
       : '/api'; // Use relative URLs for production (Netlify)
     
     // Add cache-busting parameter for API calls
@@ -921,7 +921,7 @@
       try {
         console.log('🔍 Searching for:', lastName, 'at', school);
         
-        const url = `${API_BASE}/students/search?lastName=${encodeURIComponent(lastName)}&school=${encodeURIComponent(school)}${CACHE_BUST}`;
+        const url = `${API_BASE}/students/search?lastName=${encodeURIComponent(lastName)}&school=${encodeURIComponent(school)}&v=${Date.now()}`;
         console.log('🔍 API URL:', url);
         
         const response = await fetch(url);
@@ -936,8 +936,12 @@
         
         const data = await response.json();
         console.log('🔍 Response data:', data);
+        console.log('🔍 data.found:', data.found);
+        console.log('🔍 typeof data.found:', typeof data.found);
+        console.log('🔍 !data.found:', !data.found);
         
         if (!data.found) {
+          console.log('❌ Student not found - showing popup');
           showCustomPopup('warning', 'Student Not Found', 'No students found with that name at this school');
           return;
         }
