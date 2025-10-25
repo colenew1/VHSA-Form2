@@ -370,7 +370,7 @@ app.post('/api/students/quick-add', async (req, res) => {
   }
 });
 
-// Submit screening results
+// Submit screening results with selective update support
 app.post('/api/screenings', async (req, res) => {
   try {
     if (!supabase) {
@@ -378,11 +378,12 @@ app.post('/api/screenings', async (req, res) => {
     }
     
     const payload = req.body;
+    console.log('Screening payload received:', JSON.stringify(payload, null, 2));
     
     // Get student UUID
     const { data: student, error: studentError } = await supabase
       .from('students')
-      .select('id')
+      .select('id, school')
       .eq('unique_id', payload.uniqueId)
       .single();
     
@@ -390,25 +391,136 @@ app.post('/api/screenings', async (req, res) => {
       return res.status(404).json({ error: 'Student not found' });
     }
     
-    // Build screening data (simplified - you'll need full logic)
+    // Get existing screening record if it exists
+    const { data: existingRecord, error: fetchError } = await supabase
+      .from('screening_results')
+      .select('*')
+      .eq('student_id', student.id)
+      .single();
+    
+    // Build screening data, merging with existing data for selective updates
     const screeningData = {
       student_id: student.id,
-      school: payload.uniqueId,
+      unique_id: payload.uniqueId,
+      school: student.school,
       screening_year: new Date().getFullYear(),
-      screening_event_date: payload.screeningDate,
-      absent: payload.absent || false,
-      notes: payload.notes
+      initial_screening_date: payload.screeningDate || new Date().toISOString().split('T')[0],
+      was_absent: payload.was_absent || false,
+      notes: payload.notes || null
     };
     
-    // Upsert screening results
-    const { data, error } = await supabase
-      .from('screening_results')
-      .upsert(screeningData, { onConflict: 'student_id' })
-      .select();
+    // Add vision data if provided
+    if (payload.vision) {
+      if (payload.vision.initial) {
+        screeningData.vision_initial_screener = payload.vision.initial.screener || null;
+        screeningData.vision_initial_date = payload.vision.initial.date || null;
+        screeningData.vision_initial_glasses = payload.vision.initial.glasses || null;
+        screeningData.vision_initial_right_eye = payload.vision.initial.rightEye || null;
+        screeningData.vision_initial_left_eye = payload.vision.initial.leftEye || null;
+        screeningData.vision_initial_result = payload.vision.initial.result || null;
+      }
+      if (payload.vision.rescreen) {
+        screeningData.vision_rescreen_screener = payload.vision.rescreen.screener || null;
+        screeningData.vision_rescreen_date = payload.vision.rescreen.date || null;
+        screeningData.vision_rescreen_glasses = payload.vision.rescreen.glasses || null;
+        screeningData.vision_rescreen_right_eye = payload.vision.rescreen.rightEye || null;
+        screeningData.vision_rescreen_left_eye = payload.vision.rescreen.leftEye || null;
+        screeningData.vision_rescreen_result = payload.vision.rescreen.result || null;
+      }
+    }
     
-    if (error) throw error;
+    // Add hearing data if provided
+    if (payload.hearing) {
+      if (payload.hearing.initial) {
+        screeningData.hearing_initial_screener = payload.hearing.initial.screener || null;
+        screeningData.hearing_initial_date = payload.hearing.initial.date || null;
+        screeningData.hearing_initial_result = payload.hearing.initial.result || null;
+        screeningData.hearing_initial_right_1000 = payload.hearing.initial.right1000 || null;
+        screeningData.hearing_initial_right_2000 = payload.hearing.initial.right2000 || null;
+        screeningData.hearing_initial_right_4000 = payload.hearing.initial.right4000 || null;
+        screeningData.hearing_initial_left_1000 = payload.hearing.initial.left1000 || null;
+        screeningData.hearing_initial_left_2000 = payload.hearing.initial.left2000 || null;
+        screeningData.hearing_initial_left_4000 = payload.hearing.initial.left4000 || null;
+      }
+      if (payload.hearing.rescreen) {
+        screeningData.hearing_rescreen_screener = payload.hearing.rescreen.screener || null;
+        screeningData.hearing_rescreen_date = payload.hearing.rescreen.date || null;
+        screeningData.hearing_rescreen_result = payload.hearing.rescreen.result || null;
+        screeningData.hearing_rescreen_right_1000 = payload.hearing.rescreen.right1000 || null;
+        screeningData.hearing_rescreen_right_2000 = payload.hearing.rescreen.right2000 || null;
+        screeningData.hearing_rescreen_right_4000 = payload.hearing.rescreen.right4000 || null;
+        screeningData.hearing_rescreen_left_1000 = payload.hearing.rescreen.left1000 || null;
+        screeningData.hearing_rescreen_left_2000 = payload.hearing.rescreen.left2000 || null;
+        screeningData.hearing_rescreen_left_4000 = payload.hearing.rescreen.left4000 || null;
+      }
+    }
     
-    res.json({ success: true, message: 'Screening results saved' });
+    // Add acanthosis data if provided
+    if (payload.acanthosis) {
+      if (payload.acanthosis.initial) {
+        screeningData.acanthosis_initial_screener = payload.acanthosis.initial.screener || null;
+        screeningData.acanthosis_initial_date = payload.acanthosis.initial.date || null;
+        screeningData.acanthosis_initial_result = payload.acanthosis.initial.result || null;
+      }
+      if (payload.acanthosis.rescreen) {
+        screeningData.acanthosis_rescreen_screener = payload.acanthosis.rescreen.screener || null;
+        screeningData.acanthosis_rescreen_date = payload.acanthosis.rescreen.date || null;
+        screeningData.acanthosis_rescreen_result = payload.acanthosis.rescreen.result || null;
+      }
+    }
+    
+    // Add scoliosis data if provided
+    if (payload.scoliosis) {
+      if (payload.scoliosis.initial) {
+        screeningData.scoliosis_initial_screener = payload.scoliosis.initial.screener || null;
+        screeningData.scoliosis_initial_date = payload.scoliosis.initial.date || null;
+        screeningData.scoliosis_initial_observations = payload.scoliosis.initial.observations || null;
+        screeningData.scoliosis_initial_result = payload.scoliosis.initial.result || null;
+      }
+      if (payload.scoliosis.rescreen) {
+        screeningData.scoliosis_rescreen_screener = payload.scoliosis.rescreen.screener || null;
+        screeningData.scoliosis_rescreen_date = payload.scoliosis.rescreen.date || null;
+        screeningData.scoliosis_rescreen_observations = payload.scoliosis.rescreen.observations || null;
+        screeningData.scoliosis_rescreen_result = payload.scoliosis.rescreen.result || null;
+      }
+    }
+    
+    // SELECTIVE UPDATE: Merge with existing record, only updating non-null values
+    let finalData;
+    if (existingRecord && existingRecord.id) {
+      // Merge existing data with new data, only updating non-null fields
+      finalData = {
+        ...existingRecord,
+        ...Object.fromEntries(
+          Object.entries(screeningData).filter(([key, value]) => value !== null && value !== undefined)
+        )
+      };
+      
+      // Update the record
+      const { data, error } = await supabase
+        .from('screening_results')
+        .update(finalData)
+        .eq('id', existingRecord.id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      console.log('Updated existing screening record');
+      res.json({ success: true, message: 'Screening results updated', data });
+    } else {
+      // Create new record
+      const { data, error } = await supabase
+        .from('screening_results')
+        .insert(screeningData)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      console.log('Created new screening record');
+      res.json({ success: true, message: 'Screening results saved', data });
+    }
   } catch (error) {
     console.error('Error saving screening:', error);
     res.status(500).json({ error: error.message });

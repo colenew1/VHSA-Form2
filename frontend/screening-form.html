@@ -184,12 +184,6 @@
             <span class="font-semibold text-gray-700">Student was absent</span>
           </label>
         </div>
-
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2">Notes</label>
-          <textarea id="notes" rows="2" 
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"></textarea>
-        </div>
       </div>
     </section>
 
@@ -311,7 +305,7 @@
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">Teacher</label>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Teacher Last Name</label>
               <input type="text" id="teacher" 
                      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
@@ -323,7 +317,7 @@
           </div>
 
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Status *</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Student Status *</label>
             <select id="status" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="">Select Status</option>
               <option value="New">New</option>
@@ -359,9 +353,22 @@
             <div id="displayDetails" class="text-gray-700"></div>
           </div>
           <div>
-            <label class="text-sm text-gray-600">Teacher | DOB | Status</label>
+            <label class="text-sm text-gray-600">Teacher Last Name | DOB | Student Status</label>
             <div id="displayAdditional" class="text-gray-700"></div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Student Absent Checkbox -->
+    <section id="absentSection" class="hidden mb-8">
+      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+        <div class="mb-4">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="absent" onchange="absentChanged(this.checked)" 
+                   class="w-5 h-5 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500">
+            <span class="font-semibold text-gray-700">Student was absent</span>
+          </label>
         </div>
       </div>
     </section>
@@ -387,28 +394,6 @@
         </button>
         <div class="accordion-content" data-section="vision">
           <div class="p-4 space-y-4">
-            <h3 class="font-semibold text-gray-700 border-b pb-2">Day 1</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Screening Type</label>
-                <select id="visionDay1Type" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="">Select Type</option>
-                  <option value="initial">Initial Screen</option>
-                  <option value="rescreen">Rescreen</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Screener</label>
-                <select id="visionDay1Screener" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="">Select Screener</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Date</label>
-                <input type="date" id="visionDay1Date" 
-                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-              </div>
-            </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Glasses</label>
@@ -472,28 +457,6 @@
         </button>
         <div class="accordion-content" data-section="hearing">
           <div class="p-4 space-y-4">
-            <h3 class="font-semibold text-gray-700 border-b pb-2">Day 1</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Screening Type</label>
-                <select id="hearingDay1Type" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-                  <option value="">Select Type</option>
-                  <option value="initial">Initial Screen</option>
-                  <option value="rescreen">Rescreen</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Screener</label>
-                <select id="hearingDay1Screener" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-                  <option value="">Select Screener</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Date</label>
-                <input type="date" id="hearingDay1Date" 
-                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-              </div>
-            </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">Result</label>
               <div class="flex gap-4">
@@ -537,28 +500,6 @@
         </button>
         <div class="accordion-content" data-section="acanthosis">
           <div class="p-4 space-y-4">
-            <h3 class="font-semibold text-gray-700 border-b pb-2">Day 1</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Screening Type</label>
-                <select id="acanthosisDay1Type" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                  <option value="">Select Type</option>
-                  <option value="initial">Initial Screen</option>
-                  <option value="rescreen">Rescreen</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Screener</label>
-                <select id="acanthosisDay1Screener" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-                  <option value="">Select Screener</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Date</label>
-                <input type="date" id="acanthosisDay1Date" 
-                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
-              </div>
-            </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">Result</label>
               <div class="flex gap-4">
@@ -581,32 +522,46 @@
         </button>
         <div class="accordion-content" data-section="scoliosis">
           <div class="p-4 space-y-4">
-            <h3 class="font-semibold text-gray-700 border-b pb-2">Day 1</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Screening Type</label>
-                <select id="scoliosisDay1Type" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500">
-                  <option value="">Select Type</option>
-                  <option value="initial">Initial Screen</option>
-                  <option value="rescreen">Rescreen</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Screener</label>
-                <select id="scoliosisDay1Screener" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500">
-                  <option value="">Select Screener</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Date</label>
-                <input type="date" id="scoliosisDay1Date" 
-                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500">
-              </div>
-            </div>
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">Observations</label>
-              <textarea id="scoliosisObservations" rows="3" 
-                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"></textarea>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Observations (select all that apply)</label>
+              <div class="space-y-2">
+                <label class="flex items-center">
+                  <input type="checkbox" name="scoliosisObs" value="Uneven shoulder" class="mr-2">
+                  <span class="text-sm">Uneven shoulder</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" name="scoliosisObs" value="Uneven scapula" class="mr-2">
+                  <span class="text-sm">Uneven scapula</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" name="scoliosisObs" value="Accentuated waist crease on one side" class="mr-2">
+                  <span class="text-sm">Accentuated waist crease on one side</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" name="scoliosisObs" value="Unequal arm body space visible" class="mr-2">
+                  <span class="text-sm">Unequal arm body space visible</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" name="scoliosisObs" value="Lateral curvature of the spine prominence on one side" class="mr-2">
+                  <span class="text-sm">Lateral curvature of the spine prominence on one side</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" name="scoliosisObs" value="Forward bending position" class="mr-2">
+                  <span class="text-sm">Forward bending position</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" name="scoliosisObs" value="Accentuated round back/kyphosis" class="mr-2">
+                  <span class="text-sm">Accentuated round back/kyphosis</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" name="scoliosisObs" value="Accentuated sway back/lordosis" class="mr-2">
+                  <span class="text-sm">Accentuated sway back/lordosis</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" name="scoliosisObs" value="Other see additional notes" class="mr-2">
+                  <span class="text-sm">Other (see additional notes)</span>
+                </label>
+              </div>
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">Result</label>
@@ -621,7 +576,19 @@
       
     </section>
 
-    <!-- SECTION 5: Submit -->
+    <!-- SECTION 5: Additional Notes -->
+    <section id="notesSection" class="hidden mt-8">
+      <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Additional Notes</h2>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Notes</label>
+          <textarea id="notes" rows="3" 
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6: Submit -->
     <section id="submitSection" class="hidden mt-8 pt-8 border-t-2 border-gray-300">
       <button onclick="submitScreening()" 
               class="w-full bg-green-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-green-700">
@@ -727,7 +694,7 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Teacher</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Teacher Last Name</label>
             <input type="text" id="editTeacher"
                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
           </div>
@@ -737,7 +704,7 @@
                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
           </div>
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Status *</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Student Status *</label>
             <select id="editStatus" required
                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="">Select Status</option>
@@ -1290,7 +1257,9 @@
       
       // Show sections (screeningDetails is always visible, no need to show it)
       document.getElementById('studentInfo').classList.remove('hidden');
+      document.getElementById('absentSection').classList.remove('hidden');
       document.getElementById('screeningTests').classList.remove('hidden');
+      document.getElementById('notesSection').classList.remove('hidden');
       document.getElementById('submitSection').classList.remove('hidden');
       
       // Ensure all screening sections are visible
@@ -1400,15 +1369,31 @@
 
     // Absent checkbox changed
     function absentChanged(checked) {
+      const screeningTests = document.getElementById('screeningTests');
+      const sections = ['vision', 'hearing', 'acanthosis', 'scoliosis'];
+      
       if (checked) {
-        // Close all screening sections when absent
-        const sections = ['vision', 'hearing', 'acanthosis', 'scoliosis'];
+        // Close all screening sections
         sections.forEach(section => {
           const accordion = document.querySelector(`[data-section="${section}"]`);
           if (accordion && accordion.classList.contains('open')) {
             toggleAccordion(section);
           }
         });
+        
+        // Gray out the entire screening tests section
+        if (screeningTests) {
+          screeningTests.style.opacity = '0.5';
+          screeningTests.style.pointerEvents = 'none';
+          screeningTests.style.filter = 'grayscale(100%)';
+        }
+      } else {
+        // Remove gray out effect
+        if (screeningTests) {
+          screeningTests.style.opacity = '1';
+          screeningTests.style.pointerEvents = 'auto';
+          screeningTests.style.filter = 'none';
+        }
       }
     }
 
@@ -1525,137 +1510,156 @@
 
     // Build payload
     function buildPayload() {
+      const globalScreeningType = document.getElementById('globalScreeningType').value;
+      const screeningDate = document.getElementById('screeningDate').value;
+      const screenerName = document.getElementById('screenerName').value;
+      const wasAbsent = document.getElementById('absent').checked;
+      const notes = document.getElementById('notes').value;
+      
       const payload = {
         uniqueId: currentStudent.unique_id,
-        screeningDate: document.getElementById('screeningDate').value,
-        screenerName: document.getElementById('screenerName').value,
-        absent: document.getElementById('absent').checked,
-        notes: document.getElementById('notes').value
+        screeningDate: screeningDate,
+        was_absent: wasAbsent,
+        notes: notes || null
       };
-
-      const vision = getVisionData();
-      if (vision) payload.vision = vision;
-
-      const hearing = getHearingData();
-      if (hearing) payload.hearing = hearing;
-
-      const acanthosis = getAcanthosisData();
-      if (acanthosis) payload.acanthosis = acanthosis;
-
-      const scoliosis = getScoliosisData();
-      if (scoliosis) payload.scoliosis = scoliosis;
+      
+      // Determine if this is initial or rescreen based on global type
+      const isInitial = globalScreeningType === 'initial';
+      const testKey = isInitial ? 'initial' : 'rescreen';
+      
+      // Vision data
+      const visionData = getVisionData();
+      if (visionData || true) {  // Always include to preserve structure
+        payload.vision = {
+          [testKey]: visionData ? {
+            screener: screenerName,
+            date: screeningDate,
+            glasses: visionData.glasses || null,
+            rightEye: visionData.rightEye || null,
+            leftEye: visionData.leftEye || null,
+            result: visionData.result || null
+          } : null
+        };
+      }
+      
+      // Hearing data
+      const hearingData = getHearingData();
+      if (hearingData || true) {  // Always include to preserve structure
+        payload.hearing = {
+          [testKey]: hearingData ? {
+            screener: screenerName,
+            date: screeningDate,
+            result: hearingData.result || null,
+            right1000: hearingData.right1000 || null,
+            right2000: hearingData.right2000 || null,
+            right4000: hearingData.right4000 || null,
+            left1000: hearingData.left1000 || null,
+            left2000: hearingData.left2000 || null,
+            left4000: hearingData.left4000 || null
+          } : null
+        };
+      }
+      
+      // Acanthosis data
+      const acanthosisData = getAcanthosisData();
+      if (acanthosisData || true) {  // Always include to preserve structure
+        payload.acanthosis = {
+          [testKey]: acanthosisData ? {
+            screener: screenerName,
+            date: screeningDate,
+            result: acanthosisData.result || null
+          } : null
+        };
+      }
+      
+      // Scoliosis data
+      const scoliosisData = getScoliosisData();
+      if (scoliosisData || true) {  // Always include to preserve structure
+        payload.scoliosis = {
+          [testKey]: scoliosisData ? {
+            screener: screenerName,
+            date: screeningDate,
+            result: scoliosisData.result || null,
+            observations: scoliosisData.observations || null
+          } : null
+        };
+      }
 
       return payload;
     }
 
     function getVisionData() {
-      // Check if vision section is expanded
       const visionAccordion = document.querySelector('[data-section="vision"]');
-      const isExpanded = visionAccordion && visionAccordion.classList.contains('open');
+      if (!visionAccordion?.classList.contains('open')) return null;
       
-      if (!isExpanded) {
-        return null; // Don't submit if collapsed
-      }
-      
-      const result = document.querySelector('input[name="visionResult"]:checked')?.value;
+      const result = document.querySelector('input[name="visionResult"]:checked');
       if (!result) return null;
-
+      
       const glasses = document.querySelector('input[name="visionGlasses"]:checked')?.value || 'no';
+      
       return {
-        day1: {
-          type: document.getElementById('visionDay1Type').value || 'initial',
-          screener: document.getElementById('visionDay1Screener').value || document.getElementById('screenerName').value,
-          date: document.getElementById('visionDay1Date').value || document.getElementById('screeningDate').value,
-          glasses: glasses,
-          rightEye: document.getElementById('visionRightEye').value || '',
-          leftEye: document.getElementById('visionLeftEye').value || '',
-          result: result
-        }
+        glasses: glasses,
+        rightEye: document.getElementById('visionRightEye').value || '',
+        leftEye: document.getElementById('visionLeftEye').value || '',
+        result: result.value
       };
     }
 
     function getHearingData() {
-      // Check if hearing section is expanded
       const hearingAccordion = document.querySelector('[data-section="hearing"]');
-      const isExpanded = hearingAccordion && hearingAccordion.classList.contains('open');
+      if (!hearingAccordion?.classList.contains('open')) return null;
       
-      if (!isExpanded) {
-        return null; // Don't submit if collapsed
-      }
-      
-      const result = document.querySelector('input[name="hearingResult"]:checked')?.value;
+      const result = document.querySelector('input[name="hearingResult"]:checked');
       if (!result) return null;
 
       const data = {
-        day1: {
-          type: document.getElementById('hearingDay1Type').value || 'initial',
-          screener: document.getElementById('hearingDay1Screener').value || document.getElementById('screenerName').value,
-          date: document.getElementById('hearingDay1Date').value || document.getElementById('screeningDate').value,
-          result: result
-        }
+        result: result.value
       };
 
-      if (result === 'fail') {
+      if (result.value === 'fail') {
         const checkboxes = document.querySelectorAll('.hearing-freq:checked');
         checkboxes.forEach(cb => {
           const ear = cb.dataset.ear;
           const freq = cb.dataset.freq;
-          data.day1[`${ear}${freq}`] = 'fail';
+          data[`${ear}${freq}`] = 'fail';
         });
       } else {
-        data.day1.right1000 = 'pass';
-        data.day1.right2000 = 'pass';
-        data.day1.right4000 = 'pass';
-        data.day1.left1000 = 'pass';
-        data.day1.left2000 = 'pass';
-        data.day1.left4000 = 'pass';
+        data.right1000 = 'pass';
+        data.right2000 = 'pass';
+        data.right4000 = 'pass';
+        data.left1000 = 'pass';
+        data.left2000 = 'pass';
+        data.left4000 = 'pass';
       }
 
       return data;
     }
 
     function getAcanthosisData() {
-      // Check if acanthosis section is expanded
       const acanthosisAccordion = document.querySelector('[data-section="acanthosis"]');
-      const isExpanded = acanthosisAccordion && acanthosisAccordion.classList.contains('open');
+      if (!acanthosisAccordion?.classList.contains('open')) return null;
       
-      if (!isExpanded) {
-        return null; // Don't submit if collapsed
-      }
-      
-      const result = document.querySelector('input[name="acanthosisResult"]:checked')?.value;
+      const result = document.querySelector('input[name="acanthosisResult"]:checked');
       if (!result) return null;
 
       return {
-        day1: {
-          type: document.getElementById('acanthosisDay1Type').value || 'initial',
-          screener: document.getElementById('acanthosisDay1Screener').value || document.getElementById('screenerName').value,
-          date: document.getElementById('acanthosisDay1Date').value || document.getElementById('screeningDate').value,
-          result: result
-        }
+        result: result.value
       };
     }
 
     function getScoliosisData() {
-      // Check if scoliosis section is expanded
       const scoliosisAccordion = document.querySelector('[data-section="scoliosis"]');
-      const isExpanded = scoliosisAccordion && scoliosisAccordion.classList.contains('open');
+      if (!scoliosisAccordion?.classList.contains('open')) return null;
       
-      if (!isExpanded) {
-        return null; // Don't submit if collapsed
-      }
-      
-      const result = document.querySelector('input[name="scoliosisResult"]:checked')?.value;
+      const result = document.querySelector('input[name="scoliosisResult"]:checked');
       if (!result) return null;
-
+      
+      const observations = Array.from(document.querySelectorAll('input[name="scoliosisObs"]:checked'))
+        .map(cb => cb.value);
+      
       return {
-        day1: {
-          type: document.getElementById('scoliosisDay1Type').value || 'initial',
-          screener: document.getElementById('scoliosisDay1Screener').value || document.getElementById('screenerName').value,
-          date: document.getElementById('scoliosisDay1Date').value || document.getElementById('screeningDate').value,
-          observations: document.getElementById('scoliosisObservations').value || '',
-          result: result
-        }
+        result: result.value,
+        observations: observations.join(', ')
       };
     }
 
@@ -1673,10 +1677,7 @@
       });
       
       // Clear screening test fields only
-      const screeningFields = ['visionDay1Type', 'visionDay1Screener', 'visionDay1Date', 'visionRightEye', 'visionLeftEye',
-                               'hearingDay1Type', 'hearingDay1Screener', 'hearingDay1Date',
-                               'acanthosisDay1Type', 'acanthosisDay1Screener', 'acanthosisDay1Date',
-                               'scoliosisDay1Type', 'scoliosisDay1Screener', 'scoliosisDay1Date', 'scoliosisObservations'];
+      const screeningFields = ['visionRightEye', 'visionLeftEye', 'visionNotes', 'hearingNotes', 'acanthosisNotes', 'scoliosisNotes'];
       screeningFields.forEach(id => {
         const el = document.getElementById(id);
         if (el && (el.type === 'radio' || el.type === 'checkbox')) {
@@ -1690,12 +1691,24 @@
       document.querySelectorAll('input[name="visionResult"], input[name="visionGlasses"], input[name="hearingResult"], input[name="acanthosisResult"], input[name="scoliosisResult"]').forEach(el => el.checked = false);
       document.querySelectorAll('.hearing-freq').forEach(el => el.checked = false);
       
+      // Clear scoliosis observation checkboxes
+      document.querySelectorAll('input[name="scoliosisObs"]').forEach(el => el.checked = false);
+      
+      // Clear notes
+      document.getElementById('notes').value = '';
+      
+      // Reset absent checkbox
+      document.getElementById('absent').checked = false;
+      absentChanged(false);
+      
       // Reset to search tab
       switchTab('search');
       
       // Hide sections except student search and screening details
       document.getElementById('studentInfo').classList.add('hidden');
+      document.getElementById('absentSection').classList.add('hidden');
       document.getElementById('screeningTests').classList.add('hidden');
+      document.getElementById('notesSection').classList.add('hidden');
       document.getElementById('submitSection').classList.add('hidden');
       // NOTE: screeningDetails stays visible and keeps its values
       
