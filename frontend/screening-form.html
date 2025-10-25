@@ -141,10 +141,6 @@
   <header class="max-w-6xl mx-auto mb-8 text-center">
     <h1 class="text-4xl font-bold text-gray-800 mb-2">School Health Screening Form</h1>
     <p class="text-lg text-gray-600">Vision & Hearing Screening of Austin</p>
-    <div class="mt-4 p-4 bg-blue-100 border-2 border-blue-400 rounded-lg max-w-2xl mx-auto">
-      <p class="font-semibold text-blue-900 mb-2">🎯 Demo Mode Active</p>
-      <p class="text-sm text-blue-800">Try these demo student IDs: <strong>st1001</strong>, <strong>st1002</strong>, or <strong>st1003</strong></p>
-    </div>
   </header>
 
   <!-- Main Form Container -->
@@ -169,7 +165,7 @@
           <div class="bg-blue-50 p-4 rounded-lg">
             <label class="block text-sm font-semibold text-gray-700 mb-2">Search by Student ID</label>
             <div class="flex gap-2">
-              <input type="text" id="searchId" placeholder="Enter student ID (e.g., st0100)" 
+              <input type="text" id="searchId" placeholder="Enter student ID" 
                      class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
               <button onclick="searchById()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700">
                 Search
@@ -677,10 +673,6 @@
       await loadSchools();
       await loadScreeners();
       setDefaultDate();
-      
-      // Auto-populate with demo student ID for easy testing
-      document.getElementById('searchId').value = 'st1001';
-      document.getElementById('searchId').placeholder = 'Try: st1001, st1002, or st1003';
     });
 
     // Load schools from API
@@ -809,77 +801,19 @@
         return;
       }
 
-      // DEMO MODE: Sample student IDs for testing without database
-      const demoStudents = {
-        'st1001': {
-          student: {
-            unique_id: 'st1001',
-            first_name: 'John',
-            last_name: 'Smith',
-            grade: '5th',
-            gender: 'Male',
-            school: 'Austin Elementary',
-            teacher: 'Mrs. Johnson',
-            dob: '2013-08-15',
-            status: 'Returning'
-          },
-          requiredScreenings: { vision: true, hearing: true, acanthosis: false, scoliosis: false }
-        },
-        'st1002': {
-          student: {
-            unique_id: 'st1002',
-            first_name: 'Maria',
-            last_name: 'Garcia',
-            grade: '7th',
-            gender: 'Female',
-            school: 'Austin Middle School',
-            teacher: 'Mr. Williams',
-            dob: '2011-03-22',
-            status: 'New'
-          },
-          requiredScreenings: { vision: true, hearing: true, acanthosis: false, scoliosis: true }
-        },
-        'st1003': {
-          student: {
-            unique_id: 'st1003',
-            first_name: 'Emma',
-            last_name: 'Johnson',
-            grade: 'Kindergarten',
-            gender: 'Female',
-            school: 'Sunshine Elementary',
-            teacher: 'Ms. Brown',
-            dob: '2018-11-05',
-            status: 'New'
-          },
-          requiredScreenings: { vision: true, hearing: true, acanthosis: false, scoliosis: false }
-        }
-      };
-
-      // Check if this is a demo student
-      if (demoStudents[studentId.toLowerCase()]) {
-        const demoData = demoStudents[studentId.toLowerCase()];
-        loadStudentData(demoData.student, demoData.requiredScreenings);
-        return;
-      }
-
       try {
         const response = await fetch(`${API_BASE}/students/${studentId}`);
         const data = await response.json();
         
-        if (data.found) {
-          loadStudentData(data.student, data.requiredScreenings);
-        } else {
-          alert('Student not found. Try demo IDs: st1001, st1002, or st1003');
+        if (data.error) {
+          alert('Student not found. Please check the student ID and try again.');
+          return;
         }
-      } catch (error) {
-        alert('Backend not connected. Using demo mode.\n\nTry these demo student IDs:\n• st1001 - John Smith (5th grade)\n• st1002 - Maria Garcia (7th grade)\n• st1003 - Emma Johnson (Kindergarten)');
         
-        // Offer to load demo student
-        const useDemo = confirm('Would you like to try a demo student (st1001)?');
-        if (useDemo) {
-          document.getElementById('searchId').value = 'st1001';
-          searchById();
-        }
+        loadStudentData(data.student, data.requiredScreenings);
+      } catch (error) {
+        console.error('Error searching for student:', error);
+        alert('Error connecting to the database. Please try again later.');
       }
     }
 
