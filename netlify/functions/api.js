@@ -251,6 +251,45 @@ app.get('/api/students/:uniqueId', async (req, res) => {
   }
 });
 
+// Update student information
+app.put('/api/students/:uniqueId', async (req, res) => {
+  try {
+    if (!supabase) {
+      return res.status(500).json({ error: 'Database not available' });
+    }
+    
+    const { uniqueId } = req.params;
+    const updates = {};
+    
+    // Only update provided fields with title case for names
+    if (req.body.firstName) updates.first_name = toTitleCase(req.body.firstName);
+    if (req.body.lastName) updates.last_name = toTitleCase(req.body.lastName);
+    if (req.body.grade) updates.grade = req.body.grade;
+    if (req.body.gender) updates.gender = req.body.gender;
+    if (req.body.school) updates.school = req.body.school;
+    if (req.body.teacher !== undefined) updates.teacher = toTitleCase(req.body.teacher);
+    if (req.body.dob) updates.dob = req.body.dob;
+    if (req.body.status) updates.status = req.body.status;
+    
+    const { data, error } = await supabase
+      .from('students')
+      .update(updates)
+      .eq('unique_id', uniqueId)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    res.json({
+      success: true,
+      student: data
+    });
+  } catch (error) {
+    console.error('Error updating student:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Create new student
 app.post('/api/students/quick-add', async (req, res) => {
   try {

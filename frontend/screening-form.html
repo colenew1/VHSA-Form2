@@ -665,6 +665,85 @@
     </div>
   </div>
 
+  <!-- Edit Student Modal -->
+  <div id="editStudentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
+      <h3 class="text-xl font-bold text-red-600 mb-2">Incomplete Student Data</h3>
+      <p class="text-gray-700 mb-4">This student record is missing required information. Please fill in the missing fields below:</p>
+      
+      <div class="bg-yellow-50 border border-yellow-200 rounded p-3 mb-4">
+        <p class="text-sm text-gray-700"><strong>Student ID:</strong> <span id="editStudentId"></span></p>
+      </div>
+      
+      <form id="editStudentForm" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">First Name *</label>
+            <input type="text" id="editFirstName" required
+                   class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Last Name *</label>
+            <input type="text" id="editLastName" required
+                   class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Grade *</label>
+            <input type="text" id="editGrade" required
+                   class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Gender *</label>
+            <select id="editGender" required
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">School *</label>
+            <select id="editSchool" required
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">Select School</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Teacher</label>
+            <input type="text" id="editTeacher"
+                   class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Date of Birth *</label>
+            <input type="date" id="editDOB" required
+                   class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Status *</label>
+            <select id="editStatus" required
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">Select Status</option>
+              <option value="New">New</option>
+              <option value="Returning">Returning</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="flex justify-end space-x-3 mt-6">
+          <button type="button" onclick="closeEditStudentModal()" 
+                  class="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
+            Cancel
+          </button>
+          <button type="button" onclick="saveStudentUpdates()" 
+                  class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Save & Continue
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     // Automatically detect environment and set API base URL
     const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -1038,8 +1117,150 @@
       document.getElementById('newStudentModal').style.display = 'none';
     }
 
+    // Show edit student modal
+    function showEditStudentModal(student, missingFields) {
+      // Store current student for later use
+      window.editingStudent = student;
+      
+      // Populate modal
+      document.getElementById('editStudentId').textContent = student.unique_id;
+      document.getElementById('editFirstName').value = student.first_name || '';
+      document.getElementById('editLastName').value = student.last_name || '';
+      document.getElementById('editGrade').value = student.grade || '';
+      document.getElementById('editGender').value = student.gender || '';
+      document.getElementById('editSchool').value = student.school || '';
+      document.getElementById('editTeacher').value = student.teacher || '';
+      document.getElementById('editDOB').value = student.dob || '';
+      document.getElementById('editStatus').value = student.status || '';
+      
+      // Populate school dropdown if not already done
+      const editSchoolSelect = document.getElementById('editSchool');
+      if (editSchoolSelect.options.length <= 1) {
+        schools.forEach(school => {
+          const option = new Option(school.name, school.name);
+          editSchoolSelect.add(option);
+        });
+      }
+      
+      // Highlight missing fields
+      missingFields.forEach(field => {
+        const fieldMap = {
+          'first_name': 'editFirstName',
+          'last_name': 'editLastName',
+          'grade': 'editGrade',
+          'gender': 'editGender',
+          'school': 'editSchool',
+          'dob': 'editDOB',
+          'status': 'editStatus'
+        };
+        const inputId = fieldMap[field.key];
+        if (inputId) {
+          const input = document.getElementById(inputId);
+          input.classList.add('border-red-500', 'bg-red-50');
+        }
+      });
+      
+      // Show modal
+      document.getElementById('editStudentModal').classList.remove('hidden');
+    }
+
+    // Close edit student modal
+    function closeEditStudentModal() {
+      document.getElementById('editStudentModal').classList.add('hidden');
+      window.editingStudent = null;
+    }
+
+    // Save student updates
+    async function saveStudentUpdates() {
+      const student = window.editingStudent;
+      if (!student) return;
+      
+      // Get form values
+      const updates = {
+        firstName: document.getElementById('editFirstName').value.trim(),
+        lastName: document.getElementById('editLastName').value.trim(),
+        grade: document.getElementById('editGrade').value.trim(),
+        gender: document.getElementById('editGender').value,
+        school: document.getElementById('editSchool').value,
+        teacher: document.getElementById('editTeacher').value.trim(),
+        dob: document.getElementById('editDOB').value,
+        status: document.getElementById('editStatus').value
+      };
+      
+      // Validate required fields
+      if (!updates.firstName || !updates.lastName || !updates.grade || 
+          !updates.gender || !updates.school || !updates.dob || !updates.status) {
+        showCustomPopup('warning', 'Missing Information', 'Please fill in all required fields (marked with *)');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_BASE}/students/${student.unique_id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updates)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showCustomPopup('success', 'Updated!', 'Student information has been updated successfully');
+          closeEditStudentModal();
+          
+          // Reload student data with updated info
+          const updatedStudent = data.student;
+          const requiredScreenings = {
+            vision: true,
+            hearing: true,
+            acanthosis: false,
+            scoliosis: false
+          };
+          loadStudentData(updatedStudent, requiredScreenings);
+        } else {
+          showCustomPopup('error', 'Update Failed', 'Error updating student: ' + data.error);
+        }
+      } catch (error) {
+        showCustomPopup('error', 'Update Error', 'Error updating student: ' + error.message);
+      }
+    }
+
+    // Validate student data completeness
+    function validateStudentData(student) {
+      const requiredFields = [
+        { key: 'first_name', label: 'First Name' },
+        { key: 'last_name', label: 'Last Name' },
+        { key: 'grade', label: 'Grade' },
+        { key: 'gender', label: 'Gender' },
+        { key: 'school', label: 'School' },
+        { key: 'dob', label: 'Date of Birth' },
+        { key: 'status', label: 'Status' }
+      ];
+      
+      const missingFields = [];
+      
+      for (const field of requiredFields) {
+        if (!student[field.key] || student[field.key].trim() === '') {
+          missingFields.push(field);
+        }
+      }
+      
+      return {
+        isComplete: missingFields.length === 0,
+        missingFields: missingFields
+      };
+    }
+
     // Load student data
     function loadStudentData(student, requiredScreenings) {
+      // Validate student data completeness
+      const validation = validateStudentData(student);
+      
+      if (!validation.isComplete) {
+        // Show edit modal for incomplete data
+        showEditStudentModal(student, validation.missingFields);
+        return; // Don't proceed with loading until data is complete
+      }
+      
       currentStudent = student;
       
       // Display student info
