@@ -164,6 +164,50 @@ app.get('/api/screeners', async (req, res) => {
   }
 });
 
+// Search students by name - MUST come BEFORE /:uniqueId route
+app.get('/api/students/search', async (req, res) => {
+  const { lastName, school } = req.query;
+  
+  console.log('Search params:', { lastName, school });
+  
+  if (!lastName || !school) {
+    return res.json({ found: false, error: 'Missing params' });
+  }
+  
+  try {
+    // Simple query - just find students
+    const { data, error } = await supabase
+      .from('students')
+      .select('*')
+      .ilike('last_name', `%${lastName}%`)
+      .ilike('school', `%${school}%`);
+    
+    console.log('Results:', data?.length || 0);
+    
+    if (error || !data || data.length === 0) {
+      return res.json({ found: false });
+    }
+    
+    if (data.length === 1) {
+      return res.json({
+        found: true,
+        student: data[0],
+        requiredScreenings: { vision: true, hearing: true, acanthosis: false, scoliosis: false }
+      });
+    }
+    
+    return res.json({
+      found: true,
+      multiple: true,
+      students: data
+    });
+    
+  } catch (err) {
+    console.error(err);
+    return res.json({ found: false, error: err.message });
+  }
+});
+
 // Get student by ID
 app.get('/api/students/:uniqueId', async (req, res) => {
   try {
@@ -199,138 +243,6 @@ app.get('/api/students/:uniqueId', async (req, res) => {
   } catch (error) {
     console.error('Error fetching student:', error);
     res.status(500).json({ error: error.message });
-  }
-});
-
-// Search students by name
-app.get('/api/students/search', async (req, res) => {
-  try {
-    const { lastName, school } = req.query;
-    
-    // Log what we're searching for
-    console.log('=== SEARCH REQUEST ===');
-    console.log('lastName param:', lastName);
-    console.log('school param:', school);
-    console.log('typeof lastName:', typeof lastName);
-    console.log('typeof school:', typeof school);
-    
-    if (!supabase) {
-      console.log('ERROR: Supabase client not available');
-      return res.status(500).json({ 
-        found: false,
-        error: 'Database not available' 
-      });
-    }
-    
-    if (!lastName || !school) {
-      console.log('Missing parameters');
-      return res.status(400).json({ 
-        found: false,
-        error: 'lastName and school are required' 
-      });
-    }
-    
-    // Trim whitespace and log cleaned values
-    const cleanLastName = lastName.trim();
-    const cleanSchool = school.trim();
-    
-    console.log('Cleaned lastName:', cleanLastName);
-    console.log('Cleaned school:', cleanSchool);
-    console.log('Search pattern:', `%${cleanLastName}%`);
-    
-    // Try exact match first
-    console.log('Attempting query with .ilike()');
-    const { data: students, error } = await supabase
-      .from('students')
-      .select('*')
-      .ilike('last_name', `%${cleanLastName}%`)
-      .eq('school', cleanSchool);  // Try exact match on school
-    
-    console.log('Query executed');
-    console.log('Error:', error);
-    console.log('Results found:', students ? students.length : 0);
-    
-    if (students && students.length > 0) {
-      console.log('First result:', {
-        id: students[0].unique_id,
-        name: students[0].first_name + ' ' + students[0].last_name,
-        school: students[0].school
-      });
-    }
-    
-    if (error) {
-      console.error('Supabase error:', error);
-      return res.status(500).json({ 
-        found: false,
-        error: error.message 
-      });
-    }
-    
-    if (!students || students.length === 0) {
-      console.log('No results - trying case variations');
-      
-      // Try case-insensitive on school too
-      const { data: retryStudents, error: retryError } = await supabase
-        .from('students')
-        .select('*')
-        .ilike('last_name', `%${cleanLastName}%`)
-        .ilike('school', `%${cleanSchool}%`);
-      
-      console.log('Retry results:', retryStudents ? retryStudents.length : 0);
-      
-      if (retryStudents && retryStudents.length > 0) {
-        // Use retry results
-        if (retryStudents.length === 1) {
-          return res.json({
-            found: true,
-            student: retryStudents[0],
-            requiredScreenings: { vision: true, hearing: true, acanthosis: false, scoliosis: false }
-          });
-        }
-        return res.json({
-          found: true,
-          multiple: true,
-          students: retryStudents
-        });
-      }
-      
-      return res.json({ 
-        found: false,
-        message: 'No students found',
-        debug: {
-          searchedLastName: cleanLastName,
-          searchedSchool: cleanSchool
-        }
-      });
-    }
-    
-    // Single student found
-    if (students.length === 1) {
-      return res.json({
-        found: true,
-        student: students[0],
-        requiredScreenings: { 
-          vision: true, 
-          hearing: true, 
-          acanthosis: false, 
-          scoliosis: false 
-        }
-      });
-    }
-    
-    // Multiple students found
-    return res.json({
-      found: true,
-      multiple: true,
-      students: students
-    });
-    
-  } catch (error) {
-    console.error('Search error:', error);
-    return res.status(500).json({ 
-      found: false,
-      error: error.message 
-    });
   }
 });
 
