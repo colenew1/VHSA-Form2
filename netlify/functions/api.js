@@ -94,6 +94,34 @@ app.get('/api/debug/schools', async (req, res) => {
   }
 });
 
+// Add diagnostic endpoint to list students
+app.get('/api/debug/list-students', async (req, res) => {
+  try {
+    if (!supabase) {
+      return res.status(500).json({ error: 'Database not available' });
+    }
+    
+    const { data: students, error } = await supabase
+      .from('students')
+      .select('unique_id, first_name, last_name, school')
+      .limit(20);
+    
+    if (error) {
+      return res.json({ error: error.message, details: error });
+    }
+    
+    const distinctSchools = students ? [...new Set(students.map(s => s.school))] : [];
+    
+    return res.json({
+      count: students ? students.length : 0,
+      students: students || [],
+      distinctSchools: distinctSchools
+    });
+  } catch (error) {
+    return res.json({ error: error.message });
+  }
+});
+
 // Get schools
 app.get('/api/schools', async (req, res) => {
   try {
@@ -179,7 +207,12 @@ app.get('/api/students/search', async (req, res) => {
   try {
     const { lastName, school } = req.query;
     
-    console.log('Search request:', { lastName, school });
+    // Log what we're searching for
+    console.log('=== SEARCH REQUEST ===');
+    console.log('lastName param:', lastName);
+    console.log('school param:', school);
+    console.log('typeof lastName:', typeof lastName);
+    console.log('typeof school:', typeof school);
     
     if (!supabase) {
       console.log('ERROR: Supabase client not available');
@@ -190,25 +223,40 @@ app.get('/api/students/search', async (req, res) => {
     }
     
     if (!lastName || !school) {
+      console.log('Missing parameters');
       return res.status(400).json({ 
         found: false,
         error: 'lastName and school are required' 
       });
     }
     
-    // Query students table (verified working in SQL)
+    // Trim whitespace and log cleaned values
+    const cleanLastName = lastName.trim();
+    const cleanSchool = school.trim();
+    
+    console.log('Cleaned lastName:', cleanLastName);
+    console.log('Cleaned school:', cleanSchool);
+    console.log('Search pattern:', `%${cleanLastName}%`);
+    
+    // Try exact match first
+    console.log('Attempting query with .ilike()');
     const { data: students, error } = await supabase
       .from('students')
       .select('*')
-      .ilike('last_name', `%${lastName}%`)
-      .ilike('school', `%${school}%`)  // Add % wildcards to school too
-      .order('last_name', { ascending: true });
+      .ilike('last_name', `%${cleanLastName}%`)
+      .eq('school', cleanSchool);  // Try exact match on school
     
-    console.log('Query results:', { 
-      error: error, 
-      count: students?.length,
-      firstResult: students?.[0]?.unique_id 
-    });
+    console.log('Query executed');
+    console.log('Error:', error);
+    console.log('Results found:', students ? students.length : 0);
+    
+    if (students && students.length > 0) {
+      console.log('First result:', {
+        id: students[0].unique_id,
+        name: students[0].first_name + ' ' + students[0].last_name,
+        school: students[0].school
+      });
+    }
     
     if (error) {
       console.error('Supabase error:', error);
@@ -219,28 +267,54 @@ app.get('/api/students/search', async (req, res) => {
     }
     
     if (!students || students.length === 0) {
+      console.log('No results - trying case variations');
+      
+      // Try case-insensitive on school too
+      const { data: retryStudents, error: retryError } = await supabase
+        .from('students')
+        .select('*')
+        .ilike('last_name', `%${cleanLastName}%`)
+        .ilike('school', `%${cleanSchool}%`);
+      
+      console.log('Retry results:', retryStudents ? retryStudents.length : 0);
+      
+      if (retryStudents && retryStudents.length > 0) {
+        // Use retry results
+        if (retryStudents.length === 1) {
+          return res.json({
+            found: true,
+            student: retryStudents[0],
+            requiredScreenings: { vision: true, hearing: true, acanthosis: false, scoliosis: false }
+          });
+        }
+        return res.json({
+          found: true,
+          multiple: true,
+          students: retryStudents
+        });
+      }
+      
       return res.json({ 
         found: false,
-        message: 'No students found' 
+        message: 'No students found',
+        debug: {
+          searchedLastName: cleanLastName,
+          searchedSchool: cleanSchool
+        }
       });
     }
     
     // Single student found
     if (students.length === 1) {
-      const student = students[0];
-      
-      // Calculate required screenings
-      const requiredScreenings = {
-        vision: true,
-        hearing: true,
-        acanthosis: false,
-        scoliosis: false
-      };
-      
       return res.json({
         found: true,
-        student: student,
-        requiredScreenings: requiredScreenings
+        student: students[0],
+        requiredScreenings: { 
+          vision: true, 
+          hearing: true, 
+          acanthosis: false, 
+          scoliosis: false 
+        }
       });
     }
     
