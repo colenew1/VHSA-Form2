@@ -696,6 +696,12 @@
         const searchSelect = document.getElementById('searchSchool');
         const newSelect = document.getElementById('newStudentSchool');
         
+        // Add "Other" option first
+        const otherOption1 = new Option('Other', 'other');
+        const otherOption2 = new Option('Other', 'other');
+        searchSelect.add(otherOption1);
+        newSelect.add(otherOption2);
+        
         if (Array.isArray(schools)) {
           schools.forEach(school => {
             const option1 = new Option(school.name, school.name);
@@ -742,12 +748,13 @@
               select.remove(0);
             }
             
-            // Add "Select Screener" placeholder if main dropdown, or "Other" for others
+            // Add "Select Screener" placeholder for main dropdown
             if (id === 'screenerName') {
               select.add(new Option('Select Screener', ''));
-            } else {
-              select.add(new Option('Other', 'other'));
             }
+            
+            // Add "Other" to all dropdowns
+            select.add(new Option('Other', 'other'));
             
             // Add all screeners from API
             if (Array.isArray(screeners)) {
