@@ -3,6 +3,20 @@ const express = require('express');
 const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
 
+// Helper function for title case formatting
+function toTitleCase(str) {
+  if (!str) return '';
+  return str
+    .trim()
+    .toLowerCase()
+    .split(' ')
+    .map(word => {
+      if (word.length === 0) return '';
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' ');
+}
+
 const app = express();
 
 // Middleware
@@ -141,25 +155,40 @@ app.get('/api/students/search', async (req, res) => {
     
     const { lastName, school } = req.query;
     
+    console.log('Search params:', { lastName, school }); // DEBUG
+    
     if (!lastName || !school) {
       return res.status(400).json({ error: 'lastName and school are required' });
     }
     
+    // Use ilike for case-insensitive search with partial matching
     const { data: students, error } = await supabase
       .from('students')
       .select('*')
-      .ilike('last_name', `%${lastName}%`)
-      .eq('school', school)
+      .ilike('last_name', `%${lastName}%`)  // Case-insensitive, partial match
+      .ilike('school', school)               // Case-insensitive
       .order('last_name', { ascending: true });
     
-    if (error) throw error;
+    console.log('Query results:', students?.length || 0, 'students found'); // DEBUG
+    
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
     
     if (students.length === 0) {
-      return res.json({ found: false });
+      return res.json({ found: false, message: 'No students found' });
     }
     
     if (students.length === 1) {
-      const requiredScreenings = { vision: true, hearing: true, acanthosis: false, scoliosis: false };
+      // Calculate required screenings based on grade/gender/status
+      const requiredScreenings = {
+        vision: true,
+        hearing: true,
+        acanthosis: false,
+        scoliosis: false
+      };
+      
       return res.json({
         found: true,
         student: students[0],
@@ -167,11 +196,12 @@ app.get('/api/students/search', async (req, res) => {
       });
     }
     
-    res.json({
+    return res.json({
       found: true,
       multiple: true,
       students: students
     });
+    
   } catch (error) {
     console.error('Search error:', error);
     res.status(500).json({ error: error.message });
@@ -185,16 +215,42 @@ app.post('/api/students/quick-add', async (req, res) => {
       return res.status(500).json({ error: 'Database not available' });
     }
     
-    const { firstName, lastName, grade, gender, school, teacher, dob, status } = req.body;
+    // Get and format input with title case
+    const firstName = toTitleCase(req.body.firstName);
+    const lastName = toTitleCase(req.body.lastName);
+    const grade = req.body.grade;
+    const gender = req.body.gender;
+    const school = req.body.school;
+    const teacher = toTitleCase(req.body.teacher || '');
+    const dob = req.body.dob;
+    const status = req.body.status;
     
     if (!firstName || !lastName || !grade || !gender || !school || !dob || !status) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
     
-    // Generate unique_id (simplified - you'll need proper logic)
-    const schoolCode = school.substring(0, 2).toLowerCase();
-    const uniqueId = `${schoolCode}${Date.now().toString().slice(-4)}`;
+    // Generate unique_id with better logic
+    const schoolCode = school.replace(/[^\w\s]/g, '').trim().split(/\s+/)[0].substring(0, 2).toLowerCase();
     
+    // Get max ID for this school
+    const { data: existingStudents } = await supabase
+      .from('students')
+      .select('unique_id')
+      .ilike('unique_id', `${schoolCode}%`)
+      .order('unique_id', { ascending: false })
+      .limit(1);
+    
+    let maxNumber = 0;
+    if (existingStudents && existingStudents.length > 0) {
+      const lastId = existingStudents[0].unique_id;
+      const numPart = lastId.substring(2);
+      maxNumber = parseInt(numPart, 10) || 0;
+    }
+    
+    const newNumber = maxNumber + 1;
+    const uniqueId = `${schoolCode}${String(newNumber).padStart(4, '0')}`;
+    
+    // Insert with formatted names
     const { data, error } = await supabase
       .from('students')
       .insert({
@@ -213,7 +269,13 @@ app.post('/api/students/quick-add', async (req, res) => {
     
     if (error) throw error;
     
-    const requiredScreenings = { vision: true, hearing: true, acanthosis: false, scoliosis: false };
+    // Calculate required screenings
+    const requiredScreenings = {
+      vision: true,
+      hearing: true,
+      acanthosis: false,
+      scoliosis: false
+    };
     
     res.status(201).json({
       success: true,

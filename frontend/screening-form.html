@@ -675,6 +675,20 @@
     const CACHE_BUST = `?v=${Date.now()}`;
     // Add debugging information
     console.log('Page loaded, API_BASE:', API_BASE);
+
+    // Helper function for title case formatting
+    function toTitleCase(str) {
+      if (!str) return '';
+      return str
+        .trim()
+        .toLowerCase()
+        .split(' ')
+        .map(word => {
+          if (word.length === 0) return '';
+          return word.charAt(0).toUpperCase() + word.slice(1);
+        })
+        .join(' ');
+    }
     console.log('Cache bust parameter:', CACHE_BUST);
     
     // Test API connection immediately
@@ -966,17 +980,19 @@
 
     // Create new student
     async function createNewStudent() {
-      const firstName = document.getElementById('firstName').value.trim();
-      const lastName = document.getElementById('lastName').value.trim();
+      // Get and format values with title case
+      const firstName = toTitleCase(document.getElementById('firstName').value);
+      const lastName = toTitleCase(document.getElementById('lastName').value);
       const grade = document.getElementById('grade').value;
       const gender = document.getElementById('gender').value;
       const school = document.getElementById('newStudentSchool').value;
-      const teacher = document.getElementById('teacher').value.trim();
+      const teacher = toTitleCase(document.getElementById('teacher').value);
       const dob = document.getElementById('dob').value;
       const status = document.getElementById('status').value;
 
+      // Validation
       if (!firstName || !lastName || !grade || !gender || !school || !dob || !status) {
-        alert('Please fill in all required fields');
+        showCustomPopup('warning', 'Missing Information', 'Please fill in all required fields (marked with *)');
         return;
       }
 
@@ -1002,10 +1018,10 @@
           // Store for continuation
           window.newStudentData = { student: data.student, requiredScreenings: data.requiredScreenings };
         } else {
-          alert('Error creating student: ' + data.error);
+          showCustomPopup('error', 'Error', 'Error creating student: ' + data.error);
         }
       } catch (error) {
-        alert('Error creating student: ' + error.message);
+        showCustomPopup('error', 'Error', 'Error creating student: ' + error.message);
       }
     }
 
