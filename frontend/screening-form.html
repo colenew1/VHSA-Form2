@@ -886,23 +886,14 @@
       const mainScreener = document.getElementById('screenerName').value;
       if (!mainScreener) return;
       
-      // Auto-fill to all individual screener dropdowns
-      document.getElementById('visionDay1Screener').value = mainScreener;
-      document.getElementById('hearingDay1Screener').value = mainScreener;
-      document.getElementById('acanthosisDay1Screener').value = mainScreener;
-      document.getElementById('scoliosisDay1Screener').value = mainScreener;
+      // Screener name is now handled in the buildPayload function
+      // No need to auto-fill to individual sections anymore
     }
 
     // Set default date to today
     function setDefaultDate() {
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('screeningDate').value = today;
-      
-      // Also set today's date for all individual screening section date fields
-      document.getElementById('visionDay1Date').value = today;
-      document.getElementById('hearingDay1Date').value = today;
-      document.getElementById('acanthosisDay1Date').value = today;
-      document.getElementById('scoliosisDay1Date').value = today;
     }
 
     // Tab switching
@@ -1337,13 +1328,8 @@
 
     // Apply global screening type
     function applyGlobalScreeningType() {
-      const type = document.getElementById('globalScreeningType').value;
-      if (!type) return;
-      
-      document.getElementById('visionDay1Type').value = type;
-      document.getElementById('hearingDay1Type').value = type;
-      document.getElementById('acanthosisDay1Type').value = type;
-      document.getElementById('scoliosisDay1Type').value = type;
+      // Global screening type is now handled in buildPayload function
+      // No need to update individual fields anymore
     }
 
     // Vision result changed
