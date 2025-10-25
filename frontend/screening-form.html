@@ -837,8 +837,16 @@
       }
 
       try {
-        const response = await fetch(`${API_BASE}/students/${studentId}`);
+        const response = await fetch(`${API_BASE}/students/${studentId}${CACHE_BUST}`);
         const data = await response.json();
+        
+        console.log('Student search response:', response.status, data);
+        
+        if (!response.ok) {
+          console.error('API Error:', response.status, data);
+          alert(`Error: ${response.status} - ${data.error || 'Unknown error'}`);
+          return;
+        }
         
         if (data.error) {
           alert('Student not found. Please check the student ID and try again.');
@@ -863,7 +871,7 @@
       }
 
       try {
-        const response = await fetch(`${API_BASE}/students/search?lastName=${encodeURIComponent(lastName)}&school=${encodeURIComponent(school)}`);
+        const response = await fetch(`${API_BASE}/students/search?lastName=${encodeURIComponent(lastName)}&school=${encodeURIComponent(school)}${CACHE_BUST}`);
         const data = await response.json();
         
         if (!data.found) {
@@ -919,7 +927,7 @@
       }
 
       try {
-        const response = await fetch(`${API_BASE}/students/quick-add`, {
+        const response = await fetch(`${API_BASE}/students/quick-add${CACHE_BUST}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1156,7 +1164,7 @@
       const payload = buildPayload();
       
       try {
-        const response = await fetch(`${API_BASE}/screenings`, {
+        const response = await fetch(`${API_BASE}/screenings${CACHE_BUST}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
