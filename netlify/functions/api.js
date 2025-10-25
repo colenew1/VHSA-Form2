@@ -177,54 +177,59 @@ app.get('/api/students/:uniqueId', async (req, res) => {
 // Search students by name
 app.get('/api/students/search', async (req, res) => {
   try {
-    if (!supabase) {
-      return res.status(500).json({ error: 'Database not available' });
-    }
-    
     const { lastName, school } = req.query;
     
-    console.log('Search params:', { lastName, school }); // DEBUG
+    console.log('Search request:', { lastName, school });
     
-    if (!lastName || !school) {
-      return res.status(400).json({ error: 'lastName and school are required' });
+    if (!supabase) {
+      console.log('ERROR: Supabase client not available');
+      return res.status(500).json({ 
+        found: false,
+        error: 'Database not available' 
+      });
     }
     
-    // Debug: Log the exact query being built
-    console.log('Building query with:', {
-      lastName: `%${lastName}%`,
-      school: `%${school}%`
-    });
+    if (!lastName || !school) {
+      return res.status(400).json({ 
+        found: false,
+        error: 'lastName and school are required' 
+      });
+    }
     
-    // First, let's see what students exist with this last name (regardless of school)
-    const { data: allStudentsWithName, error: nameError } = await supabase
+    // Query students table (verified working in SQL)
+    const { data: students, error } = await supabase
       .from('students')
       .select('*')
       .ilike('last_name', `%${lastName}%`)
+      .ilike('school', `%${school}%`)  // Add % wildcards to school too
       .order('last_name', { ascending: true });
     
-    console.log(`Found ${allStudentsWithName?.length || 0} students with last name "${lastName}"`);
-    if (allStudentsWithName && allStudentsWithName.length > 0) {
-      console.log('Students found:', allStudentsWithName.map(s => `${s.first_name} ${s.last_name} (${s.school})`));
+    console.log('Query results:', { 
+      error: error, 
+      count: students?.length,
+      firstResult: students?.[0]?.unique_id 
+    });
+    
+    if (error) {
+      console.error('Supabase error:', error);
+      return res.status(500).json({ 
+        found: false,
+        error: error.message 
+      });
     }
     
-    if (nameError) {
-      console.error('Name search error:', nameError);
-      throw nameError;
+    if (!students || students.length === 0) {
+      return res.json({ 
+        found: false,
+        message: 'No students found' 
+      });
     }
     
-    // Now filter by school
-    const students = allStudentsWithName?.filter(student => 
-      student.school.toLowerCase().includes(school.toLowerCase())
-    ) || [];
-    
-    console.log(`After filtering by school "${school}": ${students.length} students`);
-    
-    if (students.length === 0) {
-      return res.json({ found: false, message: 'No students found' });
-    }
-    
+    // Single student found
     if (students.length === 1) {
-      // Calculate required screenings based on grade/gender/status
+      const student = students[0];
+      
+      // Calculate required screenings
       const requiredScreenings = {
         vision: true,
         hearing: true,
@@ -234,11 +239,12 @@ app.get('/api/students/search', async (req, res) => {
       
       return res.json({
         found: true,
-        student: students[0],
+        student: student,
         requiredScreenings: requiredScreenings
       });
     }
     
+    // Multiple students found
     return res.json({
       found: true,
       multiple: true,
@@ -247,7 +253,10 @@ app.get('/api/students/search', async (req, res) => {
     
   } catch (error) {
     console.error('Search error:', error);
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ 
+      found: false,
+      error: error.message 
+    });
   }
 });
 
