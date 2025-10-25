@@ -846,15 +846,22 @@
 
     // Search by student ID
     async function searchById() {
+      console.log('🔍 searchById function called');
       const studentId = document.getElementById('searchId').value.trim().toLowerCase();
+      console.log('🔍 Student ID:', studentId);
+      
       if (!studentId) {
         alert('Please enter a student ID');
         return;
       }
 
+      console.log('🔍 Making API call to:', `${API_BASE}/students/${studentId}${CACHE_BUST}`);
+      
       try {
         const response = await fetch(`${API_BASE}/students/${studentId}${CACHE_BUST}`);
+        console.log('🔍 Response status:', response.status);
         const data = await response.json();
+        console.log('🔍 Response data:', data);
         
         if (!response.ok) {
           console.error('❌ API Error:', response.status, data);
@@ -867,9 +874,10 @@
           return;
         }
         
+        console.log('🔍 Loading student data:', data.student);
         loadStudentData(data.student, data.requiredScreenings);
       } catch (error) {
-        console.error('Error searching for student:', error);
+        console.error('💥 Error searching for student:', error);
         alert('Error connecting to the database. Please try again later.');
       }
     }
