@@ -1124,14 +1124,14 @@
       
       // Populate modal
       document.getElementById('editStudentId').textContent = student.unique_id;
-      document.getElementById('editFirstName').value = student.first_name || '';
-      document.getElementById('editLastName').value = student.last_name || '';
-      document.getElementById('editGrade').value = student.grade || '';
-      document.getElementById('editGender').value = student.gender || '';
-      document.getElementById('editSchool').value = student.school || '';
-      document.getElementById('editTeacher').value = student.teacher || '';
-      document.getElementById('editDOB').value = student.dob || '';
-      document.getElementById('editStatus').value = student.status || '';
+      document.getElementById('editFirstName').value = (student.first_name && student.first_name.toLowerCase() !== 'null') ? student.first_name : '';
+      document.getElementById('editLastName').value = (student.last_name && student.last_name.toLowerCase() !== 'null') ? student.last_name : '';
+      document.getElementById('editGrade').value = (student.grade && student.grade.toLowerCase() !== 'null') ? student.grade : '';
+      document.getElementById('editGender').value = (student.gender && student.gender.toLowerCase() !== 'null') ? student.gender : '';
+      document.getElementById('editSchool').value = (student.school && student.school.toLowerCase() !== 'null') ? student.school : '';
+      document.getElementById('editTeacher').value = (student.teacher && student.teacher.toLowerCase() !== 'null') ? student.teacher : '';
+      document.getElementById('editDOB').value = (student.dob && student.dob.toLowerCase() !== 'null') ? student.dob : '';
+      document.getElementById('editStatus').value = (student.status && student.status.toLowerCase() !== 'null') ? student.status : '';
       
       // Populate school dropdown if not already done
       const editSchoolSelect = document.getElementById('editSchool');
@@ -1239,7 +1239,9 @@
       const missingFields = [];
       
       for (const field of requiredFields) {
-        if (!student[field.key] || student[field.key].trim() === '') {
+        const value = student[field.key];
+        // Check for empty, null, undefined, or "Null" string values
+        if (!value || value.trim() === '' || value.toLowerCase() === 'null') {
           missingFields.push(field);
         }
       }
