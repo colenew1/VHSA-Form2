@@ -104,7 +104,7 @@ CREATE INDEX idx_screening_results_student_id ON screening_results(student_id);
 CREATE INDEX idx_screening_results_unique_id ON screening_results(unique_id);
 CREATE INDEX idx_screening_results_date ON screening_results(initial_screening_date);
 CREATE INDEX idx_screening_results_year ON screening_results(screening_year);
-CREATE INDEX idx_screening_results_school ON screening_results(school);
+CREATE INDEX idx_screening_results_school ON screening_results(student_school);
 CREATE INDEX idx_screening_results_was_absent ON screening_results(was_absent);
 
 -- STEP 4: Create function for automatic timestamp updates
