@@ -170,6 +170,11 @@ app.get('/api/students/search', async (req, res) => {
   
   console.log('Search params:', { lastName, school });
   
+  if (!supabase) {
+    console.log('ERROR: Supabase client not available');
+    return res.json({ found: false, error: 'Database not available' });
+  }
+  
   if (!lastName || !school) {
     return res.json({ found: false, error: 'Missing params' });
   }
