@@ -670,9 +670,24 @@
     
     // Add cache-busting parameter for API calls
     const CACHE_BUST = `?v=${Date.now()}`;
-    let currentStudent = null;
-    let schools = [];
-    let screeners = [];
+    // Add debugging information
+    console.log('Page loaded, API_BASE:', API_BASE);
+    console.log('Cache bust parameter:', CACHE_BUST);
+    
+    // Test API connection immediately
+    fetch(`${API_BASE}/health${CACHE_BUST}`)
+      .then(response => response.json())
+      .then(data => {
+        console.log('Health check response:', data);
+        if (data.supabase === 'connected') {
+          console.log('✅ Database connection confirmed');
+        } else {
+          console.log('❌ Database connection issue:', data);
+        }
+      })
+      .catch(error => {
+        console.error('❌ Health check failed:', error);
+      });
 
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', async () => {
@@ -836,26 +851,33 @@
         return;
       }
 
+      console.log('🔍 Searching for student:', studentId);
+      console.log('🔗 API URL:', `${API_BASE}/students/${studentId}${CACHE_BUST}`);
+
       try {
         const response = await fetch(`${API_BASE}/students/${studentId}${CACHE_BUST}`);
-        const data = await response.json();
+        console.log('📡 Response status:', response.status);
+        console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
         
-        console.log('Student search response:', response.status, data);
+        const data = await response.json();
+        console.log('📦 Response data:', data);
         
         if (!response.ok) {
-          console.error('API Error:', response.status, data);
+          console.error('❌ API Error:', response.status, data);
           alert(`Error: ${response.status} - ${data.error || 'Unknown error'}`);
           return;
         }
         
         if (data.error) {
+          console.log('❌ Student not found:', data.error);
           alert('Student not found. Please check the student ID and try again.');
           return;
         }
         
+        console.log('✅ Student found:', data.student);
         loadStudentData(data.student, data.requiredScreenings);
       } catch (error) {
-        console.error('Error searching for student:', error);
+        console.error('💥 Network/Parse Error:', error);
         alert('Error connecting to the database. Please try again later.');
       }
     }
