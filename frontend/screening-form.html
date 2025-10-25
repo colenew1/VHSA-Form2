@@ -683,19 +683,30 @@
     async function loadSchools() {
       try {
         const response = await fetch(`${API_BASE}/schools`);
-        schools = await response.json();
+        const data = await response.json();
         
+        // Check if response has error
+        if (!response.ok || data.error) {
+          console.error('Error loading schools:', data.error || 'Unknown error');
+          schools = [];
+          return;
+        }
+        
+        schools = data;
         const searchSelect = document.getElementById('searchSchool');
         const newSelect = document.getElementById('newStudentSchool');
         
-        schools.forEach(school => {
-          const option1 = new Option(school.name, school.name);
-          const option2 = new Option(school.name, school.name);
-          searchSelect.add(option1);
-          newSelect.add(option2);
-        });
+        if (Array.isArray(schools)) {
+          schools.forEach(school => {
+            const option1 = new Option(school.name, school.name);
+            const option2 = new Option(school.name, school.name);
+            searchSelect.add(option1);
+            newSelect.add(option2);
+          });
+        }
       } catch (error) {
         console.error('Error loading schools:', error);
+        schools = [];
       }
     }
 
@@ -703,7 +714,15 @@
     async function loadScreeners() {
       try {
         const response = await fetch(`${API_BASE}/screeners`);
-        screeners = await response.json();
+        const data = await response.json();
+        
+        // Check if response has error
+        if (!response.ok || data.error) {
+          console.error('Error loading screeners:', data.error || 'Unknown error');
+          screeners = [];
+        } else {
+          screeners = data;
+        }
         
         // Define all screener dropdowns
         const screenerDropdowns = [
@@ -731,13 +750,16 @@
             }
             
             // Add all screeners from API
-            screeners.forEach(screener => {
-              select.add(new Option(screener.name, screener.name));
-            });
+            if (Array.isArray(screeners)) {
+              screeners.forEach(screener => {
+                select.add(new Option(screener.name, screener.name));
+              });
+            }
           }
         });
       } catch (error) {
         console.error('Error loading screeners:', error);
+        screeners = [];
         // Even if API fails, ensure "Other" option exists
         const screenerDropdowns = ['visionDay1Screener', 'hearingDay1Screener', 'acanthosisDay1Screener', 'scoliosisDay1Screener'];
         screenerDropdowns.forEach(id => {
