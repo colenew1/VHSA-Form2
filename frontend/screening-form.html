@@ -1649,7 +1649,7 @@
       });
       
       // Clear screening test fields only
-      const screeningFields = ['visionRightEye', 'visionLeftEye', 'visionNotes', 'hearingNotes', 'acanthosisNotes', 'scoliosisNotes'];
+      const screeningFields = ['visionRightEye', 'visionLeftEye', 'notes'];
       screeningFields.forEach(id => {
         const el = document.getElementById(id);
         if (el && (el.type === 'radio' || el.type === 'checkbox')) {
@@ -1673,6 +1673,15 @@
       document.getElementById('absent').checked = false;
       absentChanged(false);
       
+      // Close ALL accordion sections (collapse them)
+      const sections = ['vision', 'hearing', 'acanthosis', 'scoliosis'];
+      sections.forEach(section => {
+        const accordion = document.querySelector(`[data-section="${section}"]`);
+        if (accordion && accordion.classList.contains('open')) {
+          toggleAccordion(section); // This will close it
+        }
+      });
+      
       // Reset to search tab
       switchTab('search');
       
@@ -1682,15 +1691,9 @@
       document.getElementById('screeningTests').classList.add('hidden');
       document.getElementById('notesSection').classList.add('hidden');
       document.getElementById('submitSection').classList.add('hidden');
-      // NOTE: screeningDetails stays visible and keeps its values
+      // NOTE: screeningDetails stays visible and keeps its values (screener name, date, type)
       
-      // Show all accordions
-      document.querySelectorAll('[data-section]').forEach(el => el.style.display = '');
-      
-      // Reset absent state
-      document.getElementById('absent').checked = false;
-      absentChanged(false);
-      
+      // Clear current student
       currentStudent = null;
       
       // Scroll to top
