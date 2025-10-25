@@ -195,20 +195,29 @@ app.get('/api/students/search', async (req, res) => {
       school: `%${school}%`
     });
     
-    // Use ilike for case-insensitive search with partial matching
-    const { data: students, error } = await supabase
+    // First, let's see what students exist with this last name (regardless of school)
+    const { data: allStudentsWithName, error: nameError } = await supabase
       .from('students')
       .select('*')
-      .ilike('last_name', `%${lastName}%`)  // Case-insensitive, partial match
-      .ilike('school', `%${school}%`)       // Case-insensitive, partial match for school too
+      .ilike('last_name', `%${lastName}%`)
       .order('last_name', { ascending: true });
     
-    console.log('Query results:', students?.length || 0, 'students found'); // DEBUG
-    
-    if (error) {
-      console.error('Supabase error:', error);
-      throw error;
+    console.log(`Found ${allStudentsWithName?.length || 0} students with last name "${lastName}"`);
+    if (allStudentsWithName && allStudentsWithName.length > 0) {
+      console.log('Students found:', allStudentsWithName.map(s => `${s.first_name} ${s.last_name} (${s.school})`));
     }
+    
+    if (nameError) {
+      console.error('Name search error:', nameError);
+      throw nameError;
+    }
+    
+    // Now filter by school
+    const students = allStudentsWithName?.filter(student => 
+      student.school.toLowerCase().includes(school.toLowerCase())
+    ) || [];
+    
+    console.log(`After filtering by school "${school}": ${students.length} students`);
     
     if (students.length === 0) {
       return res.json({ found: false, message: 'No students found' });
