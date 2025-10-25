@@ -1100,13 +1100,15 @@
 
     // Absent checkbox changed
     function absentChanged(checked) {
-      const testSections = document.getElementById('screeningTests');
       if (checked) {
-        testSections.style.opacity = '0.5';
-        testSections.style.pointerEvents = 'none';
-      } else {
-        testSections.style.opacity = '1';
-        testSections.style.pointerEvents = 'auto';
+        // Close all screening sections when absent
+        const sections = ['vision', 'hearing', 'acanthosis', 'scoliosis'];
+        sections.forEach(section => {
+          const accordion = document.querySelector(`[data-section="${section}"]`);
+          if (accordion && accordion.classList.contains('open')) {
+            toggleAccordion(section);
+          }
+        });
       }
     }
 
@@ -1117,55 +1119,63 @@
         return;
       }
       
-      // Check if at least ONE section is open and has data
-      const visionData = getVisionData();
-      const hearingData = getHearingData();
-      const acanthosisData = getAcanthosisData();
-      const scoliosisData = getScoliosisData();
+      // Check if student is absent - if so, skip screening validation
+      const isAbsent = document.getElementById('absent').checked;
       
-      const hasAnyData = visionData || hearingData || acanthosisData || scoliosisData;
-      
-      if (!hasAnyData) {
-        alert('Please complete at least one screening section before submitting.');
-        return;
+      if (!isAbsent) {
+        // Check if at least ONE section is open and has data
+        const visionData = getVisionData();
+        const hearingData = getHearingData();
+        const acanthosisData = getAcanthosisData();
+        const scoliosisData = getScoliosisData();
+        
+        const hasAnyData = visionData || hearingData || acanthosisData || scoliosisData;
+        
+        if (!hasAnyData) {
+          alert('Please complete at least one screening section before submitting.');
+          return;
+        }
       }
       
-      // Check if any OPENED sections are incomplete
+      // Check if any OPENED sections are incomplete (skip if absent)
       const incompleteSections = [];
       
-      // Vision - if accordion is open but no result selected
-      const visionAccordion = document.querySelector('[data-section="vision"]');
-      if (visionAccordion?.classList.contains('open')) {
-        const visionResult = document.querySelector('input[name="visionResult"]:checked');
-        if (!visionResult) {
-          incompleteSections.push('Vision');
+      if (!isAbsent) {
+        // Vision - if accordion is open but no result selected
+        const visionAccordion = document.querySelector('[data-section="vision"]');
+        if (visionAccordion?.classList.contains('open')) {
+          const visionResult = document.querySelector('input[name="visionResult"]:checked');
+          if (!visionResult) {
+            incompleteSections.push('Vision');
+          }
         }
       }
       
-      // Hearing - if accordion is open but no result selected
-      const hearingAccordion = document.querySelector('[data-section="hearing"]');
-      if (hearingAccordion?.classList.contains('open')) {
-        const hearingResult = document.querySelector('input[name="hearingResult"]:checked');
-        if (!hearingResult) {
-          incompleteSections.push('Hearing');
+        // Hearing - if accordion is open but no result selected
+        const hearingAccordion = document.querySelector('[data-section="hearing"]');
+        if (hearingAccordion?.classList.contains('open')) {
+          const hearingResult = document.querySelector('input[name="hearingResult"]:checked');
+          if (!hearingResult) {
+            incompleteSections.push('Hearing');
+          }
         }
-      }
-      
-      // Acanthosis - if accordion is open but no result selected
-      const acanthosisAccordion = document.querySelector('[data-section="acanthosis"]');
-      if (acanthosisAccordion?.classList.contains('open')) {
-        const acanthosisResult = document.querySelector('input[name="acanthosisResult"]:checked');
-        if (!acanthosisResult) {
-          incompleteSections.push('Acanthosis');
+        
+        // Acanthosis - if accordion is open but no result selected
+        const acanthosisAccordion = document.querySelector('[data-section="acanthosis"]');
+        if (acanthosisAccordion?.classList.contains('open')) {
+          const acanthosisResult = document.querySelector('input[name="acanthosisResult"]:checked');
+          if (!acanthosisResult) {
+            incompleteSections.push('Acanthosis');
+          }
         }
-      }
-      
-      // Scoliosis - if accordion is open but no result selected
-      const scoliosisAccordion = document.querySelector('[data-section="scoliosis"]');
-      if (scoliosisAccordion?.classList.contains('open')) {
-        const scoliosisResult = document.querySelector('input[name="scoliosisResult"]:checked');
-        if (!scoliosisResult) {
-          incompleteSections.push('Scoliosis');
+        
+        // Scoliosis - if accordion is open but no result selected
+        const scoliosisAccordion = document.querySelector('[data-section="scoliosis"]');
+        if (scoliosisAccordion?.classList.contains('open')) {
+          const scoliosisResult = document.querySelector('input[name="scoliosisResult"]:checked');
+          if (!scoliosisResult) {
+            incompleteSections.push('Scoliosis');
+          }
         }
       }
       
