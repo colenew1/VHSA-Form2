@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>School Health Screening Form</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --primary: #4A90E2;
+      --accent: #FFB84D;
+      --success: #4CAF50;
+      --error: #F44336;
+      --text: #2C3E50;
+      --bg: #FDFBF7;
+      --border: #E5E5E5;
+    }
+    
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .tab {
+      transition: all 0.3s;
+    }
+    
+    .tab.active {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+    }
+    
+    .accordion-content.open {
+      max-height: 5000px;
+      transition: max-height 0.5s ease-in;
+    }
+    
+    .accordion-icon {
+      transition: transform 0.3s;
+    }
+    
+    .accordion.open .accordion-icon {
+      transform: rotate(180deg);
+    }
+    
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      z-index: 1000;
+    }
+    
+    .modal-content {
+      background: white;
+      max-width: 500px;
+      margin: 50px auto;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    
+    .success-icon {
+      font-size: 60px;
+      color: var(--success);
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .student-id-display {
+      background: #f0f8ff;
+      border: 2px dashed var(--primary);
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      margin: 20px 0;
+    }
+    
+    .student-id-display div {
+      font-size: 32px;
+      font-weight: bold;
+      color: var(--primary);
+      margin-top: 10px;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+    
+    button {
+      cursor: pointer;
+    }
+    
+    button:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    .required-badge {
+      background-color: #FFB84D;
+      color: #2C3E50;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+    
+    .accordion-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+    
+    .accordion-header-text {
+      display: flex;
+      align-items: center;
+      flex: 1;
+    }
+  </style>
+</head>
+<body class="min-h-screen py-8 px-4">
+  
+  <!-- Header -->
+  <header class="max-w-6xl mx-auto mb-8 text-center">
+    <h1 class="text-4xl font-bold text-gray-800 mb-2">School Health Screening Form</h1>
+    <p class="text-lg text-gray-600">Vision & Hearing Screening of Austin</p>
+    <div class="mt-4 p-4 bg-blue-100 border-2 border-blue-400 rounded-lg max-w-2xl mx-auto">
+      <p class="font-semibold text-blue-900 mb-2">🎯 Demo Mode Active</p>
+      <p class="text-sm text-blue-800">Try these demo student IDs: <strong>st1001</strong>, <strong>st1002</strong>, or <strong>st1003</strong></p>
+    </div>
+  </header>
+
+  <!-- Main Form Container -->
+  <main class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
+    
+    <!-- SECTION 1: Find or Create Student -->
+    <section id="studentSection" class="mb-8">
+      <!-- Tabs -->
+      <div class="flex border-b-2 border-gray-200 mb-6">
+        <button id="searchTabBtn" class="tab flex-1 py-3 px-4 font-semibold text-gray-700 hover:bg-gray-100 active" onclick="switchTab('search')">
+          Search Student
+        </button>
+        <button id="newTabBtn" class="tab flex-1 py-3 px-4 font-semibold text-gray-700 hover:bg-gray-100" onclick="switchTab('new')">
+          New Student
+        </button>
+      </div>
+      
+      <!-- Search Tab Content -->
+      <div id="searchTab" class="tab-content">
+        <div class="space-y-6">
+          <!-- Search by ID -->
+          <div class="bg-blue-50 p-4 rounded-lg">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Search by Student ID</label>
+            <div class="flex gap-2">
+              <input type="text" id="searchId" placeholder="Enter student ID (e.g., st0100)" 
+                     class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <button onclick="searchById()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700">
+                Search
+              </button>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="flex items-center gap-4">
+            <div class="flex-1 border-t border-gray-300"></div>
+            <span class="text-gray-500 font-semibold">OR</span>
+            <div class="flex-1 border-t border-gray-300"></div>
+          </div>
+
+          <!-- Search by Name -->
+          <div class="bg-green-50 p-4 rounded-lg">
+            <label class="block text-sm font-semibold text-gray-700 mb-3">Search by Name</label>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+              <input type="text" id="searchLastName" placeholder="Last Name" 
+                     class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+              <select id="searchSchool" class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                <option value="">Select School</option>
+              </select>
+            </div>
+            <button onclick="searchByName()" class="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700">
+              Search by Name
+            </button>
+          </div>
+
+          <!-- Search Results -->
+          <div id="searchResults" class="hidden">
+            <div id="multipleResults" class="hidden">
+              <p class="text-sm text-gray-600 mb-3">Multiple students found. Please select one:</p>
+              <div id="studentList" class="space-y-2"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- New Student Tab Content -->
+      <div id="newTab" class="tab-content hidden">
+        <form id="newStudentForm" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">First Name *</label>
+              <input type="text" id="firstName" required 
+                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Last Name *</label>
+              <input type="text" id="lastName" required 
+                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Grade *</label>
+              <select id="grade" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">Select Grade</option>
+                <option value="Pre-K (3)">Pre-K (3)</option>
+                <option value="Pre-K (4)">Pre-K (4)</option>
+                <option value="Kindergarten">Kindergarten</option>
+                <option value="1st">1st</option>
+                <option value="2nd">2nd</option>
+                <option value="3rd">3rd</option>
+                <option value="4th">4th</option>
+                <option value="5th">5th</option>
+                <option value="6th">6th</option>
+                <option value="7th">7th</option>
+                <option value="8th">8th</option>
+                <option value="9th">9th</option>
+                <option value="10th">10th</option>
+                <option value="11th">11th</option>
+                <option value="12th">12th</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Gender *</label>
+              <select id="gender" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">School *</label>
+            <select id="newStudentSchool" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">Select School</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Teacher</label>
+              <input type="text" id="teacher" 
+                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Date of Birth *</label>
+              <input type="date" id="dob" required 
+                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Status *</label>
+            <select id="status" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">Select Status</option>
+              <option value="New">New</option>
+              <option value="Returning">Returning</option>
+            </select>
+          </div>
+
+          <button type="button" onclick="createNewStudent()" 
+                  class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 text-lg">
+            Create Student & Continue
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- SECTION 2: Student Information -->
+    <section id="studentInfo" class="hidden mb-8">
+      <div class="bg-gradient-to-r from-blue-50 to-green-50 border-2 border-blue-300 rounded-lg p-6">
+        <div class="mb-4">
+          <h2 class="text-2xl font-bold text-gray-800">Student Information</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm text-gray-600">Student ID</label>
+            <div id="displayStudentId" class="text-2xl font-bold text-blue-600"></div>
+          </div>
+          <div>
+            <label class="text-sm text-gray-600">Name</label>
+            <div id="displayName" class="text-lg font-semibold text-gray-800"></div>
+          </div>
+          <div>
+            <label class="text-sm text-gray-600">Grade | Gender | School</label>
+            <div id="displayDetails" class="text-gray-700"></div>
+          </div>
+          <div>
+            <label class="text-sm text-gray-600">Teacher | DOB | Status</label>
+            <div id="displayAdditional" class="text-gray-700"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: Screening Details -->
+    <section id="screeningDetails" class="mb-8">
+      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Screening Details</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Screening Date *</label>
+            <input type="date" id="screeningDate" required 
+                   class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Screener Name *</label>
+            <select id="screenerName" required onchange="autoFillScreener()" 
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+              <option value="">Select Screener</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Global Screening Type</label>
+          <select id="globalScreeningType" onchange="applyGlobalScreeningType()" 
+                  class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+            <option value="initial" selected>Initial Screen</option>
+            <option value="rescreen">Rescreen</option>
+          </select>
+          <p class="text-xs text-gray-600 mt-1">This will set all screening types below. You can change individual tests if needed.</p>
+        </div>
+
+        <div class="mb-4">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="absent" onchange="absentChanged(this.checked)" 
+                   class="w-5 h-5 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500">
+            <span class="font-semibold text-gray-700">Student was absent</span>
+          </label>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Notes</label>
+          <textarea id="notes" rows="2" 
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: Screening Tests -->
+    <section id="screeningTests" class="hidden space-y-4">
+      
+      <!-- Info Box -->
+      <div class="info-box bg-blue-50 p-4 mb-4 rounded-lg border-l-4 border-blue-500">
+        <p class="text-sm text-gray-700">
+          <strong>Note:</strong> Sections marked <span class="required-badge" style="display: inline-block;">Required</span> must be completed based on this student's grade, gender, and status. Other sections are optional but can still be completed if needed.
+        </p>
+      </div>
+      
+      <!-- Vision Accordion -->
+      <div class="accordion border border-gray-300 rounded-lg overflow-hidden" data-section="vision">
+        <button class="accordion-header w-full flex justify-between items-center p-4 bg-blue-50 hover:bg-blue-100 font-semibold text-left" onclick="toggleAccordion('vision')">
+          <span class="accordion-header-text">
+            Vision Screening
+            <span class="required-badge" id="visionBadge" style="display: none;">Required</span>
+          </span>
+          <span class="accordion-icon">▼</span>
+        </button>
+        <div class="accordion-content" data-section="vision">
+          <div class="p-4 space-y-4">
+            <h3 class="font-semibold text-gray-700 border-b pb-2">Day 1</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Screening Type</label>
+                <select id="visionDay1Type" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">Select Type</option>
+                  <option value="initial">Initial Screen</option>
+                  <option value="rescreen">Rescreen</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Screener</label>
+                <select id="visionDay1Screener" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">Select Screener</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Date</label>
+                <input type="date" id="visionDay1Date" 
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Glasses</label>
+                <div class="flex gap-4">
+                  <label class="flex items-center gap-2"><input type="radio" name="visionGlasses" value="yes" class="text-blue-600"> Yes</label>
+                  <label class="flex items-center gap-2"><input type="radio" name="visionGlasses" value="no" class="text-blue-600" checked> No</label>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Result</label>
+                <div class="flex gap-4">
+                  <label class="flex items-center gap-2"><input type="radio" name="visionResult" value="pass" onchange="visionResultChanged('pass')" class="text-green-600"> Pass</label>
+                  <label class="flex items-center gap-2"><input type="radio" name="visionResult" value="fail" onchange="visionResultChanged('fail')" class="text-red-600"> Fail</label>
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Right Eye</label>
+                <select id="visionRightEye" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">Select</option>
+                  <option value="20">20</option>
+                  <option value="30">30</option>
+                  <option value="40">40</option>
+                  <option value="50">50</option>
+                  <option value="60">60</option>
+                  <option value="70">70</option>
+                  <option value="80">80</option>
+                  <option value="90">90</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Left Eye</label>
+                <select id="visionLeftEye" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">Select</option>
+                  <option value="20">20</option>
+                  <option value="30">30</option>
+                  <option value="40">40</option>
+                  <option value="50">50</option>
+                  <option value="60">60</option>
+                  <option value="70">70</option>
+                  <option value="80">80</option>
+                  <option value="90">90</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hearing Accordion -->
+      <div class="accordion border border-gray-300 rounded-lg overflow-hidden" data-section="hearing">
+        <button class="accordion-header w-full flex justify-between items-center p-4 bg-green-50 hover:bg-green-100 font-semibold text-left" onclick="toggleAccordion('hearing')">
+          <span class="accordion-header-text">
+            Hearing Screening
+            <span class="required-badge" id="hearingBadge" style="display: none;">Required</span>
+          </span>
+          <span class="accordion-icon">▼</span>
+        </button>
+        <div class="accordion-content" data-section="hearing">
+          <div class="p-4 space-y-4">
+            <h3 class="font-semibold text-gray-700 border-b pb-2">Day 1</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Screening Type</label>
+                <select id="hearingDay1Type" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                  <option value="">Select Type</option>
+                  <option value="initial">Initial Screen</option>
+                  <option value="rescreen">Rescreen</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Screener</label>
+                <select id="hearingDay1Screener" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                  <option value="">Select Screener</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Date</label>
+                <input type="date" id="hearingDay1Date" 
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Result</label>
+              <div class="flex gap-4">
+                <label class="flex items-center gap-2"><input type="radio" name="hearingResult" value="pass" onchange="hearingResultChanged('pass')" class="text-green-600"> Pass</label>
+                <label class="flex items-center gap-2"><input type="radio" name="hearingResult" value="fail" onchange="hearingResultChanged('fail')" class="text-red-600"> Fail</label>
+              </div>
+            </div>
+            <div id="hearingFrequencies" class="hidden">
+              <p class="text-sm font-semibold text-gray-700 mb-2">Frequency Response (check failed frequencies):</p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p class="text-sm font-semibold text-gray-700 mb-1">Right Ear</p>
+                  <div class="space-y-1">
+                    <label class="flex items-center gap-2"><input type="checkbox" class="hearing-freq" data-ear="right" data-freq="1000" class="text-red-600"> 1000 Hz</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" class="hearing-freq" data-ear="right" data-freq="2000" class="text-red-600"> 2000 Hz</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" class="hearing-freq" data-ear="right" data-freq="4000" class="text-red-600"> 4000 Hz</label>
+                  </div>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-gray-700 mb-1">Left Ear</p>
+                  <div class="space-y-1">
+                    <label class="flex items-center gap-2"><input type="checkbox" class="hearing-freq" data-ear="left" data-freq="1000" class="text-red-600"> 1000 Hz</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" class="hearing-freq" data-ear="left" data-freq="2000" class="text-red-600"> 2000 Hz</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" class="hearing-freq" data-ear="left" data-freq="4000" class="text-red-600"> 4000 Hz</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acanthosis Accordion -->
+      <div class="accordion border border-gray-300 rounded-lg overflow-hidden" data-section="acanthosis">
+        <button class="accordion-header w-full flex justify-between items-center p-4 bg-purple-50 hover:bg-purple-100 font-semibold text-left" onclick="toggleAccordion('acanthosis')">
+          <span class="accordion-header-text">
+            Acanthosis Screening
+            <span class="required-badge" id="acanthosisBadge" style="display: none;">Required</span>
+          </span>
+          <span class="accordion-icon">▼</span>
+        </button>
+        <div class="accordion-content" data-section="acanthosis">
+          <div class="p-4 space-y-4">
+            <h3 class="font-semibold text-gray-700 border-b pb-2">Day 1</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Screening Type</label>
+                <select id="acanthosisDay1Type" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                  <option value="">Select Type</option>
+                  <option value="initial">Initial Screen</option>
+                  <option value="rescreen">Rescreen</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Screener</label>
+                <select id="acanthosisDay1Screener" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                  <option value="">Select Screener</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Date</label>
+                <input type="date" id="acanthosisDay1Date" 
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Result</label>
+              <div class="flex gap-4">
+                <label class="flex items-center gap-2"><input type="radio" name="acanthosisResult" value="pass" class="text-green-600"> Pass</label>
+                <label class="flex items-center gap-2"><input type="radio" name="acanthosisResult" value="fail" class="text-red-600"> Fail</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scoliosis Accordion -->
+      <div class="accordion border border-gray-300 rounded-lg overflow-hidden" data-section="scoliosis">
+        <button class="accordion-header w-full flex justify-between items-center p-4 bg-pink-50 hover:bg-pink-100 font-semibold text-left" onclick="toggleAccordion('scoliosis')">
+          <span class="accordion-header-text">
+            Scoliosis Screening
+            <span class="required-badge" id="scoliosisBadge" style="display: none;">Required</span>
+          </span>
+          <span class="accordion-icon">▼</span>
+        </button>
+        <div class="accordion-content" data-section="scoliosis">
+          <div class="p-4 space-y-4">
+            <h3 class="font-semibold text-gray-700 border-b pb-2">Day 1</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Screening Type</label>
+                <select id="scoliosisDay1Type" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500">
+                  <option value="">Select Type</option>
+                  <option value="initial">Initial Screen</option>
+                  <option value="rescreen">Rescreen</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Screener</label>
+                <select id="scoliosisDay1Screener" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500">
+                  <option value="">Select Screener</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Date</label>
+                <input type="date" id="scoliosisDay1Date" 
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500">
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Observations</label>
+              <textarea id="scoliosisObservations" rows="3" 
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Result</label>
+              <div class="flex gap-4">
+                <label class="flex items-center gap-2"><input type="radio" name="scoliosisResult" value="pass" class="text-green-600"> Pass</label>
+                <label class="flex items-center gap-2"><input type="radio" name="scoliosisResult" value="fail" class="text-red-600"> Fail</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </section>
+
+    <!-- SECTION 5: Submit -->
+    <section id="submitSection" class="hidden mt-8 pt-8 border-t-2 border-gray-300">
+      <button onclick="submitScreening()" 
+              class="w-full bg-green-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-green-700">
+        ✓ Submit Screening Results
+      </button>
+    </section>
+
+    <!-- Clear Form Button - Always Visible -->
+    <section class="mt-8 pt-8 border-t-2 border-gray-300">
+      <button onclick="resetForm()" 
+              class="w-full px-6 py-4 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300">
+        Clear Form
+      </button>
+    </section>
+
+  </main>
+
+  <!-- New Student Success Modal -->
+  <div id="newStudentModal" class="modal">
+    <div class="modal-content">
+      <div class="success-icon">✓</div>
+      <h2 class="text-2xl font-bold text-center mb-4">New Student Created Successfully</h2>
+      <div class="student-id-display">
+        <label class="text-sm text-gray-600">Student ID:</label>
+        <div id="newStudentId"></div>
+      </div>
+      <div class="student-info space-y-2 mb-4">
+        <p><strong>Name:</strong> <span id="newStudentName"></span></p>
+        <p><strong>Grade:</strong> <span id="newStudentGrade"></span></p>
+        <p><strong>School:</strong> <span id="newStudentSchoolName"></span></p>
+      </div>
+      <p class="text-center text-orange-600 font-semibold mb-4">📝 Write this ID on the student's label!</p>
+      <div class="flex gap-3">
+        <button onclick="continueToScreening()" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700">
+          Continue to Screening
+        </button>
+        <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:3000/api';
+    let currentStudent = null;
+    let schools = [];
+    let screeners = [];
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadSchools();
+      await loadScreeners();
+      setDefaultDate();
+      
+      // Auto-populate with demo student ID for easy testing
+      document.getElementById('searchId').value = 'st1001';
+      document.getElementById('searchId').placeholder = 'Try: st1001, st1002, or st1003';
+    });
+
+    // Load schools from API
+    async function loadSchools() {
+      try {
+        const response = await fetch(`${API_BASE}/schools`);
+        schools = await response.json();
+        
+        const searchSelect = document.getElementById('searchSchool');
+        const newSelect = document.getElementById('newStudentSchool');
+        
+        schools.forEach(school => {
+          const option1 = new Option(school.name, school.name);
+          const option2 = new Option(school.name, school.name);
+          searchSelect.add(option1);
+          newSelect.add(option2);
+        });
+      } catch (error) {
+        console.error('Error loading schools:', error);
+      }
+    }
+
+    // Load screeners from API
+    async function loadScreeners() {
+      try {
+        const response = await fetch(`${API_BASE}/screeners`);
+        screeners = await response.json();
+        
+        // Define all screener dropdowns
+        const screenerDropdowns = [
+          'screenerName',
+          'visionDay1Screener',
+          'hearingDay1Screener',
+          'acanthosisDay1Screener',
+          'scoliosisDay1Screener'
+        ];
+        
+        // Populate all dropdowns with screeners (only if they're empty to avoid duplicates)
+        screenerDropdowns.forEach(id => {
+          const select = document.getElementById(id);
+          if (select && select.options.length <= 1) { // Only populate if empty or has only "Select Screener" option
+            // Clear existing options except the first one
+            while (select.options.length > 0) {
+              select.remove(0);
+            }
+            
+            // Add "Select Screener" placeholder if main dropdown, or "Other" for others
+            if (id === 'screenerName') {
+              select.add(new Option('Select Screener', ''));
+            } else {
+              select.add(new Option('Other', 'other'));
+            }
+            
+            // Add all screeners from API
+            screeners.forEach(screener => {
+              select.add(new Option(screener.name, screener.name));
+            });
+          }
+        });
+      } catch (error) {
+        console.error('Error loading screeners:', error);
+        // Even if API fails, ensure "Other" option exists
+        const screenerDropdowns = ['visionDay1Screener', 'hearingDay1Screener', 'acanthosisDay1Screener', 'scoliosisDay1Screener'];
+        screenerDropdowns.forEach(id => {
+          const select = document.getElementById(id);
+          if (select && select.options.length <= 1) {
+            if (select.options.length === 0 || select.options[0].value === '') {
+              select.innerHTML = '';
+              select.add(new Option('Other', 'other'));
+            }
+          }
+        });
+      }
+    }
+
+    // Auto-fill screener to all sections when main screener changes
+    function autoFillScreener() {
+      const mainScreener = document.getElementById('screenerName').value;
+      if (!mainScreener) return;
+      
+      // Auto-fill to all individual screener dropdowns
+      document.getElementById('visionDay1Screener').value = mainScreener;
+      document.getElementById('hearingDay1Screener').value = mainScreener;
+      document.getElementById('acanthosisDay1Screener').value = mainScreener;
+      document.getElementById('scoliosisDay1Screener').value = mainScreener;
+    }
+
+    // Set default date to today
+    function setDefaultDate() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('screeningDate').value = today;
+      
+      // Also set today's date for all individual screening section date fields
+      document.getElementById('visionDay1Date').value = today;
+      document.getElementById('hearingDay1Date').value = today;
+      document.getElementById('acanthosisDay1Date').value = today;
+      document.getElementById('scoliosisDay1Date').value = today;
+    }
+
+    // Tab switching
+    function switchTab(tabName) {
+      // Update tab buttons
+      document.getElementById('searchTabBtn').classList.remove('active');
+      document.getElementById('newTabBtn').classList.remove('active');
+      
+      if (tabName === 'search') {
+        document.getElementById('searchTabBtn').classList.add('active');
+        document.getElementById('searchTab').classList.remove('hidden');
+        document.getElementById('newTab').classList.add('hidden');
+      } else {
+        document.getElementById('newTabBtn').classList.add('active');
+        document.getElementById('searchTab').classList.add('hidden');
+        document.getElementById('newTab').classList.remove('hidden');
+      }
+      
+      // Clear search results
+      document.getElementById('searchResults').classList.add('hidden');
+      document.getElementById('multipleResults').classList.add('hidden');
+    }
+
+    // Search by student ID
+    async function searchById() {
+      const studentId = document.getElementById('searchId').value.trim();
+      if (!studentId) {
+        alert('Please enter a student ID');
+        return;
+      }
+
+      // DEMO MODE: Sample student IDs for testing without database
+      const demoStudents = {
+        'st1001': {
+          student: {
+            unique_id: 'st1001',
+            first_name: 'John',
+            last_name: 'Smith',
+            grade: '5th',
+            gender: 'Male',
+            school: 'Austin Elementary',
+            teacher: 'Mrs. Johnson',
+            dob: '2013-08-15',
+            status: 'Returning'
+          },
+          requiredScreenings: { vision: true, hearing: true, acanthosis: false, scoliosis: false }
+        },
+        'st1002': {
+          student: {
+            unique_id: 'st1002',
+            first_name: 'Maria',
+            last_name: 'Garcia',
+            grade: '7th',
+            gender: 'Female',
+            school: 'Austin Middle School',
+            teacher: 'Mr. Williams',
+            dob: '2011-03-22',
+            status: 'New'
+          },
+          requiredScreenings: { vision: true, hearing: true, acanthosis: false, scoliosis: true }
+        },
+        'st1003': {
+          student: {
+            unique_id: 'st1003',
+            first_name: 'Emma',
+            last_name: 'Johnson',
+            grade: 'Kindergarten',
+            gender: 'Female',
+            school: 'Sunshine Elementary',
+            teacher: 'Ms. Brown',
+            dob: '2018-11-05',
+            status: 'New'
+          },
+          requiredScreenings: { vision: true, hearing: true, acanthosis: false, scoliosis: false }
+        }
+      };
+
+      // Check if this is a demo student
+      if (demoStudents[studentId.toLowerCase()]) {
+        const demoData = demoStudents[studentId.toLowerCase()];
+        loadStudentData(demoData.student, demoData.requiredScreenings);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/students/${studentId}`);
+        const data = await response.json();
+        
+        if (data.found) {
+          loadStudentData(data.student, data.requiredScreenings);
+        } else {
+          alert('Student not found. Try demo IDs: st1001, st1002, or st1003');
+        }
+      } catch (error) {
+        alert('Backend not connected. Using demo mode.\n\nTry these demo student IDs:\n• st1001 - John Smith (5th grade)\n• st1002 - Maria Garcia (7th grade)\n• st1003 - Emma Johnson (Kindergarten)');
+        
+        // Offer to load demo student
+        const useDemo = confirm('Would you like to try a demo student (st1001)?');
+        if (useDemo) {
+          document.getElementById('searchId').value = 'st1001';
+          searchById();
+        }
+      }
+    }
+
+    // Search by name
+    async function searchByName() {
+      const lastName = document.getElementById('searchLastName').value.trim();
+      const school = document.getElementById('searchSchool').value;
+      
+      if (!lastName || !school) {
+        alert('Please enter last name and select a school');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/students/search?lastName=${encodeURIComponent(lastName)}&school=${encodeURIComponent(school)}`);
+        const data = await response.json();
+        
+        if (!data.found) {
+          alert('No students found with that name.');
+          return;
+        }
+
+        if (data.multiple) {
+          // Show multiple results
+          document.getElementById('searchResults').classList.remove('hidden');
+          document.getElementById('multipleResults').classList.remove('hidden');
+          const listDiv = document.getElementById('studentList');
+          listDiv.innerHTML = '';
+          
+          data.students.forEach(student => {
+            const div = document.createElement('div');
+            div.className = 'bg-white border border-gray-300 rounded-lg p-3 hover:bg-gray-50 cursor-pointer';
+            div.innerHTML = `
+              <div class="font-semibold">${student.student.first_name} ${student.student.last_name}</div>
+              <div class="text-sm text-gray-600">ID: ${student.student.unique_id} | Grade: ${student.student.grade} | School: ${student.student.school}</div>
+            `;
+            div.onclick = () => searchByIdWithId(student.student.unique_id);
+            listDiv.appendChild(div);
+          });
+        } else {
+          // Single result
+          loadStudentData(data.student, data.requiredScreenings);
+        }
+      } catch (error) {
+        alert('Error searching: ' + error.message);
+      }
+    }
+
+    async function searchByIdWithId(id) {
+      document.getElementById('searchId').value = id;
+      await searchById();
+    }
+
+    // Create new student
+    async function createNewStudent() {
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName = document.getElementById('lastName').value.trim();
+      const grade = document.getElementById('grade').value;
+      const gender = document.getElementById('gender').value;
+      const school = document.getElementById('newStudentSchool').value;
+      const teacher = document.getElementById('teacher').value.trim();
+      const dob = document.getElementById('dob').value;
+      const status = document.getElementById('status').value;
+
+      if (!firstName || !lastName || !grade || !gender || !school || !dob || !status) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/students/quick-add`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            firstName, lastName, grade, gender, school, teacher, dob, status
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          // Show modal with new student info
+          document.getElementById('newStudentId').textContent = data.student.unique_id;
+          document.getElementById('newStudentName').textContent = `${data.student.first_name} ${data.student.last_name}`;
+          document.getElementById('newStudentGrade').textContent = data.student.grade;
+          document.getElementById('newStudentSchoolName').textContent = data.student.school;
+          document.getElementById('newStudentModal').style.display = 'block';
+          
+          // Store for continuation
+          window.newStudentData = { student: data.student, requiredScreenings: data.requiredScreenings };
+        } else {
+          alert('Error creating student: ' + data.error);
+        }
+      } catch (error) {
+        alert('Error creating student: ' + error.message);
+      }
+    }
+
+    function continueToScreening() {
+      closeModal();
+      loadStudentData(window.newStudentData.student, window.newStudentData.requiredScreenings);
+    }
+
+    function closeModal() {
+      document.getElementById('newStudentModal').style.display = 'none';
+    }
+
+    // Load student data
+    function loadStudentData(student, requiredScreenings) {
+      currentStudent = student;
+      
+      // Display student info
+      document.getElementById('displayStudentId').textContent = student.unique_id;
+      document.getElementById('displayName').textContent = `${student.first_name} ${student.last_name}`;
+      document.getElementById('displayDetails').textContent = `${student.grade} | ${student.gender} | ${student.school}`;
+      document.getElementById('displayAdditional').textContent = `${student.teacher} | ${student.dob} | ${student.status}`;
+      
+      // Show sections (screeningDetails is always visible, no need to show it)
+      document.getElementById('studentInfo').classList.remove('hidden');
+      document.getElementById('screeningTests').classList.remove('hidden');
+      document.getElementById('submitSection').classList.remove('hidden');
+      
+      // Ensure all screening sections are visible
+      document.getElementById('screeningTests').style.display = 'block';
+      
+      // Show/hide required badges and auto-open required sections
+      if (requiredScreenings) {
+        // Vision
+        if (requiredScreenings.vision) {
+          document.getElementById('visionBadge').style.display = 'inline-block';
+          openAccordion('vision');
+        } else {
+          document.getElementById('visionBadge').style.display = 'none';
+        }
+        
+        // Hearing
+        if (requiredScreenings.hearing) {
+          document.getElementById('hearingBadge').style.display = 'inline-block';
+          openAccordion('hearing');
+        } else {
+          document.getElementById('hearingBadge').style.display = 'none';
+        }
+        
+        // Acanthosis
+        if (requiredScreenings.acanthosis) {
+          document.getElementById('acanthosisBadge').style.display = 'inline-block';
+          openAccordion('acanthosis');
+        } else {
+          document.getElementById('acanthosisBadge').style.display = 'none';
+        }
+        
+        // Scoliosis
+        if (requiredScreenings.scoliosis) {
+          document.getElementById('scoliosisBadge').style.display = 'inline-block';
+          openAccordion('scoliosis');
+        } else {
+          document.getElementById('scoliosisBadge').style.display = 'none';
+        }
+      }
+      
+      // Set default screening type for all individual sections
+      document.getElementById('visionDay1Type').value = 'initial';
+      document.getElementById('hearingDay1Type').value = 'initial';
+      document.getElementById('acanthosisDay1Type').value = 'initial';
+      document.getElementById('scoliosisDay1Type').value = 'initial';
+      
+      // Scroll to student info
+      document.getElementById('studentInfo').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Toggle accordion
+    function toggleAccordion(section) {
+      const accordion = document.querySelector(`[data-section="${section}"]`);
+      const content = accordion.querySelector('.accordion-content');
+      const isOpen = content.classList.contains('open');
+      
+      // Toggle just this accordion (don't close others)
+      if (isOpen) {
+        // Close this accordion
+        content.classList.remove('open');
+        accordion.classList.remove('open');
+      } else {
+        // Open this accordion
+        content.classList.add('open');
+        accordion.classList.add('open');
+      }
+    }
+
+    function openAccordion(section) {
+      const accordion = document.querySelector(`[data-section="${section}"]`);
+      const content = accordion.querySelector('.accordion-content');
+      content.classList.add('open');
+      accordion.classList.add('open');
+    }
+
+    // Apply global screening type
+    function applyGlobalScreeningType() {
+      const type = document.getElementById('globalScreeningType').value;
+      if (!type) return;
+      
+      document.getElementById('visionDay1Type').value = type;
+      document.getElementById('hearingDay1Type').value = type;
+      document.getElementById('acanthosisDay1Type').value = type;
+      document.getElementById('scoliosisDay1Type').value = type;
+    }
+
+    // Vision result changed
+    function visionResultChanged(result) {
+      if (result === 'pass') {
+        document.getElementById('visionRightEye').value = '20';
+        document.getElementById('visionLeftEye').value = '20';
+      } else {
+        document.getElementById('visionRightEye').value = '';
+        document.getElementById('visionLeftEye').value = '';
+      }
+    }
+
+    // Hearing result changed
+    function hearingResultChanged(result) {
+      const freqSection = document.getElementById('hearingFrequencies');
+      if (result === 'pass') {
+        freqSection.classList.add('hidden');
+      } else {
+        freqSection.classList.remove('hidden');
+      }
+    }
+
+    // Absent checkbox changed
+    function absentChanged(checked) {
+      const testSections = document.getElementById('screeningTests');
+      if (checked) {
+        testSections.style.opacity = '0.5';
+        testSections.style.pointerEvents = 'none';
+      } else {
+        testSections.style.opacity = '1';
+        testSections.style.pointerEvents = 'auto';
+      }
+    }
+
+    // Submit screening
+    async function submitScreening() {
+      if (!currentStudent) {
+        alert('Please search for or create a student first');
+        return;
+      }
+      
+      // Check if at least ONE section is open and has data
+      const visionData = getVisionData();
+      const hearingData = getHearingData();
+      const acanthosisData = getAcanthosisData();
+      const scoliosisData = getScoliosisData();
+      
+      const hasAnyData = visionData || hearingData || acanthosisData || scoliosisData;
+      
+      if (!hasAnyData) {
+        alert('Please complete at least one screening section before submitting.');
+        return;
+      }
+      
+      // Check if any OPENED sections are incomplete
+      const incompleteSections = [];
+      
+      // Vision - if accordion is open but no result selected
+      const visionAccordion = document.querySelector('[data-section="vision"]');
+      if (visionAccordion?.classList.contains('open')) {
+        const visionResult = document.querySelector('input[name="visionResult"]:checked');
+        if (!visionResult) {
+          incompleteSections.push('Vision');
+        }
+      }
+      
+      // Hearing - if accordion is open but no result selected
+      const hearingAccordion = document.querySelector('[data-section="hearing"]');
+      if (hearingAccordion?.classList.contains('open')) {
+        const hearingResult = document.querySelector('input[name="hearingResult"]:checked');
+        if (!hearingResult) {
+          incompleteSections.push('Hearing');
+        }
+      }
+      
+      // Acanthosis - if accordion is open but no result selected
+      const acanthosisAccordion = document.querySelector('[data-section="acanthosis"]');
+      if (acanthosisAccordion?.classList.contains('open')) {
+        const acanthosisResult = document.querySelector('input[name="acanthosisResult"]:checked');
+        if (!acanthosisResult) {
+          incompleteSections.push('Acanthosis');
+        }
+      }
+      
+      // Scoliosis - if accordion is open but no result selected
+      const scoliosisAccordion = document.querySelector('[data-section="scoliosis"]');
+      if (scoliosisAccordion?.classList.contains('open')) {
+        const scoliosisResult = document.querySelector('input[name="scoliosisResult"]:checked');
+        if (!scoliosisResult) {
+          incompleteSections.push('Scoliosis');
+        }
+      }
+      
+      // If any opened sections are incomplete, prevent submission
+      if (incompleteSections.length > 0) {
+        alert(`Please complete the following open sections or close them before submitting:\n- ${incompleteSections.join('\n- ')}`);
+        return;
+      }
+
+      const payload = buildPayload();
+      
+      try {
+        const response = await fetch(`${API_BASE}/screenings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          alert('✓ Screening results saved successfully!');
+          if (confirm('Screen another student?')) {
+            resetForm();
+          }
+        } else {
+          alert('Error saving: ' + result.error);
+        }
+      } catch (error) {
+        alert('Error submitting: ' + error.message);
+      }
+    }
+
+    // Build payload
+    function buildPayload() {
+      const payload = {
+        uniqueId: currentStudent.unique_id,
+        screeningDate: document.getElementById('screeningDate').value,
+        screenerName: document.getElementById('screenerName').value,
+        absent: document.getElementById('absent').checked,
+        notes: document.getElementById('notes').value
+      };
+
+      const vision = getVisionData();
+      if (vision) payload.vision = vision;
+
+      const hearing = getHearingData();
+      if (hearing) payload.hearing = hearing;
+
+      const acanthosis = getAcanthosisData();
+      if (acanthosis) payload.acanthosis = acanthosis;
+
+      const scoliosis = getScoliosisData();
+      if (scoliosis) payload.scoliosis = scoliosis;
+
+      return payload;
+    }
+
+    function getVisionData() {
+      // Check if vision section is expanded
+      const visionAccordion = document.querySelector('[data-section="vision"]');
+      const isExpanded = visionAccordion && visionAccordion.classList.contains('open');
+      
+      if (!isExpanded) {
+        return null; // Don't submit if collapsed
+      }
+      
+      const result = document.querySelector('input[name="visionResult"]:checked')?.value;
+      if (!result) return null;
+
+      const glasses = document.querySelector('input[name="visionGlasses"]:checked')?.value || 'no';
+      return {
+        day1: {
+          type: document.getElementById('visionDay1Type').value || 'initial',
+          screener: document.getElementById('visionDay1Screener').value || document.getElementById('screenerName').value,
+          date: document.getElementById('visionDay1Date').value || document.getElementById('screeningDate').value,
+          glasses: glasses,
+          rightEye: document.getElementById('visionRightEye').value || '',
+          leftEye: document.getElementById('visionLeftEye').value || '',
+          result: result
+        }
+      };
+    }
+
+    function getHearingData() {
+      // Check if hearing section is expanded
+      const hearingAccordion = document.querySelector('[data-section="hearing"]');
+      const isExpanded = hearingAccordion && hearingAccordion.classList.contains('open');
+      
+      if (!isExpanded) {
+        return null; // Don't submit if collapsed
+      }
+      
+      const result = document.querySelector('input[name="hearingResult"]:checked')?.value;
+      if (!result) return null;
+
+      const data = {
+        day1: {
+          type: document.getElementById('hearingDay1Type').value || 'initial',
+          screener: document.getElementById('hearingDay1Screener').value || document.getElementById('screenerName').value,
+          date: document.getElementById('hearingDay1Date').value || document.getElementById('screeningDate').value,
+          result: result
+        }
+      };
+
+      if (result === 'fail') {
+        const checkboxes = document.querySelectorAll('.hearing-freq:checked');
+        checkboxes.forEach(cb => {
+          const ear = cb.dataset.ear;
+          const freq = cb.dataset.freq;
+          data.day1[`${ear}${freq}`] = 'fail';
+        });
+      } else {
+        data.day1.right1000 = 'pass';
+        data.day1.right2000 = 'pass';
+        data.day1.right4000 = 'pass';
+        data.day1.left1000 = 'pass';
+        data.day1.left2000 = 'pass';
+        data.day1.left4000 = 'pass';
+      }
+
+      return data;
+    }
+
+    function getAcanthosisData() {
+      // Check if acanthosis section is expanded
+      const acanthosisAccordion = document.querySelector('[data-section="acanthosis"]');
+      const isExpanded = acanthosisAccordion && acanthosisAccordion.classList.contains('open');
+      
+      if (!isExpanded) {
+        return null; // Don't submit if collapsed
+      }
+      
+      const result = document.querySelector('input[name="acanthosisResult"]:checked')?.value;
+      if (!result) return null;
+
+      return {
+        day1: {
+          type: document.getElementById('acanthosisDay1Type').value || 'initial',
+          screener: document.getElementById('acanthosisDay1Screener').value || document.getElementById('screenerName').value,
+          date: document.getElementById('acanthosisDay1Date').value || document.getElementById('screeningDate').value,
+          result: result
+        }
+      };
+    }
+
+    function getScoliosisData() {
+      // Check if scoliosis section is expanded
+      const scoliosisAccordion = document.querySelector('[data-section="scoliosis"]');
+      const isExpanded = scoliosisAccordion && scoliosisAccordion.classList.contains('open');
+      
+      if (!isExpanded) {
+        return null; // Don't submit if collapsed
+      }
+      
+      const result = document.querySelector('input[name="scoliosisResult"]:checked')?.value;
+      if (!result) return null;
+
+      return {
+        day1: {
+          type: document.getElementById('scoliosisDay1Type').value || 'initial',
+          screener: document.getElementById('scoliosisDay1Screener').value || document.getElementById('screenerName').value,
+          date: document.getElementById('scoliosisDay1Date').value || document.getElementById('screeningDate').value,
+          observations: document.getElementById('scoliosisObservations').value || '',
+          result: result
+        }
+      };
+    }
+
+    // Reset form
+    function resetForm() {
+      // Only clear student-specific fields, NOT screening details
+      const studentFields = ['searchId', 'searchLastName', 'searchSchool', 'firstName', 'lastName', 'grade', 'gender', 'newStudentSchool', 'teacher', 'dob', 'status'];
+      studentFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && (el.type === 'radio' || el.type === 'checkbox')) {
+          el.checked = false;
+        } else if (el) {
+          el.value = '';
+        }
+      });
+      
+      // Clear screening test fields only
+      const screeningFields = ['visionDay1Type', 'visionDay1Screener', 'visionDay1Date', 'visionRightEye', 'visionLeftEye',
+                               'hearingDay1Type', 'hearingDay1Screener', 'hearingDay1Date',
+                               'acanthosisDay1Type', 'acanthosisDay1Screener', 'acanthosisDay1Date',
+                               'scoliosisDay1Type', 'scoliosisDay1Screener', 'scoliosisDay1Date', 'scoliosisObservations'];
+      screeningFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && (el.type === 'radio' || el.type === 'checkbox')) {
+          el.checked = false;
+        } else if (el) {
+          el.value = '';
+        }
+      });
+      
+      // Clear radio buttons in screening tests
+      document.querySelectorAll('input[name="visionResult"], input[name="visionGlasses"], input[name="hearingResult"], input[name="acanthosisResult"], input[name="scoliosisResult"]').forEach(el => el.checked = false);
+      document.querySelectorAll('.hearing-freq').forEach(el => el.checked = false);
+      
+      // Reset to search tab
+      switchTab('search');
+      
+      // Hide sections except student search and screening details
+      document.getElementById('studentInfo').classList.add('hidden');
+      document.getElementById('screeningTests').classList.add('hidden');
+      document.getElementById('submitSection').classList.add('hidden');
+      // NOTE: screeningDetails stays visible and keeps its values
+      
+      // Show all accordions
+      document.querySelectorAll('[data-section]').forEach(el => el.style.display = '');
+      
+      // Reset absent state
+      absentChanged(false);
+      
+      currentStudent = null;
+      
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+  
+</body>
+</html>
