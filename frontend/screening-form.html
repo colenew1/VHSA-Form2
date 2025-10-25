@@ -892,21 +892,44 @@
       const lastName = document.getElementById('searchLastName').value.trim();
       const school = document.getElementById('searchSchool').value;
       
-      if (!lastName || !school) {
-        alert('Please enter last name and select a school');
+      console.log('🔍 searchByName called with:', { lastName, school });
+      
+      if (!lastName) {
+        showCustomPopup('warning', 'Missing Information', 'Please enter a last name');
         return;
       }
-
+      
+      if (!school) {
+        showCustomPopup('warning', 'Missing Information', 'Please select a school');
+        return;
+      }
+      
       try {
-        const response = await fetch(`${API_BASE}/students/search?lastName=${encodeURIComponent(lastName)}&school=${encodeURIComponent(school)}${CACHE_BUST}`);
-        const data = await response.json();
+        console.log('🔍 Searching for:', lastName, 'at', school);
         
-        if (!data.found) {
-          alert('No students found with that name.');
+        const url = `${API_BASE}/students/search?lastName=${encodeURIComponent(lastName)}&school=${encodeURIComponent(school)}${CACHE_BUST}`;
+        console.log('🔍 API URL:', url);
+        
+        const response = await fetch(url);
+        console.log('🔍 Response status:', response.status);
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('❌ API Error:', response.status, errorData);
+          showCustomPopup('error', 'API Error', `Error: ${response.status} - ${errorData.error || 'Unknown error'}`);
           return;
         }
-
+        
+        const data = await response.json();
+        console.log('🔍 Response data:', data);
+        
+        if (!data.found) {
+          showCustomPopup('warning', 'Student Not Found', 'No students found with that name at this school');
+          return;
+        }
+        
         if (data.multiple) {
+          console.log('🔍 Multiple students found:', data.students.length);
           // Show multiple results
           document.getElementById('searchResults').classList.remove('hidden');
           document.getElementById('multipleResults').classList.remove('hidden');
@@ -917,18 +940,22 @@
             const div = document.createElement('div');
             div.className = 'bg-white border border-gray-300 rounded-lg p-3 hover:bg-gray-50 cursor-pointer';
             div.innerHTML = `
-              <div class="font-semibold">${student.student.first_name} ${student.student.last_name}</div>
-              <div class="text-sm text-gray-600">ID: ${student.student.unique_id} | Grade: ${student.student.grade} | School: ${student.student.school}</div>
+              <div class="font-semibold">${student.first_name} ${student.last_name}</div>
+              <div class="text-sm text-gray-600">ID: ${student.unique_id} | Grade: ${student.grade} | School: ${student.school}</div>
             `;
-            div.onclick = () => searchByIdWithId(student.student.unique_id);
+            div.onclick = () => searchByIdWithId(student.unique_id);
             listDiv.appendChild(div);
           });
         } else {
-          // Single result
+          console.log('🔍 Single student found:', data.student);
           loadStudentData(data.student, data.requiredScreenings);
+          document.getElementById('searchResults').classList.add('hidden');
+          document.getElementById('multipleResults').classList.add('hidden');
         }
+        
       } catch (error) {
-        alert('Error searching: ' + error.message);
+        console.error('💥 Search error:', error);
+        showCustomPopup('error', 'Search Error', 'Error searching for student: ' + error.message);
       }
     }
 
