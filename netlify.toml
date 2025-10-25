@@ -1,15 +1,15 @@
 [build]
-  command = "cd backend && npm install"
+  command = "cd backend && npm install serverless-http"
   publish = "frontend"
+  
+[functions]
+  directory = "netlify/functions"
 
-# Proxy API calls to your backend server
 [[redirects]]
   from = "/api/*"
-  to = "https://your-backend-url.herokuapp.com/api/:splat"
+  to = "/.netlify/functions/serve :splat"
   status = 200
-  force = true
 
-# Catch-all for frontend routes
 [[redirects]]
   from = "/*"
   to = "/screening-form.html"
