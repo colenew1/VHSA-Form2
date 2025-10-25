@@ -402,7 +402,17 @@ app.post('/api/screenings', async (req, res) => {
     const screeningData = {
       student_id: student.id,
       unique_id: payload.uniqueId,
-      school: student.school,
+      
+      // Student demographic fields (from payload)
+      student_first_name: payload.student_first_name || null,
+      student_last_name: payload.student_last_name || null,
+      student_grade: payload.student_grade || null,
+      student_gender: payload.student_gender || null,
+      student_school: payload.student_school || student.school,
+      student_teacher: payload.student_teacher || null,
+      student_dob: payload.student_dob || null,
+      student_status: payload.student_status || null,
+      
       screening_year: new Date().getFullYear(),
       initial_screening_date: payload.screeningDate || new Date().toISOString().split('T')[0],
       was_absent: payload.was_absent || false,

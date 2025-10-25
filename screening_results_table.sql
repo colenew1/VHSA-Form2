@@ -19,7 +19,17 @@ CREATE TABLE screening_results (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
     unique_id VARCHAR(50) NOT NULL,
-    school TEXT NOT NULL,
+    
+    -- Student demographic fields (from students table)
+    student_first_name TEXT,
+    student_last_name TEXT,
+    student_grade TEXT,
+    student_gender TEXT,
+    student_school TEXT NOT NULL,
+    student_teacher TEXT,  -- Teacher last name
+    student_dob DATE,
+    student_status TEXT,
+    
     screening_year INTEGER NOT NULL,
     initial_screening_date DATE NOT NULL,  -- Date of initial screening (used by all views)
     was_absent BOOLEAN DEFAULT FALSE,

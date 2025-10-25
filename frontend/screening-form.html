@@ -1492,7 +1492,17 @@
         uniqueId: currentStudent.unique_id,
         screeningDate: screeningDate,
         was_absent: wasAbsent,
-        notes: notes || null
+        notes: notes || null,
+        
+        // Student demographic fields (from the student object)
+        student_first_name: currentStudent.first_name,
+        student_last_name: currentStudent.last_name,
+        student_grade: currentStudent.grade,
+        student_gender: currentStudent.gender,
+        student_school: currentStudent.school,
+        student_teacher: currentStudent.teacher,
+        student_dob: currentStudent.dob,
+        student_status: currentStudent.status
       };
       
       // Determine if this is initial or rescreen based on global type
