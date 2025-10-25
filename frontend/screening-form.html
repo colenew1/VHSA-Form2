@@ -852,7 +852,9 @@
       }
 
       console.log('🔍 Searching for student:', studentId);
-      console.log('🔗 API URL:', `${API_BASE}/students/${studentId}${CACHE_BUST}`);
+      console.log('🔗 API_BASE:', API_BASE);
+      console.log('🔗 CACHE_BUST:', CACHE_BUST);
+      console.log('🔗 Full URL:', `${API_BASE}/students/${studentId}${CACHE_BUST}`);
 
       try {
         const response = await fetch(`${API_BASE}/students/${studentId}${CACHE_BUST}`);
@@ -868,8 +870,8 @@
           return;
         }
         
-        if (data.error) {
-          console.log('❌ Student not found:', data.error);
+        if (!data.found) {
+          console.log('❌ Student not found');
           alert('Student not found. Please check the student ID and try again.');
           return;
         }
@@ -878,7 +880,10 @@
         loadStudentData(data.student, data.requiredScreenings);
       } catch (error) {
         console.error('💥 Network/Parse Error:', error);
-        alert('Error connecting to the database. Please try again later.');
+        console.error('💥 Error type:', typeof error);
+        console.error('💥 Error message:', error.message);
+        console.error('💥 Error stack:', error.stack);
+        alert(`Error connecting to the database: ${error.message}`);
       }
     }
 
