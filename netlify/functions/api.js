@@ -421,9 +421,17 @@ app.post('/api/screenings', async (req, res) => {
       
       screening_year: new Date().getFullYear(),
       initial_screening_date: payload.screeningDate || new Date().toISOString().split('T')[0],
-      was_absent: payload.was_absent || false,
-      notes: payload.notes || null
+      was_absent: payload.was_absent || false
     };
+    
+    // Route notes to correct column based on screening type
+    if (payload.notes) {
+      if (payload.screeningType === 'initial') {
+        screeningData.initial_notes = payload.notes;
+      } else if (payload.screeningType === 'rescreen') {
+        screeningData.rescreen_notes = payload.notes;
+      }
+    }
     
     // Add vision data if provided
     if (payload.vision) {

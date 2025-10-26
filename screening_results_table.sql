@@ -33,7 +33,8 @@ CREATE TABLE screening_results (
     screening_year INTEGER NOT NULL,
     initial_screening_date DATE NOT NULL,  -- Date of initial screening (used by all views)
     was_absent BOOLEAN DEFAULT FALSE,
-    notes TEXT,  -- ONLY ONE NOTES FIELD AT THE END
+    initial_notes TEXT,
+    rescreen_notes TEXT,
     
     -- Vision: Initial Screen
     vision_initial_screener VARCHAR(100),
