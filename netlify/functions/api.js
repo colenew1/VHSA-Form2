@@ -261,15 +261,21 @@ app.put('/api/students/:uniqueId', async (req, res) => {
     const { uniqueId } = req.params;
     const updates = {};
     
-    // Only update provided fields with title case for names
-    if (req.body.firstName) updates.first_name = toTitleCase(req.body.firstName);
-    if (req.body.lastName) updates.last_name = toTitleCase(req.body.lastName);
-    if (req.body.grade) updates.grade = req.body.grade;
-    if (req.body.gender) updates.gender = req.body.gender;
-    if (req.body.school) updates.school = req.body.school;
-    if (req.body.teacher !== undefined) updates.teacher = toTitleCase(req.body.teacher);
-    if (req.body.dob) updates.dob = req.body.dob;
-    if (req.body.status) updates.status = req.body.status;
+    // Update fields if provided (including null values for clearing)
+    if (req.body.firstName !== undefined) {
+      updates.first_name = req.body.firstName ? toTitleCase(req.body.firstName) : null;
+    }
+    if (req.body.lastName !== undefined) {
+      updates.last_name = req.body.lastName ? toTitleCase(req.body.lastName) : null;
+    }
+    if (req.body.grade !== undefined) updates.grade = req.body.grade || null;
+    if (req.body.gender !== undefined) updates.gender = req.body.gender || null;
+    if (req.body.school !== undefined) updates.school = req.body.school || null;
+    if (req.body.teacher !== undefined) {
+      updates.teacher = req.body.teacher ? toTitleCase(req.body.teacher) : null;
+    }
+    if (req.body.dob !== undefined) updates.dob = req.body.dob || null;
+    if (req.body.status !== undefined) updates.status = req.body.status || null;
     
     const { data, error } = await supabase
       .from('students')

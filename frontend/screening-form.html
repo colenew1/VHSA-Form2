@@ -1167,23 +1167,19 @@
       const student = window.editingStudent;
       if (!student) return;
       
-      // Get form values
+      // Get form values and convert empty strings to null
       const updates = {
-        firstName: document.getElementById('editFirstName').value.trim(),
-        lastName: document.getElementById('editLastName').value.trim(),
-        grade: document.getElementById('editGrade').value.trim(),
-        gender: document.getElementById('editGender').value,
-        school: document.getElementById('editSchool').value,
-        teacher: document.getElementById('editTeacher').value.trim(),
-        dob: document.getElementById('editDOB').value,
-        status: document.getElementById('editStatus').value
+        firstName: document.getElementById('editFirstName').value.trim() || null,
+        lastName: document.getElementById('editLastName').value.trim() || null,
+        grade: document.getElementById('editGrade').value.trim() || null,
+        gender: document.getElementById('editGender').value || null,
+        school: document.getElementById('editSchool').value || null,
+        teacher: document.getElementById('editTeacher').value.trim() || null,
+        dob: document.getElementById('editDOB').value || null,
+        status: document.getElementById('editStatus').value || null
       };
       
-      // Only validate truly essential fields (unless skipping)
-      if (!skipMode && (!updates.firstName || !updates.lastName || !updates.school)) {
-        showCustomPopup('warning', 'Missing Information', 'Please fill in at least first name, last name, and school');
-        return;
-      }
+      // All fields are optional now - no validation needed
       
       // If skip mode, use existing student data with any edits made
       const studentData = skipMode ? student : updates;
