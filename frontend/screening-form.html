@@ -328,8 +328,12 @@
     <!-- SECTION 3: Student Information -->
     <section id="studentInfo" class="hidden mb-8">
       <div class="bg-gradient-to-r from-blue-50 to-green-50 border-2 border-blue-300 rounded-lg p-6">
-        <div class="mb-4">
+        <div class="mb-4 flex justify-between items-center">
           <h2 class="text-2xl font-bold text-gray-800">Student Information</h2>
+          <button type="button" onclick="openEditStudentInfo()" 
+                  class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
+            Edit Info
+          </button>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -627,8 +631,8 @@
   <!-- Edit Student Modal -->
   <div id="editStudentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
     <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
-      <h3 class="text-xl font-bold text-red-600 mb-2">Incomplete Student Data</h3>
-      <p class="text-gray-700 mb-4">This student record is missing required information. Please fill in the missing fields below:</p>
+      <h3 class="text-xl font-bold text-blue-600 mb-2">Complete Student Information</h3>
+      <p class="text-gray-700 mb-4">Some fields are missing from this student record. Fill them in or skip to continue with incomplete data:</p>
       
       <div class="bg-yellow-50 border border-yellow-200 rounded p-3 mb-4">
         <p class="text-sm text-gray-700"><strong>Student ID:</strong> <span id="editStudentId"></span></p>
@@ -637,18 +641,18 @@
       <form id="editStudentForm" class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">First Name *</label>
-            <input type="text" id="editFirstName" required
+            <label class="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
+            <input type="text" id="editFirstName"
                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
           </div>
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Last Name *</label>
-            <input type="text" id="editLastName" required
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
+            <input type="text" id="editLastName"
                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
           </div>
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Grade *</label>
-            <select id="editGrade" required
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Grade</label>
+            <select id="editGrade"
                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="">Select Grade</option>
               <option value="Pre-K (3)">Pre-K (3)</option>
@@ -669,8 +673,8 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Gender *</label>
-            <select id="editGender" required
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Gender</label>
+            <select id="editGender"
                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="">Select Gender</option>
               <option value="Male">Male</option>
@@ -679,8 +683,8 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">School *</label>
-            <select id="editSchool" required
+            <label class="block text-sm font-semibold text-gray-700 mb-2">School</label>
+            <select id="editSchool"
                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="">Select School</option>
             </select>
@@ -691,13 +695,13 @@
                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
           </div>
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Date of Birth *</label>
-            <input type="date" id="editDOB" required
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Date of Birth</label>
+            <input type="date" id="editDOB"
                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
           </div>
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Student Status *</label>
-            <select id="editStatus" required
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Student Status</label>
+            <select id="editStatus"
                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="">Select Status</option>
               <option value="New">New</option>
@@ -710,6 +714,10 @@
           <button type="button" onclick="closeEditStudentModal()" 
                   class="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
             Cancel
+          </button>
+          <button type="button" onclick="saveStudentUpdates(true)" 
+                  class="px-6 py-2 text-gray-600 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200">
+            Skip & Continue with Missing Data
           </button>
           <button type="button" onclick="saveStudentUpdates()" 
                   class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
@@ -1084,6 +1092,16 @@
       document.getElementById('newStudentModal').style.display = 'none';
     }
 
+    // Open edit modal from the student info section
+    function openEditStudentInfo() {
+      if (!currentStudent) {
+        showCustomPopup('warning', 'No Student', 'No student information available to edit');
+        return;
+      }
+      // Open edit modal with current student data (no missing fields since we're editing existing)
+      showEditStudentModal(currentStudent, []);
+    }
+
     // Show edit student modal
     function showEditStudentModal(student, missingFields) {
       // Store current student for later use
@@ -1091,6 +1109,19 @@
       
       // Populate modal
       document.getElementById('editStudentId').textContent = student.unique_id;
+      
+      // Update modal title and message based on context
+      const modalTitle = document.querySelector('#editStudentModal h3');
+      const modalMessage = document.querySelector('#editStudentModal p');
+      if (missingFields && missingFields.length > 0) {
+        modalTitle.textContent = 'Complete Student Information';
+        modalTitle.className = 'text-xl font-bold text-blue-600 mb-2';
+        modalMessage.textContent = 'Some fields are missing from this student record. Fill them in or skip to continue with incomplete data:';
+      } else {
+        modalTitle.textContent = 'Edit Student Information';
+        modalTitle.className = 'text-xl font-bold text-blue-600 mb-2';
+        modalMessage.textContent = 'Update student information below:';
+      }
       document.getElementById('editFirstName').value = (student.first_name && student.first_name.toLowerCase() !== 'null') ? student.first_name : '';
       document.getElementById('editLastName').value = (student.last_name && student.last_name.toLowerCase() !== 'null') ? student.last_name : '';
       document.getElementById('editGrade').value = (student.grade && student.grade.toLowerCase() !== 'null') ? student.grade : '';
@@ -1109,23 +1140,17 @@
         });
       }
       
-      // Highlight missing fields
-      missingFields.forEach(field => {
-        const fieldMap = {
-          'first_name': 'editFirstName',
-          'last_name': 'editLastName',
-          'grade': 'editGrade',
-          'gender': 'editGender',
-          'school': 'editSchool',
-          'dob': 'editDOB',
-          'status': 'editStatus'
-        };
-        const inputId = fieldMap[field.key];
-        if (inputId) {
-          const input = document.getElementById(inputId);
-          input.classList.add('border-red-500', 'bg-red-50');
+      // Don't highlight fields - they're all optional now
+      
+      // Show/hide Skip button based on whether there are missing fields
+      const skipButton = document.querySelector('#editStudentModal button[onclick="saveStudentUpdates(true)"]');
+      if (skipButton) {
+        if (missingFields && missingFields.length > 0) {
+          skipButton.classList.remove('hidden');
+        } else {
+          skipButton.classList.add('hidden');
         }
-      });
+      }
       
       // Show modal
       document.getElementById('editStudentModal').classList.remove('hidden');
@@ -1138,7 +1163,7 @@
     }
 
     // Save student updates
-    async function saveStudentUpdates() {
+    async function saveStudentUpdates(skipMode = false) {
       const student = window.editingStudent;
       if (!student) return;
       
@@ -1154,41 +1179,74 @@
         status: document.getElementById('editStatus').value
       };
       
-      // Validate required fields
-      if (!updates.firstName || !updates.lastName || !updates.grade || 
-          !updates.gender || !updates.school || !updates.dob || !updates.status) {
-        showCustomPopup('warning', 'Missing Information', 'Please fill in all required fields (marked with *)');
+      // Only validate truly essential fields (unless skipping)
+      if (!skipMode && (!updates.firstName || !updates.lastName || !updates.school)) {
+        showCustomPopup('warning', 'Missing Information', 'Please fill in at least first name, last name, and school');
         return;
       }
       
-      try {
-        const response = await fetch(`${API_BASE}/students/${student.unique_id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updates)
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          showCustomPopup('success', 'Updated!', 'Student information has been updated successfully');
-          closeEditStudentModal();
+      // If skip mode, use existing student data with any edits made
+      const studentData = skipMode ? student : updates;
+      
+      // Update student data on server (unless skipping)
+      if (!skipMode) {
+        try {
+          const response = await fetch(`${API_BASE}/students/${student.unique_id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updates)
+          });
           
-          // Reload student data with updated info
-          const updatedStudent = data.student;
-          const requiredScreenings = {
-            vision: true,
-            hearing: true,
-            acanthosis: false,
-            scoliosis: false
-          };
-          loadStudentData(updatedStudent, requiredScreenings);
-        } else {
-          showCustomPopup('error', 'Update Failed', 'Error updating student: ' + data.error);
+          const data = await response.json();
+          
+          if (data.success) {
+            showCustomPopup('success', 'Updated!', 'Student information has been updated successfully');
+            closeEditStudentModal();
+            
+            // Reload student data with updated info
+            const updatedStudent = data.student;
+            const requiredScreenings = {
+              vision: true,
+              hearing: true,
+              acanthosis: false,
+              scoliosis: false
+            };
+            loadStudentData(updatedStudent, requiredScreenings);
+            return;
+          } else {
+            showCustomPopup('error', 'Update Failed', 'Error updating student: ' + data.error);
+            return;
+          }
+        } catch (error) {
+          showCustomPopup('error', 'Update Error', 'Error updating student: ' + error.message);
+          return;
         }
-      } catch (error) {
-        showCustomPopup('error', 'Update Error', 'Error updating student: ' + error.message);
       }
+      
+      // Skip mode: just proceed with current (potentially incomplete) data
+      closeEditStudentModal();
+      
+      // Build student object from form (use existing values where form is empty)
+      const finalStudent = {
+        ...student,
+        first_name: updates.firstName || student.first_name,
+        last_name: updates.lastName || student.last_name,
+        grade: updates.grade || student.grade,
+        gender: updates.gender || student.gender,
+        school: updates.school || student.school,
+        teacher: updates.teacher || student.teacher,
+        dob: updates.dob || student.dob,
+        status: updates.status || student.status,
+        unique_id: student.unique_id
+      };
+      
+      const requiredScreenings = {
+        vision: true,
+        hearing: true,
+        acanthosis: false,
+        scoliosis: false
+      };
+      loadStudentData(finalStudent, requiredScreenings);
     }
 
     // Validate student data completeness
