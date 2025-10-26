@@ -476,13 +476,13 @@ app.post('/api/students/quick-add', async (req, res) => {
     
     if (error) throw error;
     
-    // Calculate required screenings
-    const requiredScreenings = {
-      vision: true,
-      hearing: true,
-      acanthosis: false,
-      scoliosis: false
-    };
+    // Calculate required screenings based on student data
+    const requiredScreenings = calculateRequirements(
+      data.grade,
+      data.gender,
+      data.status,
+      data.dob
+    );
     
     res.status(201).json({
       success: true,

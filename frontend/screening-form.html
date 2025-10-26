@@ -957,6 +957,7 @@
         }
         
         console.log('🔍 Loading student data:', data.student);
+        console.log('🔍 Required screenings from API:', data.requiredScreenings);
         loadStudentData(data.student, data.requiredScreenings);
       } catch (error) {
         console.error('💥 Error searching for student:', error);
@@ -1352,6 +1353,10 @@
 
     // Load student data
     function loadStudentData(student, requiredScreenings) {
+      console.log('=== LOAD STUDENT DATA ===');
+      console.log('Student:', student);
+      console.log('Required Screenings:', requiredScreenings);
+      
       // Validate student data completeness
       const validation = validateStudentData(student);
       
@@ -1380,12 +1385,16 @@
       document.getElementById('screeningTests').style.display = 'block';
       
       // Show/hide required badges and auto-open required sections
+      console.log('Processing badges and accordions, requiredScreenings:', requiredScreenings);
       if (requiredScreenings) {
+        console.log('Required screenings found, processing...');
         // Vision
         if (requiredScreenings.vision) {
+          console.log('Vision is required, showing badge and opening accordion');
           document.getElementById('visionBadge').style.display = 'inline-block';
           openAccordion('vision');
         } else {
+          console.log('Vision is NOT required, hiding badge');
           document.getElementById('visionBadge').style.display = 'none';
         }
         
@@ -1877,7 +1886,7 @@
 
       // Set content
       modalTitle.textContent = title;
-      modalMessage.textContent = message;
+      modalMessage.innerHTML = message;
 
       // Handle buttons
       if (options.showCancel) {
