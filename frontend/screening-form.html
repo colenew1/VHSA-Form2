@@ -1384,43 +1384,59 @@
       // Ensure all screening sections are visible
       document.getElementById('screeningTests').style.display = 'block';
       
-      // Show/hide required badges and auto-open required sections
+      // First, close ALL accordions and hide ALL badges
+      console.log('Processing accordions - closing all first');
+      closeAccordion('vision');
+      closeAccordion('hearing');
+      closeAccordion('acanthosis');
+      closeAccordion('scoliosis');
+      document.getElementById('visionBadge').style.display = 'none';
+      document.getElementById('hearingBadge').style.display = 'none';
+      document.getElementById('acanthosisBadge').style.display = 'none';
+      document.getElementById('scoliosisBadge').style.display = 'none';
+      
+      // Now show/hide required badges and auto-open required sections
       console.log('Processing badges and accordions, requiredScreenings:', requiredScreenings);
       if (requiredScreenings) {
         console.log('Required screenings found, processing...');
+        
         // Vision
         if (requiredScreenings.vision) {
-          console.log('Vision is required, showing badge and opening accordion');
+          console.log('✅ Vision is REQUIRED - showing badge and opening accordion');
           document.getElementById('visionBadge').style.display = 'inline-block';
           openAccordion('vision');
         } else {
-          console.log('Vision is NOT required, hiding badge');
-          document.getElementById('visionBadge').style.display = 'none';
+          console.log('❌ Vision is NOT required');
         }
         
         // Hearing
         if (requiredScreenings.hearing) {
+          console.log('✅ Hearing is REQUIRED - showing badge and opening accordion');
           document.getElementById('hearingBadge').style.display = 'inline-block';
           openAccordion('hearing');
         } else {
-          document.getElementById('hearingBadge').style.display = 'none';
+          console.log('❌ Hearing is NOT required');
         }
         
         // Acanthosis
         if (requiredScreenings.acanthosis) {
+          console.log('✅ Acanthosis is REQUIRED - showing badge and opening accordion');
           document.getElementById('acanthosisBadge').style.display = 'inline-block';
           openAccordion('acanthosis');
         } else {
-          document.getElementById('acanthosisBadge').style.display = 'none';
+          console.log('❌ Acanthosis is NOT required');
         }
         
         // Scoliosis
         if (requiredScreenings.scoliosis) {
+          console.log('✅ Scoliosis is REQUIRED - showing badge and opening accordion');
           document.getElementById('scoliosisBadge').style.display = 'inline-block';
           openAccordion('scoliosis');
         } else {
-          document.getElementById('scoliosisBadge').style.display = 'none';
+          console.log('❌ Scoliosis is NOT required');
         }
+      } else {
+        console.error('❌ No requiredScreenings object provided!');
       }
       
       // Scroll to student info
@@ -1446,10 +1462,33 @@
     }
 
     function openAccordion(section) {
+      console.log(`openAccordion called for: ${section}`);
       const accordion = document.querySelector(`[data-section="${section}"]`);
+      if (!accordion) {
+        console.error(`Accordion not found for section: ${section}`);
+        return;
+      }
       const content = accordion.querySelector('.accordion-content');
+      if (!content) {
+        console.error(`Content not found for section: ${section}`);
+        return;
+      }
+      console.log(`Opening accordion ${section}, content exists:`, content);
+      content.style.display = 'block';
       content.classList.add('open');
       accordion.classList.add('open');
+      console.log(`Accordion ${section} is now open`);
+    }
+    
+    function closeAccordion(section) {
+      console.log(`closeAccordion called for: ${section}`);
+      const accordion = document.querySelector(`[data-section="${section}"]`);
+      if (!accordion) return;
+      const content = accordion.querySelector('.accordion-content');
+      if (!content) return;
+      content.style.display = 'none';
+      content.classList.remove('open');
+      accordion.classList.remove('open');
     }
 
     // Apply global screening type

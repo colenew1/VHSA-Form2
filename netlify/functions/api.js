@@ -328,6 +328,8 @@ app.get('/api/students/:uniqueId', async (req, res) => {
       student.dob
     );
     
+    console.log(`[GET /api/students/:uniqueId] Student ${uniqueId} - Required screenings:`, requiredScreenings);
+    
     res.json({
       found: true,
       student: student,
