@@ -1201,12 +1201,8 @@
             
             // Reload student data with updated info
             const updatedStudent = data.student;
-            const requiredScreenings = {
-              vision: true,
-              hearing: true,
-              acanthosis: false,
-              scoliosis: false
-            };
+            // Recalculate requirements based on updated student data
+            const requiredScreenings = calculateRequirementsFromStudent(updatedStudent);
             loadStudentData(updatedStudent, requiredScreenings);
             return;
           } else {
@@ -1236,13 +1232,75 @@
         unique_id: student.unique_id
       };
       
-      const requiredScreenings = {
-        vision: true,
-        hearing: true,
+      // Recalculate requirements based on updated student data
+      const requiredScreenings = calculateRequirementsFromStudent(finalStudent);
+      loadStudentData(finalStudent, requiredScreenings);
+    }
+
+    // Calculate requirements on frontend (mirrors backend logic)
+    function calculateRequirementsFromStudent(student) {
+      const gradeStr = (student.grade || '').toLowerCase();
+      const isNewStudent = (student.status || '').toLowerCase() === 'new';
+      const isFemale = (student.gender || '').toLowerCase() === 'female';
+      const isMale = (student.gender || '').toLowerCase() === 'male';
+      
+      const requirements = {
+        vision: false,
+        hearing: false,
         acanthosis: false,
         scoliosis: false
       };
-      loadStudentData(finalStudent, requiredScreenings);
+      
+      // Pre-K 3: nothing required
+      if (gradeStr.includes('pre-k (3)')) {
+        return requirements;
+      }
+      
+      // Pre-K 4: check DOB
+      if (gradeStr.includes('pre-k (4)') && student.dob) {
+        const birthDate = new Date(student.dob);
+        const birthYear = birthDate.getFullYear();
+        const septFirst = new Date(birthYear, 8, 1);
+        
+        if (birthDate <= septFirst) {
+          requirements.vision = true;
+          requirements.hearing = true;
+        }
+        return requirements;
+      }
+      
+      // K-12: Vision & Hearing
+      if (gradeStr.includes('kindergarten') || ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'].includes(gradeStr)) {
+        requirements.vision = true;
+        requirements.hearing = true;
+      }
+      
+      // Acanthosis: 1, 3, 5, 7 always
+      if (['1st', '3rd', '5th', '7th'].includes(gradeStr)) {
+        requirements.acanthosis = true;
+      }
+      
+      // Acanthosis: NEW students in 2, 4, 6, 8, 9-12
+      if (isNewStudent && ['2nd', '4th', '6th', '8th', '9th', '10th', '11th', '12th'].includes(gradeStr)) {
+        requirements.acanthosis = true;
+      }
+      
+      // Scoliosis: 5th & 7th females
+      if ((gradeStr === '5th' || gradeStr === '7th') && isFemale) {
+        requirements.scoliosis = true;
+      }
+      
+      // Scoliosis: 8th grade males (returning)
+      if (gradeStr === '8th' && isMale && !isNewStudent) {
+        requirements.scoliosis = true;
+      }
+      
+      // Scoliosis: 8th grade NEW (both genders)
+      if (gradeStr === '8th' && isNewStudent) {
+        requirements.scoliosis = true;
+      }
+      
+      return requirements;
     }
 
     // Validate student data completeness
@@ -1757,6 +1815,12 @@
       document.getElementById('notesSection').classList.add('hidden');
       document.getElementById('submitSection').classList.add('hidden');
       // NOTE: screeningDetails stays visible and keeps its values (screener name, date, type)
+      
+      // Hide all required badges
+      document.getElementById('visionBadge').style.display = 'none';
+      document.getElementById('hearingBadge').style.display = 'none';
+      document.getElementById('acanthosisBadge').style.display = 'none';
+      document.getElementById('scoliosisBadge').style.display = 'none';
       
       // Clear current student
       currentStudent = null;

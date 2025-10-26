@@ -20,7 +20,6 @@ function toTitleCase(str) {
 // Calculate which screening tests are required based on student demographics
 function calculateRequirements(student) {
   const { grade, gender, dob, status } = student;
-  const gradeNum = parseInt(grade) || 0;
   
   const requirements = {
     vision: false,
@@ -29,19 +28,70 @@ function calculateRequirements(student) {
     scoliosis: false
   };
   
-  // Vision and Hearing: All grades (Pre-K through 12)
-  if (gradeNum >= 0 && gradeNum <= 12) {
+  // Parse grade
+  const gradeStr = (grade || '').toLowerCase();
+  const isNewStudent = status?.toLowerCase() === 'new';
+  
+  // Pre-K 3: NO requirements
+  if (gradeStr.includes('pre-k (3)') || gradeStr === 'pk3') {
+    return requirements; // All false
+  }
+  
+  // Pre-K 4: Vision & Hearing ONLY if DOB on/before Sept 1
+  if (gradeStr.includes('pre-k (4)') || gradeStr === 'pk4') {
+    if (dob) {
+      const birthDate = new Date(dob);
+      const birthYear = birthDate.getFullYear();
+      const septFirst = new Date(birthYear, 8, 1); // Sept 1 of birth year
+      
+      // If born on or before Sept 1, they're "old" 4s - screening required
+      if (birthDate <= septFirst) {
+        requirements.vision = true;
+        requirements.hearing = true;
+      }
+    }
+    return requirements;
+  }
+  
+  // Kindergarten through 12th: Vision & Hearing always required
+  if (gradeStr.includes('kindergarten') || gradeStr === 'k' || 
+      ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'].includes(gradeStr)) {
     requirements.vision = true;
     requirements.hearing = true;
   }
   
-  // Acanthosis Nigricans: Grades 1, 3, 5, 7
-  if ([1, 3, 5, 7].includes(gradeNum)) {
+  // Acanthosis requirements
+  // Always required: 1st, 3rd, 5th, 7th
+  if (['1st', '3rd', '5th', '7th'].includes(gradeStr)) {
     requirements.acanthosis = true;
   }
   
-  // Scoliosis: Grade 5, Female students only
-  if (gradeNum === 5 && gender?.toLowerCase() === 'female') {
+  // NEW students only: 2nd, 4th, 6th, 8th, 9th-12th
+  if (isNewStudent && ['2nd', '4th', '6th', '8th', '9th', '10th', '11th', '12th'].includes(gradeStr)) {
+    requirements.acanthosis = true;
+  }
+  
+  // Scoliosis requirements
+  const isFemale = gender?.toLowerCase() === 'female';
+  const isMale = gender?.toLowerCase() === 'male';
+  
+  // 5th grade females
+  if (gradeStr === '5th' && isFemale) {
+    requirements.scoliosis = true;
+  }
+  
+  // 7th grade females
+  if (gradeStr === '7th' && isFemale) {
+    requirements.scoliosis = true;
+  }
+  
+  // 8th grade males (RETURNING only based on image)
+  if (gradeStr === '8th' && isMale && !isNewStudent) {
+    requirements.scoliosis = true;
+  }
+  
+  // 8th grade NEW students (both genders)
+  if (gradeStr === '8th' && isNewStudent) {
     requirements.scoliosis = true;
   }
   
@@ -348,28 +398,59 @@ app.post('/api/students/quick-add', async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
     
-    // Generate unique_id with better logic
+    // Generate unique_id with collision checking
     const schoolCode = school.replace(/[^\w\s]/g, '').trim().split(/\s+/)[0].substring(0, 2).toLowerCase();
     
-    // Get max ID for this school
-    const { data: existingStudents } = await supabase
-      .from('students')
-      .select('unique_id')
-      .ilike('unique_id', `${schoolCode}%`)
-      .order('unique_id', { ascending: false })
-      .limit(1);
+    let uniqueId;
+    let attempts = 0;
+    const maxAttempts = 100;
     
-    let maxNumber = 0;
-    if (existingStudents && existingStudents.length > 0) {
-      const lastId = existingStudents[0].unique_id;
-      const numPart = lastId.substring(2);
-      maxNumber = parseInt(numPart, 10) || 0;
+    while (attempts < maxAttempts) {
+      // Get current max ID for this school prefix
+      const { data: existingStudents } = await supabase
+        .from('students')
+        .select('unique_id')
+        .ilike('unique_id', `${schoolCode}%`)
+        .order('unique_id', { ascending: false })
+        .limit(1);
+      
+      let maxNumber = 0;
+      if (existingStudents && existingStudents.length > 0) {
+        const lastId = existingStudents[0].unique_id;
+        const numPart = lastId.substring(2);
+        maxNumber = parseInt(numPart, 10) || 0;
+      }
+      
+      const newNumber = maxNumber + 1 + attempts; // Increment by attempts to avoid immediate recollision
+      const candidateId = `${schoolCode}${String(newNumber).padStart(4, '0')}`;
+      
+      // Check if this ID already exists
+      const { data: collision } = await supabase
+        .from('students')
+        .select('unique_id')
+        .eq('unique_id', candidateId)
+        .maybeSingle();
+      
+      if (!collision) {
+        // No collision, use this ID
+        uniqueId = candidateId;
+        break;
+      }
+      
+      // Collision found, try next number
+      console.log(`Collision on ${candidateId}, retrying...`);
+      attempts++;
     }
     
-    const newNumber = maxNumber + 1;
-    const uniqueId = `${schoolCode}${String(newNumber).padStart(4, '0')}`;
+    if (!uniqueId) {
+      return res.status(500).json({ 
+        error: 'Unable to generate unique student ID after multiple attempts' 
+      });
+    }
     
-    // Insert with formatted names
+    console.log(`Generated unique ID: ${uniqueId} (attempts: ${attempts})`);
+    
+    // Insert student with verified unique ID
     const { data, error } = await supabase
       .from('students')
       .insert({
@@ -563,8 +644,11 @@ app.post('/api/screenings', async (req, res) => {
     let finalData;
     if (existingRecord && existingRecord.id) {
       // Merge existing data with new data, only updating non-null fields
+      // Exclude generated columns (vision_complete, hearing_complete, etc.)
+      const { vision_complete, hearing_complete, acanthosis_complete, scoliosis_complete, ...existingDataWithoutGenerated } = existingRecord;
+      
       finalData = {
-        ...existingRecord,
+        ...existingDataWithoutGenerated,
         ...Object.fromEntries(
           Object.entries(screeningData).filter(([key, value]) => value !== null && value !== undefined)
         )
