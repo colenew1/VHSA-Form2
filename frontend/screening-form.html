@@ -1474,7 +1474,8 @@
         return;
       }
       console.log(`Opening accordion ${section}, content exists:`, content);
-      content.style.display = 'block';
+      // Remove any inline display style (cleanup)
+      content.style.display = '';
       content.classList.add('open');
       accordion.classList.add('open');
       console.log(`Accordion ${section} is now open`);
@@ -1486,7 +1487,8 @@
       if (!accordion) return;
       const content = accordion.querySelector('.accordion-content');
       if (!content) return;
-      content.style.display = 'none';
+      // Remove inline display style if it exists (cleanup)
+      content.style.display = '';
       content.classList.remove('open');
       accordion.classList.remove('open');
     }
