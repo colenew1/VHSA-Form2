@@ -1075,15 +1075,25 @@
         const data = await response.json();
         
         if (data.success) {
-          // Show modal with new student info
-          document.getElementById('newStudentId').textContent = data.student.unique_id;
-          document.getElementById('newStudentName').textContent = `${data.student.first_name} ${data.student.last_name}`;
-          document.getElementById('newStudentGrade').textContent = data.student.grade;
-          document.getElementById('newStudentSchoolName').textContent = data.student.school;
-          document.getElementById('newStudentModal').style.display = 'block';
+          const newStudentId = data.student.unique_id;
           
-          // Store for continuation
-          window.newStudentData = { student: data.student, requiredScreenings: data.requiredScreenings };
+          // Show success message with student ID
+          showCustomPopup(
+            'success',
+            'Student Created Successfully!',
+            `Student ID: <strong>${newStudentId}</strong><br><br>To begin screening, please search for this student using the search form.`
+          );
+          
+          // Auto-close popup and reset form after 3 seconds
+          setTimeout(() => {
+            closeCustomModal();
+            
+            // Reset entire form to clean state
+            resetForm();
+            
+            // Pre-fill search with new student ID for easy access
+            document.getElementById('searchId').value = newStudentId;
+          }, 3000);
         } else {
           showCustomPopup('error', 'Error', 'Error creating student: ' + data.error);
         }
@@ -1581,18 +1591,14 @@
         const result = await response.json();
         
         if (result.success) {
-          showCustomPopup('success', 'Success!', 'Screening results saved successfully!', {
-            confirmText: 'Continue',
-            onConfirm: () => {
-              showCustomPopup('info', 'Continue Screening?', 'Would you like to screen another student?', {
-                showCancel: true,
-                confirmText: 'Yes',
-                cancelText: 'No',
-                onConfirm: () => resetForm(),
-                onCancel: () => {}
-              });
-            }
-          });
+          // Show success message
+          showCustomPopup('success', 'Success!', 'Screening results saved successfully!');
+          
+          // Auto-reset form after 2 seconds
+          setTimeout(() => {
+            closeCustomModal();
+            resetForm();
+          }, 2000);
         } else {
           showCustomPopup('error', 'Error', 'Error saving: ' + result.error);
         }
