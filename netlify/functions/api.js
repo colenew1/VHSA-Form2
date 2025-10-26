@@ -423,6 +423,24 @@ app.post('/api/students/quick-add', async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
     
+    // Check for duplicate student (same first name + last name + school)
+    const { data: existingStudent } = await supabase
+      .from('students')
+      .select('*')
+      .ilike('first_name', firstName)
+      .ilike('last_name', lastName)
+      .eq('school', school)
+      .maybeSingle();
+    
+    if (existingStudent) {
+      // Duplicate found - return special response
+      return res.status(409).json({
+        duplicate: true,
+        existingStudent: existingStudent,
+        message: 'A student with this name already exists at this school'
+      });
+    }
+    
     // Generate unique_id with collision checking
     const schoolCode = school.replace(/[^\w\s]/g, '').trim().split(/\s+/)[0].substring(0, 2).toLowerCase();
     
