@@ -18,8 +18,24 @@ function toTitleCase(str) {
 }
 
 // Calculate which screening tests are required based on student demographics
-function calculateRequirements(student) {
-  const { grade, gender, dob, status } = student;
+function calculateRequirements(gradeOrStudent, gender, status, dob) {
+  // Support both calling signatures: calculateRequirements(student) or calculateRequirements(grade, gender, status, dob)
+  let grade, genderValue, statusValue, dobValue;
+  
+  if (arguments.length === 1 && typeof gradeOrStudent === 'object') {
+    // Called with student object: calculateRequirements(student)
+    const student = gradeOrStudent;
+    grade = student.grade;
+    genderValue = student.gender;
+    statusValue = student.status;
+    dobValue = student.dob;
+  } else {
+    // Called with separate arguments: calculateRequirements(grade, gender, status, dob)
+    grade = gradeOrStudent;
+    genderValue = gender;
+    statusValue = status;
+    dobValue = dob;
+  }
   
   const requirements = {
     vision: false,
@@ -30,7 +46,7 @@ function calculateRequirements(student) {
   
   // Parse grade
   const gradeStr = (grade || '').toLowerCase();
-  const isNewStudent = status?.toLowerCase() === 'new';
+  const isNewStudent = statusValue?.toLowerCase() === 'new';
   
   // Pre-K 3: NO requirements
   if (gradeStr.includes('pre-k (3)') || gradeStr === 'pk3') {
@@ -39,8 +55,8 @@ function calculateRequirements(student) {
   
   // Pre-K 4: Vision & Hearing ONLY if DOB on/before Sept 1
   if (gradeStr.includes('pre-k (4)') || gradeStr === 'pk4') {
-    if (dob) {
-      const birthDate = new Date(dob);
+    if (dobValue) {
+      const birthDate = new Date(dobValue);
       const birthYear = birthDate.getFullYear();
       const septFirst = new Date(birthYear, 8, 1); // Sept 1 of birth year
       
@@ -72,8 +88,8 @@ function calculateRequirements(student) {
   }
   
   // Scoliosis requirements
-  const isFemale = gender?.toLowerCase() === 'female';
-  const isMale = gender?.toLowerCase() === 'male';
+  const isFemale = genderValue?.toLowerCase() === 'female';
+  const isMale = genderValue?.toLowerCase() === 'male';
   
   // 5th grade females
   if (gradeStr === '5th' && isFemale) {
