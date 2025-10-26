@@ -915,6 +915,15 @@
       // Clear search results
       document.getElementById('searchResults').classList.add('hidden');
       document.getElementById('multipleResults').classList.add('hidden');
+      
+      // Hide student info and screening sections when switching to new student tab
+      if (tabName === 'new') {
+        document.getElementById('studentInfo').classList.add('hidden');
+        document.getElementById('absentSection').classList.add('hidden');
+        document.getElementById('screeningTests').classList.add('hidden');
+        document.getElementById('notesSection').classList.add('hidden');
+        document.getElementById('submitSection').classList.add('hidden');
+      }
     }
 
     // Search by student ID

@@ -275,10 +275,17 @@ app.get('/api/students/search', async (req, res) => {
     }
     
     if (data.length === 1) {
+      const requiredScreenings = calculateRequirements(
+        data[0].grade,
+        data[0].gender,
+        data[0].status,
+        data[0].dob
+      );
+      
       return res.json({
         found: true,
         student: data[0],
-        requiredScreenings: { vision: true, hearing: true, acanthosis: false, scoliosis: false }
+        requiredScreenings: requiredScreenings
       });
     }
     
@@ -313,13 +320,13 @@ app.get('/api/students/:uniqueId', async (req, res) => {
       return res.json({ found: false });
     }
     
-    // Calculate required screenings (simplified logic)
-    const requiredScreenings = {
-      vision: true,
-      hearing: true,
-      acanthosis: false,
-      scoliosis: false
-    };
+    // Calculate required screenings based on student data
+    const requiredScreenings = calculateRequirements(
+      student.grade,
+      student.gender,
+      student.status,
+      student.dob
+    );
     
     res.json({
       found: true,
