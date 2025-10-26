@@ -17,6 +17,37 @@ function toTitleCase(str) {
     .join(' ');
 }
 
+// Calculate which screening tests are required based on student demographics
+function calculateRequirements(student) {
+  const { grade, gender, dob, status } = student;
+  const gradeNum = parseInt(grade) || 0;
+  
+  const requirements = {
+    vision: false,
+    hearing: false,
+    acanthosis: false,
+    scoliosis: false
+  };
+  
+  // Vision and Hearing: All grades (Pre-K through 12)
+  if (gradeNum >= 0 && gradeNum <= 12) {
+    requirements.vision = true;
+    requirements.hearing = true;
+  }
+  
+  // Acanthosis Nigricans: Grades 1, 3, 5, 7
+  if ([1, 3, 5, 7].includes(gradeNum)) {
+    requirements.acanthosis = true;
+  }
+  
+  // Scoliosis: Grade 5, Female students only
+  if (gradeNum === 5 && gender?.toLowerCase() === 'female') {
+    requirements.scoliosis = true;
+  }
+  
+  return requirements;
+}
+
 const app = express();
 
 // Middleware
@@ -431,6 +462,25 @@ app.post('/api/screenings', async (req, res) => {
       } else if (payload.screeningType === 'rescreen') {
         screeningData.rescreen_notes = payload.notes;
       }
+    }
+    
+    // Only set required flags when creating NEW records (not on updates)
+    if (!existingRecord || !existingRecord.id) {
+      // Calculate which tests are required based on student demographics
+      const studentForCalc = {
+        grade: payload.student_grade || 'Unknown',
+        gender: payload.student_gender || 'Unknown',
+        status: payload.student_status || 'New',
+        dob: payload.student_dob || null
+      };
+      
+      const requiredScreenings = calculateRequirements(studentForCalc);
+      
+      // Add required flags to screeningData
+      screeningData.vision_required = requiredScreenings.vision;
+      screeningData.hearing_required = requiredScreenings.hearing;
+      screeningData.acanthosis_required = requiredScreenings.acanthosis;
+      screeningData.scoliosis_required = requiredScreenings.scoliosis;
     }
     
     // Add vision data if provided
