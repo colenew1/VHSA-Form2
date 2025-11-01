@@ -2045,6 +2045,17 @@
       // Clear current student
       currentStudent = null;
       
+      // Clear student info display elements
+      document.getElementById('displayStudentId').textContent = '';
+      document.getElementById('displayName').textContent = '';
+      document.getElementById('displayDetails').textContent = '';
+      document.getElementById('displayAdditional').textContent = '';
+      
+      // Clear search results
+      document.getElementById('searchResults').classList.add('hidden');
+      document.getElementById('multipleResults').classList.add('hidden');
+      document.getElementById('studentList').innerHTML = '';
+      
       // Scroll to top
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
