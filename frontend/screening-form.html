@@ -1134,7 +1134,7 @@
                     },
                     onCancel: () => {
                       // Stay on form with data still filled in
-                      closeCustomModal();
+                      hideCustomPopup();
                     }
                   }
                 );
@@ -1153,7 +1153,7 @@
                 
                 // Auto-close popup and reset form after 3 seconds
                 setTimeout(() => {
-                  closeCustomModal();
+                  hideCustomPopup();
                   
                   // Reset entire form to clean state
                   resetForm();
@@ -1195,7 +1195,7 @@
           
           // Auto-close popup and reset form after 3 seconds
           setTimeout(() => {
-            closeCustomModal();
+            hideCustomPopup();
             resetForm();
             document.getElementById('searchId').value = data.student.unique_id;
           }, 3000);
@@ -1713,6 +1713,7 @@
       
       // Check if any OPENED sections are incomplete (skip if absent)
       const incompleteSections = [];
+      const validationErrors = [];
       
       if (!isAbsent) {
         // Vision - if accordion is open but no result selected
@@ -1721,6 +1722,16 @@
           const visionResult = document.querySelector('input[name="visionResult"]:checked');
           if (!visionResult) {
             incompleteSections.push('Vision');
+          } else if (visionResult.value === 'fail') {
+            // When vision fails, both eye ratings are required
+            const rightEye = document.getElementById('visionRightEye').value;
+            const leftEye = document.getElementById('visionLeftEye').value;
+            if (!rightEye || rightEye === '') {
+              validationErrors.push('Vision: Please select a rating for the right eye when result is Fail');
+            }
+            if (!leftEye || leftEye === '') {
+              validationErrors.push('Vision: Please select a rating for the left eye when result is Fail');
+            }
           }
         }
         
@@ -1730,6 +1741,12 @@
           const hearingResult = document.querySelector('input[name="hearingResult"]:checked');
           if (!hearingResult) {
             incompleteSections.push('Hearing');
+          } else if (hearingResult.value === 'fail') {
+            // When hearing fails, at least one frequency must be marked as fail (minus)
+            const failedFrequencies = document.querySelectorAll('.hearing-freq[data-status="fail"]');
+            if (failedFrequencies.length === 0) {
+              validationErrors.push('Hearing: Please mark at least one frequency as failed (click to toggle to minus) when result is Fail');
+            }
           }
         }
         
@@ -1755,6 +1772,12 @@
       // If any opened sections are incomplete, prevent submission
       if (incompleteSections.length > 0) {
         showCustomPopup('warning', 'Incomplete Sections', `Please complete the following open sections or close them before submitting:\n- ${incompleteSections.join('\n- ')}`);
+        return;
+      }
+      
+      // If there are validation errors, prevent submission
+      if (validationErrors.length > 0) {
+        showCustomPopup('warning', 'Validation Error', validationErrors.join('<br>'));
         return;
       }
 
@@ -1785,7 +1808,7 @@
                 
                 // Auto-reset form after 2 seconds
                 setTimeout(() => {
-                  closeCustomModal();
+                  hideCustomPopup();
                   resetForm();
                 }, 2000);
               } else {
