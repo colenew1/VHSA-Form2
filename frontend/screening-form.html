@@ -1088,75 +1088,91 @@
         return;
       }
 
-      try {
-        const response = await fetch(`${API_BASE}/students/quick-add${CACHE_BUST}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            firstName, lastName, grade, gender, school, teacher, dob, status
-          })
-        });
-
-        const data = await response.json();
-        
-        // Handle duplicate detection
-        if (response.status === 409 && data.duplicate) {
-          // Duplicate found - show confirmation popup
-          const existing = data.existingStudent;
-          
-          showCustomPopup(
-            'warning',
-            'Student Already Exists',
-            `A student with the name <strong>${existing.first_name} ${existing.last_name}</strong> already exists at <strong>${existing.school}</strong>.<br><br>
-            <strong>Existing Info:</strong><br>
-            ID: ${existing.unique_id}<br>
-            Grade: ${existing.grade} | Gender: ${existing.gender}<br>
-            DOB: ${existing.dob} | Status: ${existing.status}<br><br>
-            Would you like to <strong>update</strong> this student's information with the new data you entered?`,
-            {
-              showCancel: true,
-              confirmText: 'Update Existing Student',
-              cancelText: 'Cancel',
-              onConfirm: () => {
-                updateExistingStudent(existing.unique_id, {
+      // Show confirmation dialog
+      showCustomPopup(
+        'warning',
+        'Confirm Student Creation',
+        'Are you sure you want to create this student?',
+        {
+          showCancel: true,
+          confirmText: 'Yes, Create Student',
+          cancelText: 'Cancel',
+          onConfirm: async () => {
+            try {
+              const response = await fetch(`${API_BASE}/students/quick-add${CACHE_BUST}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
                   firstName, lastName, grade, gender, school, teacher, dob, status
-                });
-              },
-              onCancel: () => {
-                // Stay on form with data still filled in
-                closeCustomModal();
+                })
+              });
+
+              const data = await response.json();
+              
+              // Handle duplicate detection
+              if (response.status === 409 && data.duplicate) {
+                // Duplicate found - show confirmation popup
+                const existing = data.existingStudent;
+                
+                showCustomPopup(
+                  'warning',
+                  'Student Already Exists',
+                  `A student with the name <strong>${existing.first_name} ${existing.last_name}</strong> already exists at <strong>${existing.school}</strong>.<br><br>
+                  <strong>Existing Info:</strong><br>
+                  ID: ${existing.unique_id}<br>
+                  Grade: ${existing.grade} | Gender: ${existing.gender}<br>
+                  DOB: ${existing.dob} | Status: ${existing.status}<br><br>
+                  Would you like to <strong>update</strong> this student's information with the new data you entered?`,
+                  {
+                    showCancel: true,
+                    confirmText: 'Update Existing Student',
+                    cancelText: 'Cancel',
+                    onConfirm: () => {
+                      updateExistingStudent(existing.unique_id, {
+                        firstName, lastName, grade, gender, school, teacher, dob, status
+                      });
+                    },
+                    onCancel: () => {
+                      // Stay on form with data still filled in
+                      closeCustomModal();
+                    }
+                  }
+                );
+                return;
               }
+              
+              if (data.success) {
+                const newStudentId = data.student.unique_id;
+                
+                // Show success message with student ID
+                showCustomPopup(
+                  'success',
+                  'Student Created Successfully!',
+                  `Student ID: <strong>${newStudentId}</strong><br><br>To begin screening, please search for this student using the search form.`
+                );
+                
+                // Auto-close popup and reset form after 3 seconds
+                setTimeout(() => {
+                  closeCustomModal();
+                  
+                  // Reset entire form to clean state
+                  resetForm();
+                  
+                  // Pre-fill search with new student ID for easy access
+                  document.getElementById('searchId').value = newStudentId;
+                }, 3000);
+              } else {
+                showCustomPopup('error', 'Error', 'Error creating student: ' + data.error);
+              }
+            } catch (error) {
+              showCustomPopup('error', 'Error', 'Error creating student: ' + error.message);
             }
-          );
-          return;
+          },
+          onCancel: () => {
+            // User cancelled - dialog already closed by default
+          }
         }
-        
-        if (data.success) {
-          const newStudentId = data.student.unique_id;
-          
-          // Show success message with student ID
-          showCustomPopup(
-            'success',
-            'Student Created Successfully!',
-            `Student ID: <strong>${newStudentId}</strong><br><br>To begin screening, please search for this student using the search form.`
-          );
-          
-          // Auto-close popup and reset form after 3 seconds
-          setTimeout(() => {
-            closeCustomModal();
-            
-            // Reset entire form to clean state
-            resetForm();
-            
-            // Pre-fill search with new student ID for easy access
-            document.getElementById('searchId').value = newStudentId;
-          }, 3000);
-        } else {
-          showCustomPopup('error', 'Error', 'Error creating student: ' + data.error);
-        }
-      } catch (error) {
-        showCustomPopup('error', 'Error', 'Error creating student: ' + error.message);
-      }
+      );
     }
 
     // Update existing student with new information (screening records stay intact)
@@ -1745,32 +1761,48 @@
         return;
       }
 
-      const payload = buildPayload();
-      
-      try {
-        const response = await fetch(`${API_BASE}/screenings${CACHE_BUST}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-          // Show success message
-          showCustomPopup('success', 'Success!', 'Screening results saved successfully!');
-          
-          // Auto-reset form after 2 seconds
-          setTimeout(() => {
-            closeCustomModal();
-            resetForm();
-          }, 2000);
-        } else {
-          showCustomPopup('error', 'Error', 'Error saving: ' + result.error);
+      // Show confirmation dialog
+      showCustomPopup(
+        'warning',
+        'Confirm Submission',
+        'Are you sure you want to submit? Cannot undo.',
+        {
+          showCancel: true,
+          confirmText: 'Yes, Submit',
+          cancelText: 'Cancel',
+          onConfirm: async () => {
+            const payload = buildPayload();
+            
+            try {
+              const response = await fetch(`${API_BASE}/screenings${CACHE_BUST}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              });
+              
+              const result = await response.json();
+              
+              if (result.success) {
+                // Show success message
+                showCustomPopup('success', 'Success!', 'Screening results saved successfully!');
+                
+                // Auto-reset form after 2 seconds
+                setTimeout(() => {
+                  closeCustomModal();
+                  resetForm();
+                }, 2000);
+              } else {
+                showCustomPopup('error', 'Error', 'Error saving: ' + result.error);
+              }
+            } catch (error) {
+              showCustomPopup('error', 'Submission Error', 'Error submitting: ' + error.message);
+            }
+          },
+          onCancel: () => {
+            // User cancelled - dialog already closed by default
+          }
         }
-      } catch (error) {
-        showCustomPopup('error', 'Submission Error', 'Error submitting: ' + error.message);
-      }
+      );
     }
 
     // Build payload
