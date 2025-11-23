@@ -7,7 +7,8 @@ import schoolsRouter from './routes/schools.js';
 import studentsRouter from './routes/students.js';
 import screeningsRouter from './routes/screenings.js';
 import screenersRouter from './routes/screeners.js';
-import authRouter from './routes/auth.js';
+// AUTHENTICATION REMOVED - Auth system will be rebuilt as separate standalone system
+// import authRouter from './routes/auth.js';
 
 dotenv.config();
 
@@ -40,16 +41,18 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(frontendDir, 'screening-form.html'));
 });
 
-app.get('/login.html', (req, res) => {
-  res.sendFile(path.join(frontendDir, 'login.html'));
-});
+// AUTHENTICATION REMOVED - Login page route commented out
+// app.get('/login.html', (req, res) => {
+//   res.sendFile(path.join(frontendDir, 'login.html'));
+// });
 
 // API routes
 app.use('/api/schools', schoolsRouter);
 app.use('/api/students', studentsRouter);
 app.use('/api/screenings', screeningsRouter);
 app.use('/api/screeners', screenersRouter);
-app.use('/api/auth', authRouter);
+// AUTHENTICATION REMOVED - Auth routes commented out
+// app.use('/api/auth', authRouter);
 
 // 404 handler for API routes
 app.use('/api/*', (req, res) => {
@@ -79,6 +82,6 @@ app.listen(PORT, () => {
   console.log(`   - Students: /api/students`);
   console.log(`   - Screenings: /api/screenings`);
   console.log(`   - Screeners: /api/screeners`);
-  console.log(`   - Auth: /api/auth`);
+  // console.log(`   - Auth: /api/auth`); // AUTHENTICATION REMOVED
   console.log(``);
 });

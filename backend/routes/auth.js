@@ -1,7 +1,12 @@
-import express from 'express';
-import { supabase } from '../utils/supabase.js';
+// AUTHENTICATION REMOVED - This file is disabled while auth system is rebuilt
+// All auth routes have been commented out. Auth will be rebuilt as a separate standalone system.
+// To re-enable: Restore the import in server.js (line 10) and uncomment the route (line 52)
 
-const router = express.Router();
+// DISABLED - File kept for reference but not imported in server.js
+// import express from 'express';
+// import { supabase } from '../utils/supabase.js';
+// 
+// const router = express.Router();
 
 // GET /api/auth/config
 // Returns Supabase configuration for frontend (anon key only, safe to expose)
@@ -300,5 +305,5 @@ router.post('/logout', async (req, res) => {
   }
 });
 
-export default router;
+// export default router; // DISABLED - File not imported in server.js
 
