@@ -58,23 +58,39 @@ router.post('/', async (req, res) => {
       updated_at: new Date().toISOString()
     };
     
-    // Vision screening
-    if (vision?.day1) {
-      if (vision.day1.type) updateData.vision_day1_type = vision.day1.type;
-      if (vision.day1.screener) updateData.vision_day1_screener = vision.day1.screener;
-      if (vision.day1.date) updateData.vision_day1_date = vision.day1.date;
-      if (vision.day1.glasses !== undefined) updateData.vision_day1_glasses = vision.day1.glasses === 'yes';
-      if (vision.day1.rightEye) updateData.vision_day1_right_eye = vision.day1.rightEye;
-      if (vision.day1.leftEye) updateData.vision_day1_left_eye = vision.day1.leftEye;
-      if (vision.day1.result) updateData.vision_day1_result = vision.day1.result;
+    // Vision screening - handle both day1 and initial/rescreen structures
+    const visionData = vision?.day1 || vision?.initial || vision?.rescreen;
+    if (visionData) {
+      if (visionData.type) updateData.vision_day1_type = visionData.type;
+      if (visionData.screener) updateData.vision_day1_screener = visionData.screener;
+      if (visionData.date) updateData.vision_day1_date = visionData.date;
+      if (visionData.glasses !== undefined) updateData.vision_day1_glasses = visionData.glasses === 'yes';
+      if (visionData.rightEye) updateData.vision_day1_right_eye = visionData.rightEye;
+      if (visionData.leftEye) updateData.vision_day1_left_eye = visionData.leftEye;
+      if (visionData.result) updateData.vision_day1_result = visionData.result;
+      
+      // Capture vision_overall (screener's explicit pass/fail determination)
+      // Convert 'pass' to 'P', 'fail' to 'F'
+      if (visionData.result) {
+        const result = visionData.result.toLowerCase();
+        updateData.vision_overall = result === 'pass' ? 'P' : (result === 'fail' ? 'F' : null);
+      }
     }
     
-    // Hearing screening
-    if (hearing?.day1) {
-      if (hearing.day1.type) updateData.hearing_day1_type = hearing.day1.type;
-      if (hearing.day1.screener) updateData.hearing_day1_screener = hearing.day1.screener;
-      if (hearing.day1.date) updateData.hearing_day1_date = hearing.day1.date;
-      if (hearing.day1.result) updateData.hearing_day1_result = hearing.day1.result;
+    // Hearing screening - handle both day1 and initial/rescreen structures
+    const hearingData = hearing?.day1 || hearing?.initial || hearing?.rescreen;
+    if (hearingData) {
+      if (hearingData.type) updateData.hearing_day1_type = hearingData.type;
+      if (hearingData.screener) updateData.hearing_day1_screener = hearingData.screener;
+      if (hearingData.date) updateData.hearing_day1_date = hearingData.date;
+      if (hearingData.result) updateData.hearing_day1_result = hearingData.result;
+      
+      // Capture hearing_overall (screener's explicit pass/fail determination)
+      // Convert 'pass' to 'P', 'fail' to 'F'
+      if (hearingData.result) {
+        const result = hearingData.result.toLowerCase();
+        updateData.hearing_overall = result === 'pass' ? 'P' : (result === 'fail' ? 'F' : null);
+      }
     }
     
     // Acanthosis screening
