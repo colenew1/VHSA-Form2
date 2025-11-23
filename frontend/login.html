@@ -90,6 +90,14 @@
       try {
         // Get Supabase config from backend
         const configResponse = await fetch(`${API_BASE}/auth/config`);
+        
+        // Check if response is JSON
+        const contentType = configResponse.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          console.error('Expected JSON but got:', contentType);
+          return false;
+        }
+        
         const config = await configResponse.json();
         
         if (config.supabaseUrl && config.supabaseAnonKey && window.supabase) {
@@ -183,6 +191,15 @@
           })
         });
 
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          console.error('Expected JSON but got:', contentType, text.substring(0, 100));
+          showError('Server returned an invalid response. Please check if the backend is running.');
+          return;
+        }
+
         const data = await response.json();
         
         if (data.success) {
@@ -232,6 +249,14 @@
             },
             body: JSON.stringify({ email })
           });
+
+          // Check if response is JSON
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.error('Expected JSON but got:', contentType, text.substring(0, 100));
+            throw new Error('Server returned an invalid response. Please check if the backend is running.');
+          }
 
           const data = await response.json();
 
