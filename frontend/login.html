@@ -131,6 +131,7 @@
     handleCallback();
 
     // Also check for direct session tokens (from old flow)
+    const urlParams = new URLSearchParams(window.location.search);
     const accessToken = urlParams.get('access_token');
     const refreshToken = urlParams.get('refresh_token');
     const expiresAt = urlParams.get('expires_at');
@@ -199,53 +200,62 @@
     }
 
     // Handle email form submission
-    document.getElementById('emailForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const email = document.getElementById('email').value.trim().toLowerCase();
-      const submitBtn = document.getElementById('submitBtn');
-      const messageDiv = document.getElementById('message');
-      const messageContent = document.getElementById('messageContent');
-      
-      // Validate email
-      if (!email || !email.includes('@')) {
-        showError('Please enter a valid email address.');
-        return;
-      }
-
-      // Disable button and show loading state
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Sending...';
-      messageDiv.classList.add('hidden');
-
-      try {
-        // Request magic link via backend API
-        const response = await fetch(`${API_BASE}/auth/request-magic-link`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ email })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok || !data.success) {
-          throw new Error(data.error || 'Failed to send magic link');
+    const emailForm = document.getElementById('emailForm');
+    if (emailForm) {
+      emailForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const emailInput = document.getElementById('email');
+        const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
+        const submitBtn = document.getElementById('submitBtn');
+        const messageDiv = document.getElementById('message');
+        const messageContent = document.getElementById('messageContent');
+        
+        // Validate email
+        if (!email || !email.includes('@')) {
+          showError('Please enter a valid email address.');
+          return;
         }
 
-        // Show success message
-        document.getElementById('loginForm').classList.add('hidden');
-        document.getElementById('successMessage').classList.remove('hidden');
-        document.getElementById('sentEmail').textContent = email;
+        // Disable button and show loading state
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+        messageDiv.classList.add('hidden');
 
-      } catch (error) {
-        console.error('Error sending magic link:', error);
-        showError(error.message || 'Failed to send magic link. Please try again.');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Send Magic Link';
-      }
-    });
+        try {
+          // Request magic link via backend API
+          const response = await fetch(`${API_BASE}/auth/request-magic-link`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email })
+          });
+
+          const data = await response.json();
+
+          if (!response.ok || !data.success) {
+            throw new Error(data.error || 'Failed to send magic link');
+          }
+
+          // Show success message
+          document.getElementById('loginForm').classList.add('hidden');
+          document.getElementById('successMessage').classList.remove('hidden');
+          document.getElementById('sentEmail').textContent = email;
+
+        } catch (error) {
+          console.error('Error sending magic link:', error);
+          showError(error.message || 'Failed to send magic link. Please try again.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Send Magic Link';
+          // Restore email value if it was cleared
+          if (emailInput && !emailInput.value && email) {
+            emailInput.value = email;
+          }
+        }
+      });
+    }
 
     function showError(message) {
       const messageDiv = document.getElementById('message');

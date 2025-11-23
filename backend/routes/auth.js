@@ -169,12 +169,23 @@ router.post('/verify-session', async (req, res) => {
       });
     }
 
-    // Get user info from screener_users table
+    // Get user info from screener_users table and update last_login
     const { data: screenerUser, error: dbError } = await supabase
       .from('screener_users')
       .select('id, email, name, created_at, last_login')
       .eq('email', user.email?.toLowerCase())
       .single();
+
+    // Update last_login timestamp
+    if (user.email) {
+      await supabase
+        .from('screener_users')
+        .update({ 
+          last_login: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('email', user.email.toLowerCase());
+    }
 
     if (dbError) {
       console.error('Error fetching screener user:', dbError);
@@ -187,7 +198,7 @@ router.post('/verify-session', async (req, res) => {
         email: user.email,
         name: screenerUser?.name || null,
         created_at: screenerUser?.created_at || null,
-        last_login: screenerUser?.last_login || null
+        last_login: new Date().toISOString()
       }
     });
   } catch (error) {
@@ -224,12 +235,23 @@ router.get('/me', async (req, res) => {
       });
     }
 
-    // Get user info from screener_users table
+    // Get user info from screener_users table and update last_login
     const { data: screenerUser, error: dbError } = await supabase
       .from('screener_users')
       .select('id, email, name, created_at, last_login')
       .eq('email', user.email?.toLowerCase())
       .single();
+
+    // Update last_login timestamp
+    if (user.email) {
+      await supabase
+        .from('screener_users')
+        .update({ 
+          last_login: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('email', user.email.toLowerCase());
+    }
 
     if (dbError) {
       console.error('Error fetching screener user:', dbError);
@@ -242,7 +264,7 @@ router.get('/me', async (req, res) => {
         email: user.email,
         name: screenerUser?.name || null,
         created_at: screenerUser?.created_at || null,
-        last_login: screenerUser?.last_login || null
+        last_login: new Date().toISOString()
       }
     });
   } catch (error) {
