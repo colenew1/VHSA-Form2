@@ -20,6 +20,7 @@ router.post('/', async (req, res) => {
     } = req.body;
     
     console.log('Submitting screening results for:', uniqueId);
+    console.log('Received payload structure:', JSON.stringify({ vision, hearing }, null, 2));
     
     if (!uniqueId || !screeningDate) {
       return res.status(400).json({
@@ -70,11 +71,23 @@ router.post('/', async (req, res) => {
       if (visionData.result) updateData.vision_day1_result = visionData.result;
       
       // Capture vision_overall (screener's explicit pass/fail determination)
-      // Convert 'pass' to 'P', 'fail' to 'F'
+      // Convert 'pass' to 'PASS', 'fail' to 'FAIL' (all caps)
       if (visionData.result) {
-        const result = visionData.result.toLowerCase();
-        updateData.vision_overall = result === 'pass' ? 'P' : (result === 'fail' ? 'F' : null);
+        const result = String(visionData.result).toLowerCase().trim();
+        console.log('Vision result received:', result, 'from visionData:', visionData);
+        if (result === 'pass') {
+          updateData.vision_overall = 'PASS';
+        } else if (result === 'fail') {
+          updateData.vision_overall = 'FAIL';
+        } else {
+          updateData.vision_overall = null;
+          console.warn('Unexpected vision result value:', visionData.result);
+        }
+      } else {
+        console.log('No vision result found in visionData:', visionData);
       }
+    } else {
+      console.log('No vision data found. vision object:', vision);
     }
     
     // Hearing screening - handle both day1 and initial/rescreen structures
@@ -86,11 +99,23 @@ router.post('/', async (req, res) => {
       if (hearingData.result) updateData.hearing_day1_result = hearingData.result;
       
       // Capture hearing_overall (screener's explicit pass/fail determination)
-      // Convert 'pass' to 'P', 'fail' to 'F'
+      // Convert 'pass' to 'PASS', 'fail' to 'FAIL' (all caps)
       if (hearingData.result) {
-        const result = hearingData.result.toLowerCase();
-        updateData.hearing_overall = result === 'pass' ? 'P' : (result === 'fail' ? 'F' : null);
+        const result = String(hearingData.result).toLowerCase().trim();
+        console.log('Hearing result received:', result, 'from hearingData:', hearingData);
+        if (result === 'pass') {
+          updateData.hearing_overall = 'PASS';
+        } else if (result === 'fail') {
+          updateData.hearing_overall = 'FAIL';
+        } else {
+          updateData.hearing_overall = null;
+          console.warn('Unexpected hearing result value:', hearingData.result);
+        }
+      } else {
+        console.log('No hearing result found in hearingData:', hearingData);
       }
+    } else {
+      console.log('No hearing data found. hearing object:', hearing);
     }
     
     // Acanthosis screening
@@ -109,6 +134,10 @@ router.post('/', async (req, res) => {
       if (scoliosis.day1.observations) updateData.scoliosis_day1_observations = scoliosis.day1.observations;
       if (scoliosis.day1.result) updateData.scoliosis_day1_result = scoliosis.day1.result;
     }
+    
+    // Log the final updateData to show what's being stored
+    console.log('Storing vision_overall:', updateData.vision_overall);
+    console.log('Storing hearing_overall:', updateData.hearing_overall);
     
     let result;
     if (existingScreening) {
