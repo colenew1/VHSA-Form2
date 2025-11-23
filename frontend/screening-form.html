@@ -1797,6 +1797,12 @@
           cancelText: 'Cancel',
           onConfirm: async () => {
             const payload = buildPayload();
+            console.log('=== FRONTEND PAYLOAD BEING SENT ===');
+            console.log('Full payload:', JSON.stringify(payload, null, 2));
+            console.log('Vision structure:', payload.vision);
+            console.log('Hearing structure:', payload.hearing);
+            console.log('Vision result:', payload.vision?.initial?.result || payload.vision?.rescreen?.result);
+            console.log('Hearing result:', payload.hearing?.initial?.result || payload.hearing?.rescreen?.result);
             
             try {
               const response = await fetch(`${API_BASE}/screenings${CACHE_BUST}`, {
