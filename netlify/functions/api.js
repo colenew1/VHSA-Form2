@@ -653,6 +653,40 @@ app.post('/api/screenings', async (req, res) => {
       }
     }
     
+    // Capture vision_overall (screener's explicit pass/fail determination)
+    // This is the source of truth - the screener's decision, not calculated
+    if (payload.vision) {
+      const visionResult = payload.vision.initial?.result || payload.vision.rescreen?.result;
+      if (visionResult) {
+        const result = String(visionResult).toLowerCase().trim();
+        if (result === 'pass') {
+          screeningData.vision_overall = 'PASS';
+        } else if (result === 'fail') {
+          screeningData.vision_overall = 'FAIL';
+        } else {
+          screeningData.vision_overall = null;
+        }
+        console.log('Setting vision_overall to:', screeningData.vision_overall, 'from result:', visionResult);
+      }
+    }
+    
+    // Capture hearing_overall (screener's explicit pass/fail determination)
+    // This is the source of truth - the screener's decision, not calculated
+    if (payload.hearing) {
+      const hearingResult = payload.hearing.initial?.result || payload.hearing.rescreen?.result;
+      if (hearingResult) {
+        const result = String(hearingResult).toLowerCase().trim();
+        if (result === 'pass') {
+          screeningData.hearing_overall = 'PASS';
+        } else if (result === 'fail') {
+          screeningData.hearing_overall = 'FAIL';
+        } else {
+          screeningData.hearing_overall = null;
+        }
+        console.log('Setting hearing_overall to:', screeningData.hearing_overall, 'from result:', hearingResult);
+      }
+    }
+    
     // Add acanthosis data if provided
     if (payload.acanthosis) {
       if (payload.acanthosis.initial) {
