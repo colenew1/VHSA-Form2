@@ -2,35 +2,94 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>School Health Screening Form</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>VHSA Screening</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              200: '#99f6e4',
+              300: '#5eead4',
+              400: '#2dd4bf',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              800: '#115e59',
+              900: '#134e4a',
+            }
+          }
+        }
+      }
+    }
+  </script>
   <style>
-    :root {
-      --primary: #4A90E2;
-      --accent: #FFB84D;
-      --success: #4CAF50;
-      --error: #F44336;
-      --text: #2C3E50;
-      --bg: #FDFBF7;
-      --border: #E5E5E5;
+    * {
+      -webkit-tap-highlight-color: transparent;
     }
     
     body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: linear-gradient(135deg, #0f766e 0%, #115e59 50%, #134e4a 100%);
+      min-height: 100vh;
     }
     
-    .tab {
-      transition: all 0.3s;
+    /* Sticky student header */
+    .student-sticky {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
     
-    .tab.active {
-      background: var(--primary);
+    /* Pass/Fail buttons */
+    .result-btn {
+      min-height: 56px;
+      font-size: 18px;
+      font-weight: 700;
+      border-radius: 12px;
+      transition: all 0.15s ease;
+      border: 3px solid transparent;
+    }
+    
+    .result-btn.pass {
+      background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+      color: #166534;
+      border-color: #86efac;
+    }
+    
+    .result-btn.pass.selected {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
       color: white;
+      border-color: #22c55e;
+      box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4);
     }
     
+    .result-btn.fail {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      color: #991b1b;
+      border-color: #fca5a5;
+    }
+    
+    .result-btn.fail.selected {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      border-color: #ef4444;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+    }
+    
+    /* Accordion styles */
     .accordion-content {
       max-height: 0;
       overflow: hidden;
@@ -38,7 +97,7 @@
     }
     
     .accordion-content.open {
-      max-height: 5000px;
+      max-height: 2000px;
       transition: max-height 0.5s ease-in;
     }
     
@@ -50,199 +109,245 @@
       transform: rotate(180deg);
     }
     
+    /* Accordion section colors */
+    .section-vision { border-left: 4px solid #3b82f6; }
+    .section-hearing { border-left: 4px solid #22c55e; }
+    .section-acanthosis { border-left: 4px solid #a855f7; }
+    .section-scoliosis { border-left: 4px solid #ec4899; }
+    
+    /* Badges */
+    .badge-required {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      color: #78350f;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .badge-complete {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+    }
+    
+    /* Form inputs - larger for mobile */
+    input[type="text"],
+    input[type="date"],
+    select,
+    textarea {
+      min-height: 52px;
+      font-size: 16px;
+      border-radius: 12px;
+      padding: 12px 16px;
+    }
+    
+    /* Large touch-friendly checkboxes */
+    input[type="checkbox"],
+    input[type="radio"] {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+    }
+    
+    /* Hearing frequency buttons */
+    .hearing-freq {
+      width: 52px;
+      height: 52px;
+      font-size: 28px;
+      border-radius: 12px;
+      transition: all 0.15s ease;
+    }
+    
+    /* Tabs */
+    .tab {
+      transition: all 0.2s ease;
+      min-height: 52px;
+    }
+    
+    .tab.active {
+      background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+      color: white;
+      font-weight: 700;
+    }
+    
+    /* Modal styles */
     .modal {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
       display: none;
       z-index: 1000;
     }
     
     .modal-content {
       background: white;
-      max-width: 500px;
-      margin: 50px auto;
-      padding: 30px;
+      max-width: 420px;
+      margin: 20px auto;
+      padding: 24px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
       border-radius: 10px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
     }
     
-    .success-icon {
-      font-size: 60px;
-      color: var(--success);
-      text-align: center;
-      margin-bottom: 20px;
+    ::-webkit-scrollbar-thumb {
+      background: #0d9488;
+      border-radius: 10px;
     }
     
+    /* Button press effect */
+    button:active {
+      transform: scale(0.98);
+    }
+    
+    /* Info display styling */
     .student-id-display {
-      background: #f0f8ff;
-      border: 2px dashed var(--primary);
-      padding: 20px;
-      border-radius: 8px;
+      background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+      border: 2px dashed #14b8a6;
+      padding: 16px;
+      border-radius: 12px;
       text-align: center;
-      margin: 20px 0;
     }
     
     .student-id-display div {
-      font-size: 32px;
-      font-weight: bold;
-      color: var(--primary);
-      margin-top: 10px;
+      font-size: 28px;
+      font-weight: 800;
+      color: #0f766e;
+      margin-top: 8px;
     }
     
-    input:focus, select:focus, textarea:focus {
-      outline: 2px solid var(--primary);
-      outline-offset: 2px;
-    }
-    
-    button {
-      cursor: pointer;
-    }
-    
-    button:hover {
-      opacity: 0.9;
-      transform: translateY(-1px);
-    }
-    
-    button:active {
-      transform: translateY(0);
-    }
-    
-    .required-badge {
-      background-color: #FFB84D;
-      color: #2C3E50;
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: bold;
-      margin-left: 10px;
-    }
-    
-    .complete-badge {
-      background-color: #4CAF50;
-      color: white;
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: bold;
-      margin-left: 10px;
-    }
-    
-    .accordion-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-    }
-    
-    .accordion-header-text {
-      display: flex;
-      align-items: center;
-      flex: 1;
+    .success-icon {
+      font-size: 48px;
+      color: #22c55e;
+      text-align: center;
+      margin-bottom: 16px;
     }
   </style>
 </head>
-<body class="min-h-screen py-8 px-4">
+<body class="pb-8">
   
   <!-- Header -->
-  <header class="max-w-6xl mx-auto mb-8 text-center">
-    <h1 class="text-4xl font-bold text-gray-800 mb-2">School Health Screening Form</h1>
-    <p class="text-lg text-gray-600">Vision & Hearing Screening of Austin</p>
+  <header class="bg-white/10 backdrop-blur-sm border-b border-white/20 px-4 py-4 mb-4">
+    <div class="max-w-lg mx-auto text-center">
+      <h1 class="text-2xl font-bold text-white tracking-tight">VHSA Screening</h1>
+      <p class="text-sm text-teal-200 font-medium">Vision & Hearing Screening of Austin</p>
+    </div>
   </header>
 
   <!-- Main Form Container -->
-  <main class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
+  <main class="max-w-lg mx-auto px-4 space-y-4">
     
     <!-- SECTION 1: Screening Details -->
-    <section id="screeningDetails" class="mb-8">
-      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Screening Details</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Screening Date *</label>
-            <input type="date" id="screeningDate" required 
-                   class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">
-              Screener Name <span class="text-red-500 font-bold">*</span>
-            </label>
-            <select id="screenerName" required onchange="autoFillScreener()" 
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 invalid:border-red-500">
-              <option value="">Select Screener</option>
-            </select>
-          </div>
+    <section id="screeningDetails" class="bg-white rounded-2xl shadow-lg p-5">
+      <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+        <span class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600">📋</span>
+        Screening Setup
+      </h2>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Date</label>
+          <input type="date" id="screeningDate" required 
+                 class="w-full border-2 border-gray-200 focus:border-teal-500 focus:ring-0 transition-colors">
+        </div>
+        
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Screener <span class="text-red-500">*</span></label>
+          <select id="screenerName" required onchange="autoFillScreener()" 
+                  class="w-full border-2 border-gray-200 focus:border-teal-500 focus:ring-0 transition-colors">
+            <option value="">Select Screener</option>
+          </select>
         </div>
 
-        <div class="mb-4">
-          <label class="block text-sm font-semibold text-gray-700 mb-2">Screening Type</label>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Type</label>
           <select id="globalScreeningType" onchange="applyGlobalScreeningType()" 
-                  class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                  class="w-full border-2 border-gray-200 focus:border-teal-500 focus:ring-0 transition-colors">
             <option value="initial" selected>Initial Screen</option>
             <option value="rescreen">Rescreen</option>
           </select>
-          <p class="text-xs text-gray-600 mt-1">This will set all screening types below. You can change individual tests if needed.</p>
         </div>
       </div>
     </section>
 
     <!-- SECTION 2: Find or Create Student -->
-    <section id="studentSection" class="mb-8">
+    <section id="studentSection" class="bg-white rounded-2xl shadow-lg overflow-hidden">
       <!-- Tabs -->
-      <div class="flex border-b-2 border-gray-200 mb-6">
-        <button id="searchTabBtn" class="tab flex-1 py-3 px-4 font-semibold text-gray-700 hover:bg-gray-100 active" onclick="switchTab('search')">
-          Search Student
+      <div class="flex border-b border-gray-200">
+        <button id="searchTabBtn" class="tab flex-1 py-4 px-4 font-semibold text-gray-600 active" onclick="switchTab('search')">
+          🔍 Find Student
         </button>
-        <button id="newTabBtn" class="tab flex-1 py-3 px-4 font-semibold text-gray-700 hover:bg-gray-100" onclick="switchTab('new')">
-          Add Student
+        <button id="newTabBtn" class="tab flex-1 py-4 px-4 font-semibold text-gray-600" onclick="switchTab('new')">
+          ➕ Add New
         </button>
       </div>
       
       <!-- Search Tab Content -->
-      <div id="searchTab" class="tab-content">
-        <div class="space-y-6">
+      <div id="searchTab" class="tab-content p-5">
+        <div class="space-y-4">
           <!-- Search by ID -->
-          <div class="bg-blue-50 p-4 rounded-lg">
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Search by Student ID</label>
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Student ID</label>
             <div class="flex gap-2">
-              <input type="text" id="searchId" placeholder="Enter student ID" 
-                     class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              <input type="text" id="searchId" placeholder="e.g. st0001" 
+                     class="flex-1 border-2 border-gray-200 focus:border-blue-500 focus:ring-0 transition-colors"
                      oninput="this.value = this.value.toLowerCase()">
-              <button onclick="searchById()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700">
-                Search
+              <button onclick="searchById()" class="px-6 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 active:bg-blue-800 min-h-[52px]">
+                Go
               </button>
             </div>
           </div>
 
           <!-- Divider -->
-          <div class="flex items-center gap-4">
-            <div class="flex-1 border-t border-gray-300"></div>
-            <span class="text-gray-500 font-semibold">OR</span>
-            <div class="flex-1 border-t border-gray-300"></div>
+          <div class="flex items-center gap-3 py-2">
+            <div class="flex-1 border-t-2 border-gray-200"></div>
+            <span class="text-gray-400 font-bold text-sm">OR</span>
+            <div class="flex-1 border-t-2 border-gray-200"></div>
           </div>
 
           <!-- Search by Name -->
-          <div class="bg-green-50 p-4 rounded-lg">
-            <label class="block text-sm font-semibold text-gray-700 mb-3">Search by Name</label>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-              <input type="text" id="searchLastName" placeholder="Last Name" 
-                     class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
-              <select id="searchSchool" class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
+              <input type="text" id="searchLastName" placeholder="Enter last name" 
+                     class="w-full border-2 border-gray-200 focus:border-green-500 focus:ring-0 transition-colors">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">School</label>
+              <select id="searchSchool" class="w-full border-2 border-gray-200 focus:border-green-500 focus:ring-0 transition-colors">
                 <option value="">Select School</option>
               </select>
             </div>
-            <button onclick="searchByName()" class="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700">
-              Search by Last Name
+            <button onclick="searchByName()" class="w-full py-4 bg-green-600 text-white rounded-xl font-bold text-lg hover:bg-green-700 active:bg-green-800">
+              Search
             </button>
           </div>
 
           <!-- Search Results -->
           <div id="searchResults" class="hidden">
             <div id="multipleResults" class="hidden">
-              <p class="text-sm text-gray-600 mb-3">Multiple students found. Please select one:</p>
+              <p class="text-sm text-gray-600 mb-3 font-medium">Multiple students found:</p>
               <div id="studentList" class="space-y-2"></div>
             </div>
           </div>
@@ -250,26 +355,26 @@
       </div>
       
       <!-- New Student Tab Content -->
-      <div id="newTab" class="tab-content hidden">
+      <div id="newTab" class="tab-content hidden p-5">
         <form id="newStudentForm" class="space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">First Name *</label>
               <input type="text" id="firstName" required 
-                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                     class="w-full border-2 border-gray-200 focus:border-teal-500 focus:ring-0 transition-colors">
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">Last Name *</label>
               <input type="text" id="lastName" required 
-                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                     class="w-full border-2 border-gray-200 focus:border-teal-500 focus:ring-0 transition-colors">
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">Grade *</label>
-              <select id="grade" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">Select Grade</option>
+              <select id="grade" required class="w-full border-2 border-gray-200 focus:border-teal-500 focus:ring-0 transition-colors">
+                <option value="">Select</option>
                 <option value="Pre-K (3)">Pre-K (3)</option>
                 <option value="Pre-K (4)">Pre-K (4)</option>
                 <option value="Kindergarten">Kindergarten</option>
@@ -289,8 +394,8 @@
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">Gender *</label>
-              <select id="gender" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">Select Gender</option>
+              <select id="gender" required class="w-full border-2 border-gray-200 focus:border-teal-500 focus:ring-0 transition-colors">
+                <option value="">Select</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
                 <option value="Other">Other</option>
@@ -300,27 +405,27 @@
 
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">School *</label>
-            <select id="newStudentSchool" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select id="newStudentSchool" required class="w-full border-2 border-gray-200 focus:border-teal-500 focus:ring-0 transition-colors">
               <option value="">Select School</option>
             </select>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">Teacher Last Name</label>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Teacher</label>
               <input type="text" id="teacher" 
-                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                     class="w-full border-2 border-gray-200 focus:border-teal-500 focus:ring-0 transition-colors">
             </div>
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">Date of Birth *</label>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">DOB *</label>
               <input type="date" id="dob" required 
-                     class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                     class="w-full border-2 border-gray-200 focus:border-teal-500 focus:ring-0 transition-colors">
             </div>
           </div>
 
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Student Status *</label>
-            <select id="status" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Status *</label>
+            <select id="status" required class="w-full border-2 border-gray-200 focus:border-teal-500 focus:ring-0 transition-colors">
               <option value="">Select Status</option>
               <option value="New">New</option>
               <option value="Returning">Returning</option>
@@ -328,102 +433,116 @@
           </div>
 
           <button type="button" onclick="createNewStudent()" 
-                  class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 text-lg">
-            Create Student & Continue
+                  class="w-full py-4 bg-teal-600 text-white rounded-xl font-bold text-lg hover:bg-teal-700 active:bg-teal-800 mt-2">
+            Create Student
           </button>
         </form>
       </div>
     </section>
 
-    <!-- SECTION 3: Student Information -->
-    <section id="studentInfo" class="hidden mb-8">
-      <div class="bg-gradient-to-r from-blue-50 to-green-50 border-2 border-blue-300 rounded-lg p-6">
-        <div class="mb-4 flex justify-between items-center">
-          <h2 class="text-2xl font-bold text-gray-800">Student Information</h2>
+    <!-- SECTION 3: Student Information (Sticky) -->
+    <section id="studentInfo" class="hidden student-sticky">
+      <div class="bg-gradient-to-r from-teal-600 to-teal-700 rounded-2xl shadow-lg p-4 text-white">
+        <div class="flex justify-between items-start mb-2">
+          <div>
+            <div class="text-teal-200 text-xs font-semibold uppercase tracking-wide">Student</div>
+            <div id="displayName" class="text-xl font-bold"></div>
+          </div>
+          <div class="text-right">
+            <div id="displayStudentId" class="text-2xl font-black text-teal-100"></div>
+          </div>
+        </div>
+        <div class="flex justify-between items-center text-sm">
+          <div id="displayDetails" class="text-teal-100"></div>
           <button type="button" onclick="openEditStudentInfo()" 
-                  class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold">
-            Edit Info
+                  class="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-bold transition-colors">
+            Edit
           </button>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="text-sm text-gray-600">Student ID</label>
-            <div id="displayStudentId" class="text-2xl font-bold text-blue-600"></div>
-          </div>
-          <div>
-            <label class="text-sm text-gray-600">Name</label>
-            <div id="displayName" class="text-lg font-semibold text-gray-800"></div>
-          </div>
-          <div>
-            <label class="text-sm text-gray-600">Grade | Gender | School</label>
-            <div id="displayDetails" class="text-gray-700"></div>
-          </div>
-          <div>
-            <label class="text-sm text-gray-600">Teacher Last Name | DOB | Student Status</label>
-            <div id="displayAdditional" class="text-gray-700"></div>
-          </div>
-        </div>
+        <div id="displayAdditional" class="text-xs text-teal-200 mt-1"></div>
       </div>
     </section>
 
     <!-- Student Absent Checkbox -->
-    <section id="absentSection" class="hidden mb-8">
-      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-        <div class="mb-4">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" id="absent" onchange="absentChanged(this.checked)" 
-                   class="w-5 h-5 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500">
-            <span class="font-semibold text-gray-700">Student was absent</span>
-          </label>
-        </div>
+    <section id="absentSection" class="hidden">
+      <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4">
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" id="absent" onchange="absentChanged(this.checked)" 
+                 class="rounded-md border-amber-400 text-amber-600 focus:ring-amber-500">
+          <span class="font-bold text-amber-800 text-lg">Student was absent</span>
+        </label>
       </div>
     </section>
 
     <!-- SECTION 4: Screening Tests -->
-    <section id="screeningTests" class="hidden space-y-4">
+    <section id="screeningTests" class="hidden space-y-3">
       
       <!-- Info Box -->
-      <div class="info-box bg-blue-50 p-4 mb-4 rounded-lg border-l-4 border-blue-500">
-        <p class="text-sm text-gray-700">
-          <strong>Note:</strong> Sections marked <span class="required-badge" style="display: inline-block;">Required</span> must be completed based on this student's grade, gender, and status. Other sections are optional but can still be completed if needed.
+      <div class="bg-blue-50 border-l-4 border-blue-500 rounded-r-xl p-4">
+        <p class="text-sm text-blue-800">
+          <span class="font-bold">Tip:</span> Sections marked <span class="badge-required ml-1">Required</span> are based on student's grade & status.
         </p>
       </div>
       
       <!-- Vision Accordion -->
-      <div class="accordion border border-gray-300 rounded-lg overflow-hidden" data-section="vision">
-        <button class="accordion-header w-full flex justify-between items-center p-4 bg-blue-50 hover:bg-blue-100 font-semibold text-left" onclick="toggleAccordion('vision')">
-          <span class="accordion-header-text">
-            Vision Screening
-            <span class="required-badge" id="visionBadge" style="display: none;">Required</span>
-            <span class="complete-badge" id="visionCompleteBadge" style="display: none;">✓ Complete</span>
+      <div class="accordion bg-white rounded-2xl shadow-md overflow-hidden section-vision" data-section="vision">
+        <button class="w-full flex justify-between items-center p-4 hover:bg-gray-50 transition-colors" onclick="toggleAccordion('vision')">
+          <span class="flex items-center gap-3">
+            <span class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xl">👁️</span>
+            <span class="font-bold text-gray-900 text-lg">Vision</span>
+            <span class="badge-required" id="visionBadge" style="display: none;">Required</span>
+            <span class="badge-complete" id="visionCompleteBadge" style="display: none;">✓ Done</span>
           </span>
-          <span class="accordion-icon">▼</span>
+          <span class="accordion-icon text-gray-400 text-xl">▼</span>
         </button>
         <div class="accordion-content" data-section="vision">
-          <div class="p-4 space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Glasses</label>
-                <div class="flex gap-4">
-                  <label class="flex items-center gap-2"><input type="radio" name="visionGlasses" value="yes" class="text-blue-600"> Yes</label>
-                  <label class="flex items-center gap-2"><input type="radio" name="visionGlasses" value="no" class="text-blue-600" checked> No</label>
-                </div>
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Result</label>
-                <div class="flex gap-4">
-                  <label class="flex items-center gap-2"><input type="radio" name="visionResult" value="pass" onchange="visionResultChanged('pass')" class="text-green-600"> Pass</label>
-                  <label class="flex items-center gap-2"><input type="radio" name="visionResult" value="fail" onchange="visionResultChanged('fail')" class="text-red-600"> Fail</label>
-                </div>
+          <div class="p-4 pt-0 space-y-4">
+            <!-- Glasses -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-3">Glasses?</label>
+              <div class="flex gap-3">
+                <label class="flex-1">
+                  <input type="radio" name="visionGlasses" value="yes" class="sr-only peer">
+                  <div class="py-3 text-center rounded-xl border-2 border-gray-200 font-semibold cursor-pointer peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 transition-all">
+                    Yes
+                  </div>
+                </label>
+                <label class="flex-1">
+                  <input type="radio" name="visionGlasses" value="no" class="sr-only peer" checked>
+                  <div class="py-3 text-center rounded-xl border-2 border-gray-200 font-semibold cursor-pointer peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 transition-all">
+                    No
+                  </div>
+                </label>
               </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- Result -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-3">Result</label>
+              <div class="flex gap-3">
+                <label class="flex-1">
+                  <input type="radio" name="visionResult" value="pass" onchange="visionResultChanged('pass')" class="sr-only peer">
+                  <div class="result-btn pass text-center cursor-pointer peer-checked:selected flex items-center justify-center">
+                    ✓ PASS
+                  </div>
+                </label>
+                <label class="flex-1">
+                  <input type="radio" name="visionResult" value="fail" onchange="visionResultChanged('fail')" class="sr-only peer">
+                  <div class="result-btn fail text-center cursor-pointer peer-checked:selected flex items-center justify-center">
+                    ✕ FAIL
+                  </div>
+                </label>
+              </div>
+            </div>
+            
+            <!-- Eye readings -->
+            <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Right Eye</label>
                 <div class="flex items-center gap-2">
-                  <span class="text-sm font-semibold text-gray-700">20/</span>
-                  <select id="visionRightEye" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">Select</option>
+                  <span class="text-lg font-bold text-gray-500">20/</span>
+                  <select id="visionRightEye" class="flex-1 border-2 border-gray-200 focus:border-blue-500 focus:ring-0">
+                    <option value="">-</option>
                     <option value="20" selected>20</option>
                     <option value="30">30</option>
                     <option value="40">40</option>
@@ -431,7 +550,6 @@
                     <option value="60">60</option>
                     <option value="70">70</option>
                     <option value="80">80</option>
-                    <option value="90">90</option>
                     <option value="100">100</option>
                   </select>
                 </div>
@@ -439,9 +557,9 @@
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Left Eye</label>
                 <div class="flex items-center gap-2">
-                  <span class="text-sm font-semibold text-gray-700">20/</span>
-                  <select id="visionLeftEye" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">Select</option>
+                  <span class="text-lg font-bold text-gray-500">20/</span>
+                  <select id="visionLeftEye" class="flex-1 border-2 border-gray-200 focus:border-blue-500 focus:ring-0">
+                    <option value="">-</option>
                     <option value="20">20</option>
                     <option value="30">30</option>
                     <option value="40">40</option>
@@ -449,7 +567,6 @@
                     <option value="60">60</option>
                     <option value="70">70</option>
                     <option value="80">80</option>
-                    <option value="90">90</option>
                     <option value="100">100</option>
                   </select>
                 </div>
@@ -460,58 +577,72 @@
       </div>
 
       <!-- Hearing Accordion -->
-      <div class="accordion border border-gray-300 rounded-lg overflow-hidden" data-section="hearing">
-        <button class="accordion-header w-full flex justify-between items-center p-4 bg-green-50 hover:bg-green-100 font-semibold text-left" onclick="toggleAccordion('hearing')">
-          <span class="accordion-header-text">
-            Hearing Screening
-            <span class="required-badge" id="hearingBadge" style="display: none;">Required</span>
-            <span class="complete-badge" id="hearingCompleteBadge" style="display: none;">✓ Complete</span>
+      <div class="accordion bg-white rounded-2xl shadow-md overflow-hidden section-hearing" data-section="hearing">
+        <button class="w-full flex justify-between items-center p-4 hover:bg-gray-50 transition-colors" onclick="toggleAccordion('hearing')">
+          <span class="flex items-center gap-3">
+            <span class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl">👂</span>
+            <span class="font-bold text-gray-900 text-lg">Hearing</span>
+            <span class="badge-required" id="hearingBadge" style="display: none;">Required</span>
+            <span class="badge-complete" id="hearingCompleteBadge" style="display: none;">✓ Done</span>
           </span>
-          <span class="accordion-icon">▼</span>
+          <span class="accordion-icon text-gray-400 text-xl">▼</span>
         </button>
         <div class="accordion-content" data-section="hearing">
-          <div class="p-4 space-y-4">
+          <div class="p-4 pt-0 space-y-4">
+            <!-- Result -->
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">Result</label>
-              <div class="flex gap-4">
-                <label class="flex items-center gap-2"><input type="radio" name="hearingResult" value="pass" onchange="hearingResultChanged('pass')" class="text-green-600"> Pass</label>
-                <label class="flex items-center gap-2"><input type="radio" name="hearingResult" value="fail" onchange="hearingResultChanged('fail')" class="text-red-600"> Fail</label>
+              <label class="block text-sm font-semibold text-gray-700 mb-3">Result</label>
+              <div class="flex gap-3">
+                <label class="flex-1">
+                  <input type="radio" name="hearingResult" value="pass" onchange="hearingResultChanged('pass')" class="sr-only peer">
+                  <div class="result-btn pass text-center cursor-pointer peer-checked:selected flex items-center justify-center">
+                    ✓ PASS
+                  </div>
+                </label>
+                <label class="flex-1">
+                  <input type="radio" name="hearingResult" value="fail" onchange="hearingResultChanged('fail')" class="sr-only peer">
+                  <div class="result-btn fail text-center cursor-pointer peer-checked:selected flex items-center justify-center">
+                    ✕ FAIL
+                  </div>
+                </label>
               </div>
             </div>
+            
+            <!-- Frequencies -->
             <div id="hearingFrequencies">
-              <p class="text-sm font-semibold text-gray-700 mb-2">Frequency Response (click to toggle between + pass and - fail):</p>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <p class="text-sm font-semibold text-gray-700 mb-3">Tap to toggle pass/fail:</p>
+              <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <p class="text-sm font-semibold text-gray-700 mb-1">Right Ear</p>
-                  <div class="space-y-1">
-                    <div class="flex items-center gap-2">
-                      <button type="button" class="hearing-freq w-8 h-8 flex items-center justify-center border-2 border-gray-300 rounded font-bold text-lg text-green-600 hover:bg-gray-50" data-ear="right" data-freq="1000" data-status="pass" onclick="toggleHearingFreq(this)">+</button>
-                      <span class="text-sm">1000 Hz</span>
+                  <p class="text-sm font-bold text-gray-600 mb-2 text-center">Right Ear</p>
+                  <div class="space-y-2">
+                    <div class="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2">
+                      <span class="text-sm font-medium">1000 Hz</span>
+                      <button type="button" class="hearing-freq flex items-center justify-center border-2 border-green-400 bg-green-50 font-bold text-green-600 hover:bg-green-100" data-ear="right" data-freq="1000" data-status="pass" onclick="toggleHearingFreq(this)">+</button>
                     </div>
-                    <div class="flex items-center gap-2">
-                      <button type="button" class="hearing-freq w-8 h-8 flex items-center justify-center border-2 border-gray-300 rounded font-bold text-lg text-green-600 hover:bg-gray-50" data-ear="right" data-freq="2000" data-status="pass" onclick="toggleHearingFreq(this)">+</button>
-                      <span class="text-sm">2000 Hz</span>
+                    <div class="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2">
+                      <span class="text-sm font-medium">2000 Hz</span>
+                      <button type="button" class="hearing-freq flex items-center justify-center border-2 border-green-400 bg-green-50 font-bold text-green-600 hover:bg-green-100" data-ear="right" data-freq="2000" data-status="pass" onclick="toggleHearingFreq(this)">+</button>
                     </div>
-                    <div class="flex items-center gap-2">
-                      <button type="button" class="hearing-freq w-8 h-8 flex items-center justify-center border-2 border-gray-300 rounded font-bold text-lg text-green-600 hover:bg-gray-50" data-ear="right" data-freq="4000" data-status="pass" onclick="toggleHearingFreq(this)">+</button>
-                      <span class="text-sm">4000 Hz</span>
+                    <div class="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2">
+                      <span class="text-sm font-medium">4000 Hz</span>
+                      <button type="button" class="hearing-freq flex items-center justify-center border-2 border-green-400 bg-green-50 font-bold text-green-600 hover:bg-green-100" data-ear="right" data-freq="4000" data-status="pass" onclick="toggleHearingFreq(this)">+</button>
                     </div>
                   </div>
                 </div>
                 <div>
-                  <p class="text-sm font-semibold text-gray-700 mb-1">Left Ear</p>
-                  <div class="space-y-1">
-                    <div class="flex items-center gap-2">
-                      <button type="button" class="hearing-freq w-8 h-8 flex items-center justify-center border-2 border-gray-300 rounded font-bold text-lg text-green-600 hover:bg-gray-50" data-ear="left" data-freq="1000" data-status="pass" onclick="toggleHearingFreq(this)">+</button>
-                      <span class="text-sm">1000 Hz</span>
+                  <p class="text-sm font-bold text-gray-600 mb-2 text-center">Left Ear</p>
+                  <div class="space-y-2">
+                    <div class="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2">
+                      <span class="text-sm font-medium">1000 Hz</span>
+                      <button type="button" class="hearing-freq flex items-center justify-center border-2 border-green-400 bg-green-50 font-bold text-green-600 hover:bg-green-100" data-ear="left" data-freq="1000" data-status="pass" onclick="toggleHearingFreq(this)">+</button>
                     </div>
-                    <div class="flex items-center gap-2">
-                      <button type="button" class="hearing-freq w-8 h-8 flex items-center justify-center border-2 border-gray-300 rounded font-bold text-lg text-green-600 hover:bg-gray-50" data-ear="left" data-freq="2000" data-status="pass" onclick="toggleHearingFreq(this)">+</button>
-                      <span class="text-sm">2000 Hz</span>
+                    <div class="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2">
+                      <span class="text-sm font-medium">2000 Hz</span>
+                      <button type="button" class="hearing-freq flex items-center justify-center border-2 border-green-400 bg-green-50 font-bold text-green-600 hover:bg-green-100" data-ear="left" data-freq="2000" data-status="pass" onclick="toggleHearingFreq(this)">+</button>
                     </div>
-                    <div class="flex items-center gap-2">
-                      <button type="button" class="hearing-freq w-8 h-8 flex items-center justify-center border-2 border-gray-300 rounded font-bold text-lg text-green-600 hover:bg-gray-50" data-ear="left" data-freq="4000" data-status="pass" onclick="toggleHearingFreq(this)">+</button>
-                      <span class="text-sm">4000 Hz</span>
+                    <div class="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2">
+                      <span class="text-sm font-medium">4000 Hz</span>
+                      <button type="button" class="hearing-freq flex items-center justify-center border-2 border-green-400 bg-green-50 font-bold text-green-600 hover:bg-green-100" data-ear="left" data-freq="4000" data-status="pass" onclick="toggleHearingFreq(this)">+</button>
                     </div>
                   </div>
                 </div>
@@ -522,86 +653,109 @@
       </div>
 
       <!-- Acanthosis Accordion -->
-      <div class="accordion border border-gray-300 rounded-lg overflow-hidden" data-section="acanthosis">
-        <button class="accordion-header w-full flex justify-between items-center p-4 bg-purple-50 hover:bg-purple-100 font-semibold text-left" onclick="toggleAccordion('acanthosis')">
-          <span class="accordion-header-text">
-            Acanthosis Screening
-            <span class="required-badge" id="acanthosisBadge" style="display: none;">Required</span>
-            <span class="complete-badge" id="acanthosisCompleteBadge" style="display: none;">✓ Complete</span>
+      <div class="accordion bg-white rounded-2xl shadow-md overflow-hidden section-acanthosis" data-section="acanthosis">
+        <button class="w-full flex justify-between items-center p-4 hover:bg-gray-50 transition-colors" onclick="toggleAccordion('acanthosis')">
+          <span class="flex items-center gap-3">
+            <span class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center text-xl">🩺</span>
+            <span class="font-bold text-gray-900 text-lg">Acanthosis</span>
+            <span class="badge-required" id="acanthosisBadge" style="display: none;">Required</span>
+            <span class="badge-complete" id="acanthosisCompleteBadge" style="display: none;">✓ Done</span>
           </span>
-          <span class="accordion-icon">▼</span>
+          <span class="accordion-icon text-gray-400 text-xl">▼</span>
         </button>
         <div class="accordion-content" data-section="acanthosis">
-          <div class="p-4 space-y-4">
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">Result</label>
-              <div class="flex gap-4">
-                <label class="flex items-center gap-2"><input type="radio" name="acanthosisResult" value="pass" class="text-green-600"> Pass</label>
-                <label class="flex items-center gap-2"><input type="radio" name="acanthosisResult" value="fail" class="text-red-600"> Fail</label>
-              </div>
+          <div class="p-4 pt-0">
+            <label class="block text-sm font-semibold text-gray-700 mb-3">Result</label>
+            <div class="flex gap-3">
+              <label class="flex-1">
+                <input type="radio" name="acanthosisResult" value="pass" class="sr-only peer">
+                <div class="result-btn pass text-center cursor-pointer peer-checked:selected flex items-center justify-center">
+                  ✓ PASS
+                </div>
+              </label>
+              <label class="flex-1">
+                <input type="radio" name="acanthosisResult" value="fail" class="sr-only peer">
+                <div class="result-btn fail text-center cursor-pointer peer-checked:selected flex items-center justify-center">
+                  ✕ FAIL
+                </div>
+              </label>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Scoliosis Accordion -->
-      <div class="accordion border border-gray-300 rounded-lg overflow-hidden" data-section="scoliosis">
-        <button class="accordion-header w-full flex justify-between items-center p-4 bg-pink-50 hover:bg-pink-100 font-semibold text-left" onclick="toggleAccordion('scoliosis')">
-          <span class="accordion-header-text">
-            Scoliosis Screening
-            <span class="required-badge" id="scoliosisBadge" style="display: none;">Required</span>
-            <span class="complete-badge" id="scoliosisCompleteBadge" style="display: none;">✓ Complete</span>
+      <div class="accordion bg-white rounded-2xl shadow-md overflow-hidden section-scoliosis" data-section="scoliosis">
+        <button class="w-full flex justify-between items-center p-4 hover:bg-gray-50 transition-colors" onclick="toggleAccordion('scoliosis')">
+          <span class="flex items-center gap-3">
+            <span class="w-10 h-10 bg-pink-100 rounded-xl flex items-center justify-center text-xl">🦴</span>
+            <span class="font-bold text-gray-900 text-lg">Scoliosis</span>
+            <span class="badge-required" id="scoliosisBadge" style="display: none;">Required</span>
+            <span class="badge-complete" id="scoliosisCompleteBadge" style="display: none;">✓ Done</span>
           </span>
-          <span class="accordion-icon">▼</span>
+          <span class="accordion-icon text-gray-400 text-xl">▼</span>
         </button>
         <div class="accordion-content" data-section="scoliosis">
-          <div class="p-4 space-y-4">
+          <div class="p-4 pt-0 space-y-4">
+            <!-- Observations -->
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">Observations (select all that apply)</label>
-              <div class="space-y-2">
-                <label class="flex items-center">
-                  <input type="checkbox" name="scoliosisObs" value="Uneven shoulder" class="mr-2">
+              <label class="block text-sm font-semibold text-gray-700 mb-3">Observations</label>
+              <div class="space-y-2 bg-gray-50 rounded-xl p-3">
+                <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-white rounded-lg transition-colors">
+                  <input type="checkbox" name="scoliosisObs" value="Uneven shoulder" class="rounded border-gray-300 text-pink-600 focus:ring-pink-500">
                   <span class="text-sm">Uneven shoulder</span>
                 </label>
-                <label class="flex items-center">
-                  <input type="checkbox" name="scoliosisObs" value="Uneven scapula" class="mr-2">
+                <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-white rounded-lg transition-colors">
+                  <input type="checkbox" name="scoliosisObs" value="Uneven scapula" class="rounded border-gray-300 text-pink-600 focus:ring-pink-500">
                   <span class="text-sm">Uneven scapula</span>
                 </label>
-                <label class="flex items-center">
-                  <input type="checkbox" name="scoliosisObs" value="Accentuated waist crease on one side" class="mr-2">
-                  <span class="text-sm">Accentuated waist crease on one side</span>
+                <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-white rounded-lg transition-colors">
+                  <input type="checkbox" name="scoliosisObs" value="Accentuated waist crease on one side" class="rounded border-gray-300 text-pink-600 focus:ring-pink-500">
+                  <span class="text-sm">Accentuated waist crease</span>
                 </label>
-                <label class="flex items-center">
-                  <input type="checkbox" name="scoliosisObs" value="Unequal arm body space visible" class="mr-2">
-                  <span class="text-sm">Unequal arm body space visible</span>
+                <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-white rounded-lg transition-colors">
+                  <input type="checkbox" name="scoliosisObs" value="Unequal arm body space visible" class="rounded border-gray-300 text-pink-600 focus:ring-pink-500">
+                  <span class="text-sm">Unequal arm-body space</span>
                 </label>
-                <label class="flex items-center">
-                  <input type="checkbox" name="scoliosisObs" value="Lateral curvature of the spine prominence on one side" class="mr-2">
-                  <span class="text-sm">Lateral curvature of the spine prominence on one side</span>
+                <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-white rounded-lg transition-colors">
+                  <input type="checkbox" name="scoliosisObs" value="Lateral curvature of the spine prominence on one side" class="rounded border-gray-300 text-pink-600 focus:ring-pink-500">
+                  <span class="text-sm">Lateral spine curvature</span>
                 </label>
-                <label class="flex items-center">
-                  <input type="checkbox" name="scoliosisObs" value="Forward bending position" class="mr-2">
+                <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-white rounded-lg transition-colors">
+                  <input type="checkbox" name="scoliosisObs" value="Forward bending position" class="rounded border-gray-300 text-pink-600 focus:ring-pink-500">
                   <span class="text-sm">Forward bending position</span>
                 </label>
-                <label class="flex items-center">
-                  <input type="checkbox" name="scoliosisObs" value="Accentuated round back/kyphosis" class="mr-2">
-                  <span class="text-sm">Accentuated round back/kyphosis</span>
+                <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-white rounded-lg transition-colors">
+                  <input type="checkbox" name="scoliosisObs" value="Accentuated round back/kyphosis" class="rounded border-gray-300 text-pink-600 focus:ring-pink-500">
+                  <span class="text-sm">Round back/kyphosis</span>
                 </label>
-                <label class="flex items-center">
-                  <input type="checkbox" name="scoliosisObs" value="Accentuated sway back/lordosis" class="mr-2">
-                  <span class="text-sm">Accentuated sway back/lordosis</span>
+                <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-white rounded-lg transition-colors">
+                  <input type="checkbox" name="scoliosisObs" value="Accentuated sway back/lordosis" class="rounded border-gray-300 text-pink-600 focus:ring-pink-500">
+                  <span class="text-sm">Sway back/lordosis</span>
                 </label>
-                <label class="flex items-center">
-                  <input type="checkbox" name="scoliosisObs" value="Other see additional notes" class="mr-2">
-                  <span class="text-sm">Other (see additional notes)</span>
+                <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-white rounded-lg transition-colors">
+                  <input type="checkbox" name="scoliosisObs" value="Other see additional notes" class="rounded border-gray-300 text-pink-600 focus:ring-pink-500">
+                  <span class="text-sm">Other (see notes)</span>
                 </label>
               </div>
             </div>
+            
+            <!-- Result -->
             <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">Result</label>
-              <div class="flex gap-4">
-                <label class="flex items-center gap-2"><input type="radio" name="scoliosisResult" value="pass" class="text-green-600"> Pass</label>
-                <label class="flex items-center gap-2"><input type="radio" name="scoliosisResult" value="fail" class="text-red-600"> Fail</label>
+              <label class="block text-sm font-semibold text-gray-700 mb-3">Result</label>
+              <div class="flex gap-3">
+                <label class="flex-1">
+                  <input type="radio" name="scoliosisResult" value="pass" class="sr-only peer">
+                  <div class="result-btn pass text-center cursor-pointer peer-checked:selected flex items-center justify-center">
+                    ✓ PASS
+                  </div>
+                </label>
+                <label class="flex-1">
+                  <input type="radio" name="scoliosisResult" value="fail" class="sr-only peer">
+                  <div class="result-btn fail text-center cursor-pointer peer-checked:selected flex items-center justify-center">
+                    ✕ FAIL
+                  </div>
+                </label>
               </div>
             </div>
           </div>
@@ -611,30 +765,30 @@
     </section>
 
     <!-- SECTION 5: Additional Notes -->
-    <section id="notesSection" class="hidden mt-8">
-      <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Additional Notes</h2>
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2">Notes</label>
-          <textarea id="notes" rows="3" 
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"></textarea>
-        </div>
+    <section id="notesSection" class="hidden">
+      <div class="bg-white rounded-2xl shadow-lg p-5">
+        <h2 class="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+          <span class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">📝</span>
+          Notes
+        </h2>
+        <textarea id="notes" rows="3" placeholder="Additional notes..." 
+                  class="w-full border-2 border-gray-200 focus:border-teal-500 focus:ring-0 transition-colors resize-none"></textarea>
       </div>
     </section>
 
     <!-- SECTION 6: Submit -->
-    <section id="submitSection" class="hidden mt-8 pt-8 border-t-2 border-gray-300">
+    <section id="submitSection" class="hidden">
       <button onclick="submitScreening()" 
-              class="w-full bg-green-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-green-700">
-        ✓ Submit Screening Results
+              class="w-full py-5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-2xl font-bold text-xl shadow-lg hover:from-green-600 hover:to-green-700 active:from-green-700 active:to-green-800 transition-all">
+        ✓ Submit Screening
       </button>
     </section>
 
-    <!-- Clear Form Button - Always Visible -->
-    <section class="mt-8 pt-8 border-t-2 border-gray-300">
+    <!-- Clear Form Button -->
+    <section class="pt-4">
       <button onclick="resetForm()" 
-              class="w-full px-6 py-4 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300">
-        Clear Form
+              class="w-full py-4 bg-white/10 text-white/80 rounded-xl font-semibold hover:bg-white/20 transition-colors border border-white/20">
+        Clear & Start Over
       </button>
     </section>
 
@@ -644,22 +798,22 @@
   <div id="newStudentModal" class="modal">
     <div class="modal-content">
       <div class="success-icon">✓</div>
-      <h2 class="text-2xl font-bold text-center mb-4">New Student Created Successfully</h2>
+      <h2 class="text-xl font-bold text-center mb-4">Student Created!</h2>
       <div class="student-id-display">
-        <label class="text-sm text-gray-600">Student ID:</label>
+        <label class="text-sm text-gray-600">Student ID</label>
         <div id="newStudentId"></div>
       </div>
-      <div class="student-info space-y-2 mb-4">
+      <div class="space-y-2 my-4 text-sm">
         <p><strong>Name:</strong> <span id="newStudentName"></span></p>
         <p><strong>Grade:</strong> <span id="newStudentGrade"></span></p>
         <p><strong>School:</strong> <span id="newStudentSchoolName"></span></p>
       </div>
-      <p class="text-center text-orange-600 font-semibold mb-4">📝 Write this ID on the student's label!</p>
+      <p class="text-center text-amber-600 font-semibold mb-4 text-sm">📝 Write ID on student's label!</p>
       <div class="flex gap-3">
-        <button onclick="continueToScreening()" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700">
-          Continue to Screening
+        <button onclick="continueToScreening()" class="flex-1 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700">
+          Continue
         </button>
-        <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300">
+        <button onclick="closeModal()" class="px-4 py-3 bg-gray-200 text-gray-700 rounded-xl font-bold hover:bg-gray-300">
           Done
         </button>
       </div>
@@ -667,32 +821,34 @@
   </div>
 
   <!-- Edit Student Modal -->
-  <div id="editStudentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
-      <h3 class="text-xl font-bold text-blue-600 mb-2">Complete Student Information</h3>
-      <p class="text-gray-700 mb-4">Some fields are missing from this student record. Fill them in or skip to continue with incomplete data:</p>
+  <div id="editStudentModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 max-h-[90vh] overflow-y-auto">
+      <h3 class="text-xl font-bold text-teal-700 mb-2">Edit Student Info</h3>
+      <p class="text-gray-600 mb-4 text-sm">Update information below:</p>
       
-      <div class="bg-yellow-50 border border-yellow-200 rounded p-3 mb-4">
-        <p class="text-sm text-gray-700"><strong>Student ID:</strong> <span id="editStudentId"></span></p>
+      <div class="bg-teal-50 border border-teal-200 rounded-xl p-3 mb-4">
+        <p class="text-sm text-gray-700"><strong>ID:</strong> <span id="editStudentId"></span></p>
       </div>
       
-      <form id="editStudentForm" class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form id="editStudentForm" class="space-y-3">
+        <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">First Name</label>
             <input type="text" id="editFirstName"
-                   class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                   class="w-full border-2 border-gray-200 rounded-xl px-3 py-2 focus:border-teal-500 focus:ring-0">
           </div>
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Last Name</label>
             <input type="text" id="editLastName"
-                   class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                   class="w-full border-2 border-gray-200 rounded-xl px-3 py-2 focus:border-teal-500 focus:ring-0">
           </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Grade</label>
-            <select id="editGrade"
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="">Select Grade</option>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Grade</label>
+            <select id="editGrade" class="w-full border-2 border-gray-200 rounded-xl px-3 py-2 focus:border-teal-500 focus:ring-0">
+              <option value="">Select</option>
               <option value="Pre-K (3)">Pre-K (3)</option>
               <option value="Pre-K (4)">Pre-K (4)</option>
               <option value="Kindergarten">Kindergarten</option>
@@ -711,222 +867,148 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Gender</label>
-            <select id="editGender"
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="">Select Gender</option>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Gender</label>
+            <select id="editGender" class="w-full border-2 border-gray-200 rounded-xl px-3 py-2 focus:border-teal-500 focus:ring-0">
+              <option value="">Select</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
               <option value="Other">Other</option>
             </select>
           </div>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">School</label>
+          <select id="editSchool" class="w-full border-2 border-gray-200 rounded-xl px-3 py-2 focus:border-teal-500 focus:ring-0">
+            <option value="">Select School</option>
+          </select>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">School</label>
-            <select id="editSchool"
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="">Select School</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Teacher Last Name</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Teacher</label>
             <input type="text" id="editTeacher"
-                   class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                   class="w-full border-2 border-gray-200 rounded-xl px-3 py-2 focus:border-teal-500 focus:ring-0">
           </div>
           <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Date of Birth</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">DOB</label>
             <input type="date" id="editDOB"
-                   class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Student Status</label>
-            <select id="editStatus"
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="">Select Status</option>
-              <option value="New">New</option>
-              <option value="Returning">Returning</option>
-            </select>
+                   class="w-full border-2 border-gray-200 rounded-xl px-3 py-2 focus:border-teal-500 focus:ring-0">
           </div>
         </div>
         
-        <div class="flex justify-end space-x-3 mt-6">
-          <button type="button" onclick="closeEditStudentModal()" 
-                  class="px-6 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
-            Cancel
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Status</label>
+          <select id="editStatus" class="w-full border-2 border-gray-200 rounded-xl px-3 py-2 focus:border-teal-500 focus:ring-0">
+            <option value="">Select</option>
+            <option value="New">New</option>
+            <option value="Returning">Returning</option>
+          </select>
+        </div>
+        
+        <div class="flex flex-col gap-2 pt-4">
+          <button type="button" onclick="saveStudentUpdates()" 
+                  class="w-full py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700">
+            Save Changes
           </button>
           <button type="button" onclick="saveStudentUpdates(true)" 
-                  class="px-6 py-2 text-gray-600 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200">
-            Skip & Continue with Missing Data
+                  class="w-full py-3 bg-gray-100 text-gray-600 rounded-xl font-semibold hover:bg-gray-200">
+            Skip & Continue
           </button>
-          <button type="button" onclick="saveStudentUpdates()" 
-                  class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-            Save & Continue
+          <button type="button" onclick="closeEditStudentModal()" 
+                  class="w-full py-3 text-gray-500 font-semibold hover:text-gray-700">
+            Cancel
           </button>
         </div>
       </form>
     </div>
   </div>
 
+  <!-- Custom Popup Modal -->
+  <div id="customModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-5">
+      <div class="flex items-center mb-4">
+        <div id="modalIcon" class="w-10 h-10 rounded-full flex items-center justify-center text-white text-xl mr-3"></div>
+        <h3 id="modalTitle" class="text-lg font-bold text-gray-900"></h3>
+      </div>
+      <p id="modalMessage" class="text-gray-600 mb-6"></p>
+      <div class="flex gap-3">
+        <button id="modalCancelBtn" class="flex-1 py-3 text-gray-600 border-2 border-gray-200 rounded-xl font-semibold hover:bg-gray-50 hidden">
+          Cancel
+        </button>
+        <button id="modalConfirmBtn" class="flex-1 py-3 bg-teal-600 text-white rounded-xl font-bold hover:bg-teal-700">
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Automatically detect environment and set API base URL
     const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-      ? 'http://localhost:3000/api'  // Local Express server
-      : '/api'; // Use relative URLs for production (Netlify)
+      ? 'http://localhost:3000/api'
+      : '/api';
     
-    // Add cache-busting parameter for API calls
     const CACHE_BUST = `?v=${Date.now()}`;
+    let currentStudent = null;
+    let schools = [];
+    let screeners = [];
 
-    // Helper function for title case formatting
     function toTitleCase(str) {
       if (!str) return '';
-      return str
-        .trim()
-        .toLowerCase()
-        .split(' ')
-        .map(word => {
-          if (word.length === 0) return '';
-          return word.charAt(0).toUpperCase() + word.slice(1);
-        })
+      return str.trim().toLowerCase().split(' ')
+        .map(word => word.length === 0 ? '' : word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
     }
 
-    // AUTHENTICATION REMOVED - App is now fully accessible without login
-    // All auth functions (checkAuth, clearAuth, handleLogout) have been removed
-    // Auth system will be rebuilt as a separate standalone system
-
-    // Initialize on page load
     document.addEventListener('DOMContentLoaded', async () => {
-      // AUTHENTICATION CHECK REMOVED - App loads directly without auth
       await loadSchools();
       await loadScreeners();
       setDefaultDate();
-      
-      // Ensure absent checkbox starts unchecked
       document.getElementById('absent').checked = false;
     });
 
-    // Load schools from API
     async function loadSchools() {
       try {
         const response = await fetch(`${API_BASE}/schools${CACHE_BUST}`);
         const data = await response.json();
-        
-        // Check if response has error
-        if (!response.ok || data.error) {
-          console.error('Error loading schools:', data.error || 'Unknown error');
-          schools = [];
-          return;
-        }
-        
+        if (!response.ok || data.error) { schools = []; return; }
         schools = data;
         const searchSelect = document.getElementById('searchSchool');
         const newSelect = document.getElementById('newStudentSchool');
-        
         if (Array.isArray(schools)) {
           schools.forEach(school => {
-            const option1 = new Option(school.name, school.name);
-            const option2 = new Option(school.name, school.name);
-            searchSelect.add(option1);
-            newSelect.add(option2);
+            searchSelect.add(new Option(school.name, school.name));
+            newSelect.add(new Option(school.name, school.name));
           });
         }
-        
-        // Add "Other" option at the bottom
-        const otherOption1 = new Option('Other', 'other');
-        const otherOption2 = new Option('Other', 'other');
-        searchSelect.add(otherOption1);
-        newSelect.add(otherOption2);
-      } catch (error) {
-        console.error('Error loading schools:', error);
-        schools = [];
-      }
+        searchSelect.add(new Option('Other', 'other'));
+        newSelect.add(new Option('Other', 'other'));
+      } catch (error) { schools = []; }
     }
 
-    // Load screeners from API
     async function loadScreeners() {
       try {
         const response = await fetch(`${API_BASE}/screeners${CACHE_BUST}`);
         const data = await response.json();
-        
-        // Check if response has error
-        if (!response.ok || data.error) {
-          console.error('Error loading screeners:', data.error || 'Unknown error');
-          screeners = [];
-        } else {
-          screeners = data;
+        if (!response.ok || data.error) { screeners = []; } else { screeners = data; }
+        const select = document.getElementById('screenerName');
+        if (Array.isArray(screeners)) {
+          screeners.forEach(s => select.add(new Option(s.name, s.name)));
         }
-        
-        // Define all screener dropdowns
-        const screenerDropdowns = [
-          'screenerName',
-          'visionDay1Screener',
-          'hearingDay1Screener',
-          'acanthosisDay1Screener',
-          'scoliosisDay1Screener'
-        ];
-        
-        // Populate all dropdowns with screeners (only if they're empty to avoid duplicates)
-        screenerDropdowns.forEach(id => {
-          const select = document.getElementById(id);
-          if (select && select.options.length <= 1) { // Only populate if empty or has only "Select Screener" option
-            // Clear existing options except the first one
-            while (select.options.length > 0) {
-              select.remove(0);
-            }
-            
-            // Add "Select Screener" placeholder for main dropdown
-            if (id === 'screenerName') {
-              select.add(new Option('Select Screener', ''));
-            }
-            
-            // Add all screeners from API first
-            if (Array.isArray(screeners)) {
-              screeners.forEach(screener => {
-                select.add(new Option(screener.name, screener.name));
-              });
-            }
-            
-            // Add "Other" at the bottom
-            select.add(new Option('Other', 'other'));
-          }
-        });
-      } catch (error) {
-        console.error('Error loading screeners:', error);
-        screeners = [];
-        // Even if API fails, ensure "Other" option exists
-        const screenerDropdowns = ['visionDay1Screener', 'hearingDay1Screener', 'acanthosisDay1Screener', 'scoliosisDay1Screener'];
-        screenerDropdowns.forEach(id => {
-          const select = document.getElementById(id);
-          if (select && select.options.length <= 1) {
-            if (select.options.length === 0 || select.options[0].value === '') {
-              select.innerHTML = '';
-              select.add(new Option('Other', 'other'));
-            }
-          }
-        });
-      }
+        select.add(new Option('Other', 'other'));
+      } catch (error) { screeners = []; }
     }
 
-    // Auto-fill screener to all sections when main screener changes
-    function autoFillScreener() {
-      const mainScreener = document.getElementById('screenerName').value;
-      if (!mainScreener) return;
-      
-      // Screener name is now handled in the buildPayload function
-      // No need to auto-fill to individual sections anymore
-    }
+    function autoFillScreener() { }
 
-    // Set default date to today
     function setDefaultDate() {
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('screeningDate').value = today;
+      document.getElementById('screeningDate').value = new Date().toISOString().split('T')[0];
     }
 
-    // Tab switching
     function switchTab(tabName) {
-      // Update tab buttons
       document.getElementById('searchTabBtn').classList.remove('active');
       document.getElementById('newTabBtn').classList.remove('active');
-      
       if (tabName === 'search') {
         document.getElementById('searchTabBtn').classList.add('active');
         document.getElementById('searchTab').classList.remove('hidden');
@@ -936,12 +1018,8 @@
         document.getElementById('searchTab').classList.add('hidden');
         document.getElementById('newTab').classList.remove('hidden');
       }
-      
-      // Clear search results
       document.getElementById('searchResults').classList.add('hidden');
       document.getElementById('multipleResults').classList.add('hidden');
-      
-      // Hide student info and screening sections when switching to new student tab
       if (tabName === 'new') {
         document.getElementById('studentInfo').classList.add('hidden');
         document.getElementById('absentSection').classList.add('hidden');
@@ -951,81 +1029,38 @@
       }
     }
 
-    // Search by student ID
     async function searchById() {
       const studentId = document.getElementById('searchId').value.trim().toLowerCase();
-      
-      if (!studentId) {
-        showCustomPopup('warning', 'Missing Student ID', 'Please enter a student ID');
-        return;
-      }
-      
+      if (!studentId) { showCustomPopup('warning', 'Missing ID', 'Please enter a student ID'); return; }
       try {
         const response = await fetch(`${API_BASE}/students/${studentId}${CACHE_BUST}`);
         const data = await response.json();
-        
-        if (!response.ok) {
-          showCustomPopup('error', 'API Error', `Error: ${response.status} - ${data.error || 'Unknown error'}`);
-          return;
-        }
-        
-        if (!data.found) {
-          showCustomPopup('warning', 'Student Not Found', 'Student not found. Please check the student ID and try again.');
-          return;
-        }
-        
+        if (!response.ok) { showCustomPopup('error', 'Error', `Error: ${response.status}`); return; }
+        if (!data.found) { showCustomPopup('warning', 'Not Found', 'Student not found'); return; }
         loadStudentData(data.student, data.requiredScreenings, data.completedScreenings);
-      } catch (error) {
-        showCustomPopup('error', 'Connection Error', 'Error connecting to the database. Please try again later.');
-      }
+      } catch (error) { showCustomPopup('error', 'Error', 'Connection error'); }
     }
 
-    // Search by name
     async function searchByName() {
       const lastName = document.getElementById('searchLastName').value.trim();
       const school = document.getElementById('searchSchool').value;
-      
-      if (!lastName) {
-        showCustomPopup('warning', 'Missing Information', 'Please enter a last name');
-        return;
-      }
-      
-      if (!school) {
-        showCustomPopup('warning', 'Missing Information', 'Please select a school');
-        return;
-      }
-      
+      if (!lastName) { showCustomPopup('warning', 'Missing Info', 'Enter a last name'); return; }
+      if (!school) { showCustomPopup('warning', 'Missing Info', 'Select a school'); return; }
       try {
         const url = `${API_BASE}/students/search?lastName=${encodeURIComponent(lastName)}&school=${encodeURIComponent(school)}&v=${Date.now()}`;
         const response = await fetch(url);
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          showCustomPopup('error', 'API Error', `Error: ${response.status} - ${errorData.error || 'Unknown error'}`);
-          return;
-        }
-        
+        if (!response.ok) { showCustomPopup('error', 'Error', 'Search failed'); return; }
         const data = await response.json();
-        
-        if (!data.found) {
-          showCustomPopup('warning', 'Student Not Found', 'No students found with that name at this school');
-          return;
-        }
-        
+        if (!data.found) { showCustomPopup('warning', 'Not Found', 'No students found'); return; }
         if (data.multiple) {
-          // Show multiple results
           document.getElementById('searchResults').classList.remove('hidden');
           document.getElementById('multipleResults').classList.remove('hidden');
           const listDiv = document.getElementById('studentList');
           listDiv.innerHTML = '';
-          
           data.students.forEach(student => {
             const div = document.createElement('div');
-            div.className = 'bg-white border border-gray-300 rounded-lg p-3 hover:bg-gray-50 cursor-pointer';
-            div.innerHTML = `
-              <div class="font-semibold">${student.first_name} ${student.last_name}</div>
-              <div class="text-sm text-gray-600">ID: ${student.unique_id} | Grade: ${student.grade} | School: ${student.school}</div>
-            `;
+            div.className = 'bg-gray-50 border-2 border-gray-200 rounded-xl p-4 active:bg-gray-100 cursor-pointer';
+            div.innerHTML = `<div class="font-bold text-gray-900">${student.first_name} ${student.last_name}</div><div class="text-sm text-gray-600">${student.unique_id} • ${student.grade}</div>`;
             div.onclick = () => searchByIdWithId(student.unique_id);
             listDiv.appendChild(div);
           });
@@ -1034,11 +1069,7 @@
           document.getElementById('searchResults').classList.add('hidden');
           document.getElementById('multipleResults').classList.add('hidden');
         }
-        
-      } catch (error) {
-        console.error('💥 Search error:', error);
-        showCustomPopup('error', 'Search Error', 'Error searching for student: ' + error.message);
-      }
+      } catch (error) { showCustomPopup('error', 'Error', error.message); }
     }
 
     async function searchByIdWithId(id) {
@@ -1046,9 +1077,7 @@
       await searchById();
     }
 
-    // Create new student
     async function createNewStudent() {
-      // Get and format values with title case
       const firstName = toTitleCase(document.getElementById('firstName').value);
       const lastName = toTitleCase(document.getElementById('lastName').value);
       const grade = document.getElementById('grade').value;
@@ -1057,171 +1086,59 @@
       const teacher = toTitleCase(document.getElementById('teacher').value);
       const dob = document.getElementById('dob').value;
       const status = document.getElementById('status').value;
-
-      // Validation
       if (!firstName || !lastName || !grade || !gender || !school || !dob || !status) {
-        showCustomPopup('warning', 'Missing Information', 'Please fill in all required fields (marked with *)');
+        showCustomPopup('warning', 'Missing Fields', 'Fill in all required fields');
         return;
       }
-
-      // Show confirmation dialog
-      showCustomPopup(
-        'warning',
-        'Confirm Student Creation',
-        'Are you sure you want to create this student?',
-        {
-          showCancel: true,
-          confirmText: 'Yes, Create Student',
-          cancelText: 'Cancel',
-          onConfirm: async () => {
-            try {
-              const response = await fetch(`${API_BASE}/students/quick-add${CACHE_BUST}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  firstName, lastName, grade, gender, school, teacher, dob, status
-                })
+      showCustomPopup('warning', 'Confirm', 'Create this student?', {
+        showCancel: true, confirmText: 'Create', cancelText: 'Cancel',
+        onConfirm: async () => {
+          try {
+            const response = await fetch(`${API_BASE}/students/quick-add${CACHE_BUST}`, {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ firstName, lastName, grade, gender, school, teacher, dob, status })
+            });
+            const data = await response.json();
+            if (response.status === 409 && data.duplicate) {
+              showCustomPopup('warning', 'Exists', `Student ${data.existingStudent.first_name} ${data.existingStudent.last_name} already exists`, {
+                showCancel: true, confirmText: 'Update', cancelText: 'Cancel',
+                onConfirm: () => updateExistingStudent(data.existingStudent.unique_id, { firstName, lastName, grade, gender, school, teacher, dob, status })
               });
-
-              const data = await response.json();
-              
-              // Handle duplicate detection
-              if (response.status === 409 && data.duplicate) {
-                // Duplicate found - show confirmation popup
-                const existing = data.existingStudent;
-                
-                showCustomPopup(
-                  'warning',
-                  'Student Already Exists',
-                  `A student with the name <strong>${existing.first_name} ${existing.last_name}</strong> already exists at <strong>${existing.school}</strong>.<br><br>
-                  <strong>Existing Info:</strong><br>
-                  ID: ${existing.unique_id}<br>
-                  Grade: ${existing.grade} | Gender: ${existing.gender}<br>
-                  DOB: ${existing.dob} | Status: ${existing.status}<br><br>
-                  Would you like to <strong>update</strong> this student's information with the new data you entered?`,
-                  {
-                    showCancel: true,
-                    confirmText: 'Update Existing Student',
-                    cancelText: 'Cancel',
-                    onConfirm: () => {
-                      updateExistingStudent(existing.unique_id, {
-                        firstName, lastName, grade, gender, school, teacher, dob, status
-                      });
-                    },
-                    onCancel: () => {
-                      // Stay on form with data still filled in
-                      hideCustomPopup();
-                    }
-                  }
-                );
-                return;
-              }
-              
-              if (data.success) {
-                const newStudentId = data.student.unique_id;
-                
-                // Show success message with student ID
-                showCustomPopup(
-                  'success',
-                  'Student Created Successfully!',
-                  `Student ID: <strong>${newStudentId}</strong><br><br>To begin screening, please search for this student using the search form.`
-                );
-                
-                // Auto-close popup and reset form after 3 seconds
-                setTimeout(() => {
-                  hideCustomPopup();
-                  
-                  // Reset entire form to clean state
-                  resetForm();
-                  
-                  // Pre-fill search with new student ID for easy access
-                  document.getElementById('searchId').value = newStudentId;
-                }, 3000);
-              } else {
-                showCustomPopup('error', 'Error', 'Error creating student: ' + data.error);
-              }
-            } catch (error) {
-              showCustomPopup('error', 'Error', 'Error creating student: ' + error.message);
+              return;
             }
-          },
-          onCancel: () => {
-            // User cancelled - dialog already closed by default
-          }
+            if (data.success) {
+              showCustomPopup('success', 'Created!', `ID: <strong>${data.student.unique_id}</strong>`);
+              setTimeout(() => { hideCustomPopup(); resetForm(); document.getElementById('searchId').value = data.student.unique_id; }, 3000);
+            } else { showCustomPopup('error', 'Error', data.error); }
+          } catch (error) { showCustomPopup('error', 'Error', error.message); }
         }
-      );
+      });
     }
 
-    // Update existing student with new information (screening records stay intact)
     async function updateExistingStudent(uniqueId, newData) {
       try {
         const response = await fetch(`${API_BASE}/students/${uniqueId}${CACHE_BUST}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newData)
+          method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newData)
         });
-
         const data = await response.json();
-        
         if (data.success) {
-          showCustomPopup(
-            'success',
-            'Student Updated Successfully!',
-            `Student <strong>${data.student.first_name} ${data.student.last_name}</strong> (ID: ${data.student.unique_id}) has been updated.<br><br>To begin screening, please search for this student using the search form.`
-          );
-          
-          // Auto-close popup and reset form after 3 seconds
-          setTimeout(() => {
-            hideCustomPopup();
-            resetForm();
-            document.getElementById('searchId').value = data.student.unique_id;
-          }, 3000);
-        } else {
-          showCustomPopup('error', 'Error', 'Error updating student: ' + data.error);
-        }
-      } catch (error) {
-        showCustomPopup('error', 'Error', 'Error updating student: ' + error.message);
-      }
+          showCustomPopup('success', 'Updated!', `Student ${data.student.unique_id} updated`);
+          setTimeout(() => { hideCustomPopup(); resetForm(); document.getElementById('searchId').value = data.student.unique_id; }, 3000);
+        } else { showCustomPopup('error', 'Error', data.error); }
+      } catch (error) { showCustomPopup('error', 'Error', error.message); }
     }
 
-    function continueToScreening() {
-      closeModal();
-      loadStudentData(window.newStudentData.student, window.newStudentData.requiredScreenings);
-    }
+    function continueToScreening() { closeModal(); loadStudentData(window.newStudentData.student, window.newStudentData.requiredScreenings); }
+    function closeModal() { document.getElementById('newStudentModal').style.display = 'none'; }
 
-    function closeModal() {
-      document.getElementById('newStudentModal').style.display = 'none';
-    }
-
-    // Open edit modal from the student info section
     function openEditStudentInfo() {
-      if (!currentStudent) {
-        showCustomPopup('warning', 'No Student', 'No student information available to edit');
-        return;
-      }
-      // Open edit modal with current student data (no missing fields since we're editing existing)
+      if (!currentStudent) { showCustomPopup('warning', 'Error', 'No student selected'); return; }
       showEditStudentModal(currentStudent, []);
     }
 
-    // Show edit student modal
     function showEditStudentModal(student, missingFields) {
-      // Store current student for later use
       window.editingStudent = student;
-      
-      // Populate modal
       document.getElementById('editStudentId').textContent = student.unique_id;
-      
-      // Update modal title and message based on context
-      const modalTitle = document.querySelector('#editStudentModal h3');
-      const modalMessage = document.querySelector('#editStudentModal p');
-      if (missingFields && missingFields.length > 0) {
-        modalTitle.textContent = 'Complete Student Information';
-        modalTitle.className = 'text-xl font-bold text-blue-600 mb-2';
-        modalMessage.textContent = 'Some fields are missing from this student record. Fill them in or skip to continue with incomplete data:';
-      } else {
-        modalTitle.textContent = 'Edit Student Information';
-        modalTitle.className = 'text-xl font-bold text-blue-600 mb-2';
-        modalMessage.textContent = 'Update student information below:';
-      }
       document.getElementById('editFirstName').value = (student.first_name && student.first_name.toLowerCase() !== 'null') ? student.first_name : '';
       document.getElementById('editLastName').value = (student.last_name && student.last_name.toLowerCase() !== 'null') ? student.last_name : '';
       document.getElementById('editGrade').value = (student.grade && student.grade.toLowerCase() !== 'null') ? student.grade : '';
@@ -1230,44 +1147,18 @@
       document.getElementById('editTeacher').value = (student.teacher && student.teacher.toLowerCase() !== 'null') ? student.teacher : '';
       document.getElementById('editDOB').value = (student.dob && student.dob.toLowerCase() !== 'null') ? student.dob : '';
       document.getElementById('editStatus').value = (student.status && student.status.toLowerCase() !== 'null') ? student.status : '';
-      
-      // Populate school dropdown if not already done
       const editSchoolSelect = document.getElementById('editSchool');
       if (editSchoolSelect.options.length <= 1) {
-        schools.forEach(school => {
-          const option = new Option(school.name, school.name);
-          editSchoolSelect.add(option);
-        });
+        schools.forEach(school => editSchoolSelect.add(new Option(school.name, school.name)));
       }
-      
-      // Don't highlight fields - they're all optional now
-      
-      // Show/hide Skip button based on whether there are missing fields
-      const skipButton = document.querySelector('#editStudentModal button[onclick="saveStudentUpdates(true)"]');
-      if (skipButton) {
-        if (missingFields && missingFields.length > 0) {
-          skipButton.classList.remove('hidden');
-        } else {
-          skipButton.classList.add('hidden');
-        }
-      }
-      
-      // Show modal
       document.getElementById('editStudentModal').classList.remove('hidden');
     }
 
-    // Close edit student modal
-    function closeEditStudentModal() {
-      document.getElementById('editStudentModal').classList.add('hidden');
-      window.editingStudent = null;
-    }
+    function closeEditStudentModal() { document.getElementById('editStudentModal').classList.add('hidden'); window.editingStudent = null; }
 
-    // Save student updates
     async function saveStudentUpdates(skipMode = false) {
       const student = window.editingStudent;
       if (!student) return;
-      
-      // Get form values and convert empty strings to null
       const updates = {
         firstName: document.getElementById('editFirstName').value.trim() || null,
         lastName: document.getElementById('editLastName').value.trim() || null,
@@ -1278,269 +1169,90 @@
         dob: document.getElementById('editDOB').value || null,
         status: document.getElementById('editStatus').value || null
       };
-      
-      // All fields are optional now - no validation needed
-      
-      // If skip mode, use existing student data with any edits made
-      const studentData = skipMode ? student : updates;
-      
-      // Update student data on server (unless skipping)
       if (!skipMode) {
         try {
           const response = await fetch(`${API_BASE}/students/${student.unique_id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updates)
+            method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updates)
           });
-          
           const data = await response.json();
-          
           if (data.success) {
-            showCustomPopup('success', 'Updated!', 'Student information has been updated successfully');
+            showCustomPopup('success', 'Saved!', 'Student updated');
             closeEditStudentModal();
-            
-            // Reload student data with updated info
-            const updatedStudent = data.student;
-            // Recalculate requirements based on updated student data
-            const requiredScreenings = calculateRequirementsFromStudent(updatedStudent);
-            loadStudentData(updatedStudent, requiredScreenings);
+            loadStudentData(data.student, calculateRequirementsFromStudent(data.student));
             return;
-          } else {
-            showCustomPopup('error', 'Update Failed', 'Error updating student: ' + data.error);
-            return;
-          }
-        } catch (error) {
-          showCustomPopup('error', 'Update Error', 'Error updating student: ' + error.message);
-          return;
-        }
+          } else { showCustomPopup('error', 'Error', data.error); return; }
+        } catch (error) { showCustomPopup('error', 'Error', error.message); return; }
       }
-      
-      // Skip mode: just proceed with current (potentially incomplete) data
       closeEditStudentModal();
-      
-      // Build student object from form (use existing values where form is empty)
-      const finalStudent = {
-        ...student,
-        first_name: updates.firstName || student.first_name,
-        last_name: updates.lastName || student.last_name,
-        grade: updates.grade || student.grade,
-        gender: updates.gender || student.gender,
-        school: updates.school || student.school,
-        teacher: updates.teacher || student.teacher,
-        dob: updates.dob || student.dob,
-        status: updates.status || student.status,
-        unique_id: student.unique_id
-      };
-      
-      // Recalculate requirements based on updated student data
-      const requiredScreenings = calculateRequirementsFromStudent(finalStudent);
-      loadStudentData(finalStudent, requiredScreenings);
+      const finalStudent = { ...student, first_name: updates.firstName || student.first_name, last_name: updates.lastName || student.last_name, grade: updates.grade || student.grade, gender: updates.gender || student.gender, school: updates.school || student.school, teacher: updates.teacher || student.teacher, dob: updates.dob || student.dob, status: updates.status || student.status, unique_id: student.unique_id };
+      loadStudentData(finalStudent, calculateRequirementsFromStudent(finalStudent));
     }
 
-    // Calculate requirements on frontend (mirrors backend logic)
     function calculateRequirementsFromStudent(student) {
       const gradeStr = (student.grade || '').toLowerCase();
       const isNewStudent = (student.status || '').toLowerCase() === 'new';
       const isFemale = (student.gender || '').toLowerCase() === 'female';
       const isMale = (student.gender || '').toLowerCase() === 'male';
-      
-      const requirements = {
-        vision: false,
-        hearing: false,
-        acanthosis: false,
-        scoliosis: false
-      };
-      
-      // Pre-K 3: nothing required
-      if (gradeStr.includes('pre-k (3)')) {
-        return requirements;
-      }
-      
-      // Pre-K 4: check DOB
+      const requirements = { vision: false, hearing: false, acanthosis: false, scoliosis: false };
+      if (gradeStr.includes('pre-k (3)')) return requirements;
       if (gradeStr.includes('pre-k (4)') && student.dob) {
         const birthDate = new Date(student.dob);
-        const birthYear = birthDate.getFullYear();
-        const septFirst = new Date(birthYear, 8, 1);
-        
-        if (birthDate <= septFirst) {
-          requirements.vision = true;
-          requirements.hearing = true;
-        }
+        const septFirst = new Date(birthDate.getFullYear(), 8, 1);
+        if (birthDate <= septFirst) { requirements.vision = true; requirements.hearing = true; }
         return requirements;
       }
-      
-      // K-12: Vision & Hearing
-      if (gradeStr.includes('kindergarten') || ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'].includes(gradeStr)) {
-        requirements.vision = true;
-        requirements.hearing = true;
+      if (gradeStr.includes('kindergarten') || ['1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th'].includes(gradeStr)) {
+        requirements.vision = true; requirements.hearing = true;
       }
-      
-      // Acanthosis: 1, 3, 5, 7 always
-      if (['1st', '3rd', '5th', '7th'].includes(gradeStr)) {
-        requirements.acanthosis = true;
-      }
-      
-      // Acanthosis: NEW students in 2, 4, 6, 8, 9-12
-      if (isNewStudent && ['2nd', '4th', '6th', '8th', '9th', '10th', '11th', '12th'].includes(gradeStr)) {
-        requirements.acanthosis = true;
-      }
-      
-      // Scoliosis: 5th & 7th females
-      if ((gradeStr === '5th' || gradeStr === '7th') && isFemale) {
-        requirements.scoliosis = true;
-      }
-      
-      // Scoliosis: 8th grade males (returning)
-      if (gradeStr === '8th' && isMale && !isNewStudent) {
-        requirements.scoliosis = true;
-      }
-      
-      // Scoliosis: 8th grade NEW (both genders)
-      if (gradeStr === '8th' && isNewStudent) {
-        requirements.scoliosis = true;
-      }
-      
+      if (['1st','3rd','5th','7th'].includes(gradeStr)) requirements.acanthosis = true;
+      if (isNewStudent && ['2nd','4th','6th','8th','9th','10th','11th','12th'].includes(gradeStr)) requirements.acanthosis = true;
+      if ((gradeStr === '5th' || gradeStr === '7th') && isFemale) requirements.scoliosis = true;
+      if (gradeStr === '8th' && isMale && !isNewStudent) requirements.scoliosis = true;
+      if (gradeStr === '8th' && isNewStudent) requirements.scoliosis = true;
       return requirements;
     }
 
-    // Validate student data completeness
     function validateStudentData(student) {
-      const requiredFields = [
-        { key: 'first_name', label: 'First Name' },
-        { key: 'last_name', label: 'Last Name' },
-        { key: 'grade', label: 'Grade' },
-        { key: 'gender', label: 'Gender' },
-        { key: 'school', label: 'School' },
-        { key: 'dob', label: 'Date of Birth' },
-        { key: 'status', label: 'Status' }
-      ];
-      
-      const missingFields = [];
-      
-      for (const field of requiredFields) {
-        const value = student[field.key];
-        // Check for empty, null, undefined, or "Null" string values
-        if (!value || value.trim() === '' || value.toLowerCase() === 'null') {
-          missingFields.push(field);
-        }
-      }
-      
-      return {
-        isComplete: missingFields.length === 0,
-        missingFields: missingFields
-      };
+      const requiredFields = ['first_name','last_name','grade','gender','school','dob','status'];
+      const missingFields = requiredFields.filter(key => {
+        const value = student[key];
+        return !value || value.trim() === '' || value.toLowerCase() === 'null';
+      });
+      return { isComplete: missingFields.length === 0, missingFields };
     }
 
-    // Load student data
     function loadStudentData(student, requiredScreenings, completedScreenings) {
-      // Validate student data completeness
       const validation = validateStudentData(student);
-      
-      if (!validation.isComplete) {
-        // Show edit modal for incomplete data
-        showEditStudentModal(student, validation.missingFields);
-        return; // Don't proceed with loading until data is complete
-      }
-      
+      if (!validation.isComplete) { showEditStudentModal(student, validation.missingFields); return; }
       currentStudent = student;
-      
-      // Default completedScreenings if not provided
       const completed = completedScreenings || { vision: false, hearing: false, acanthosis: false, scoliosis: false };
-      
-      // Display student info
       document.getElementById('displayStudentId').textContent = student.unique_id;
       document.getElementById('displayName').textContent = `${student.first_name} ${student.last_name}`;
-      document.getElementById('displayDetails').textContent = `${student.grade} | ${student.gender} | ${student.school}`;
-      document.getElementById('displayAdditional').textContent = `${student.teacher} | ${student.dob} | ${student.status}`;
-      
-      // Show sections (screeningDetails is always visible, no need to show it)
+      document.getElementById('displayDetails').textContent = `${student.grade} • ${student.gender}`;
+      document.getElementById('displayAdditional').textContent = `${student.school} • ${student.status}`;
       document.getElementById('studentInfo').classList.remove('hidden');
       document.getElementById('absentSection').classList.remove('hidden');
       document.getElementById('screeningTests').classList.remove('hidden');
       document.getElementById('notesSection').classList.remove('hidden');
       document.getElementById('submitSection').classList.remove('hidden');
-      
-      // First, close ALL accordions and hide ALL badges (required and complete)
-      closeAccordion('vision');
-      closeAccordion('hearing');
-      closeAccordion('acanthosis');
-      closeAccordion('scoliosis');
-      document.getElementById('visionBadge').style.display = 'none';
-      document.getElementById('hearingBadge').style.display = 'none';
-      document.getElementById('acanthosisBadge').style.display = 'none';
-      document.getElementById('scoliosisBadge').style.display = 'none';
-      document.getElementById('visionCompleteBadge').style.display = 'none';
-      document.getElementById('hearingCompleteBadge').style.display = 'none';
-      document.getElementById('acanthosisCompleteBadge').style.display = 'none';
-      document.getElementById('scoliosisCompleteBadge').style.display = 'none';
-      
-      // Now show badges and auto-open sections based on required AND completion status
+      closeAccordion('vision'); closeAccordion('hearing'); closeAccordion('acanthosis'); closeAccordion('scoliosis');
+      ['visionBadge','hearingBadge','acanthosisBadge','scoliosisBadge','visionCompleteBadge','hearingCompleteBadge','acanthosisCompleteBadge','scoliosisCompleteBadge'].forEach(id => document.getElementById(id).style.display = 'none');
       if (requiredScreenings) {
-        // Vision: required + not complete = open, required + complete = show complete badge
-        if (requiredScreenings.vision) {
-          if (completed.vision) {
-            document.getElementById('visionCompleteBadge').style.display = 'inline-block';
-            // Don't auto-open - it's complete
-          } else {
-            document.getElementById('visionBadge').style.display = 'inline-block';
-            openAccordion('vision');
+        ['vision','hearing','acanthosis','scoliosis'].forEach(test => {
+          if (requiredScreenings[test]) {
+            if (completed[test]) { document.getElementById(`${test}CompleteBadge`).style.display = 'inline-block'; }
+            else { document.getElementById(`${test}Badge`).style.display = 'inline-block'; openAccordion(test); }
           }
-        }
-        
-        // Hearing: required + not complete = open, required + complete = show complete badge
-        if (requiredScreenings.hearing) {
-          if (completed.hearing) {
-            document.getElementById('hearingCompleteBadge').style.display = 'inline-block';
-            // Don't auto-open - it's complete
-          } else {
-            document.getElementById('hearingBadge').style.display = 'inline-block';
-            openAccordion('hearing');
-          }
-        }
-        
-        // Acanthosis: required + not complete = open, required + complete = show complete badge
-        if (requiredScreenings.acanthosis) {
-          if (completed.acanthosis) {
-            document.getElementById('acanthosisCompleteBadge').style.display = 'inline-block';
-            // Don't auto-open - it's complete
-          } else {
-            document.getElementById('acanthosisBadge').style.display = 'inline-block';
-            openAccordion('acanthosis');
-          }
-        }
-        
-        // Scoliosis: required + not complete = open, required + complete = show complete badge
-        if (requiredScreenings.scoliosis) {
-          if (completed.scoliosis) {
-            document.getElementById('scoliosisCompleteBadge').style.display = 'inline-block';
-            // Don't auto-open - it's complete
-          } else {
-            document.getElementById('scoliosisBadge').style.display = 'inline-block';
-            openAccordion('scoliosis');
-          }
-        }
+        });
       }
-      
-      // Scroll to student info
       document.getElementById('studentInfo').scrollIntoView({ behavior: 'smooth' });
     }
 
-    // Toggle accordion
     function toggleAccordion(section) {
       const accordion = document.querySelector(`[data-section="${section}"]`);
       const content = accordion.querySelector('.accordion-content');
-      const isOpen = content.classList.contains('open');
-      
-      // Toggle just this accordion (don't close others)
-      if (isOpen) {
-        // Close this accordion
-        content.classList.remove('open');
-        accordion.classList.remove('open');
-      } else {
-        // Open this accordion
-        content.classList.add('open');
-        accordion.classList.add('open');
-      }
+      if (content.classList.contains('open')) { content.classList.remove('open'); accordion.classList.remove('open'); }
+      else { content.classList.add('open'); accordion.classList.add('open'); }
     }
 
     function openAccordion(section) {
@@ -1548,515 +1260,154 @@
       if (!accordion) return;
       const content = accordion.querySelector('.accordion-content');
       if (!content) return;
-      content.style.display = '';
-      content.classList.add('open');
-      accordion.classList.add('open');
+      content.classList.add('open'); accordion.classList.add('open');
     }
-    
+
     function closeAccordion(section) {
       const accordion = document.querySelector(`[data-section="${section}"]`);
       if (!accordion) return;
       const content = accordion.querySelector('.accordion-content');
       if (!content) return;
-      content.style.display = '';
-      content.classList.remove('open');
-      accordion.classList.remove('open');
+      content.classList.remove('open'); accordion.classList.remove('open');
     }
 
-    // Apply global screening type
-    function applyGlobalScreeningType() {
-      // Global screening type is now handled in buildPayload function
-      // No need to update individual fields anymore
-    }
+    function applyGlobalScreeningType() { }
+    function visionResultChanged(result) { document.getElementById('visionRightEye').value = result === 'pass' ? '20' : ''; document.getElementById('visionLeftEye').value = result === 'pass' ? '20' : ''; }
+    function hearingResultChanged(result) { resetHearingFrequencies(); }
 
-    // Vision result changed
-    function visionResultChanged(result) {
-      if (result === 'pass') {
-        document.getElementById('visionRightEye').value = '20';
-        document.getElementById('visionLeftEye').value = '20';
-      } else {
-        document.getElementById('visionRightEye').value = '';
-        document.getElementById('visionLeftEye').value = '';
-      }
-    }
-
-    // Hearing result changed
-    function hearingResultChanged(result) {
-      const freqSection = document.getElementById('hearingFrequencies');
-      // Always show the frequency section and reset all to plus (pass)
-      freqSection.classList.remove('hidden');
-      // Reset all frequency buttons to plus (pass) regardless of pass/fail selection
-      resetHearingFrequencies();
-    }
-
-    // Toggle hearing frequency between + (pass) and - (fail)
     function toggleHearingFreq(button) {
-      const currentStatus = button.dataset.status;
-      if (currentStatus === 'pass') {
-        // Switch to minus (fail)
-        button.dataset.status = 'fail';
-        button.textContent = '-';
-        button.classList.remove('text-green-600', 'border-gray-300');
-        button.classList.add('text-red-600', 'border-red-500');
+      if (button.dataset.status === 'pass') {
+        button.dataset.status = 'fail'; button.textContent = '-';
+        button.classList.remove('text-green-600','border-green-400','bg-green-50');
+        button.classList.add('text-red-600','border-red-400','bg-red-50');
       } else {
-        // Switch to plus (pass)
-        button.dataset.status = 'pass';
-        button.textContent = '+';
-        button.classList.remove('text-red-600', 'border-red-500');
-        button.classList.add('text-green-600', 'border-gray-300');
+        button.dataset.status = 'pass'; button.textContent = '+';
+        button.classList.remove('text-red-600','border-red-400','bg-red-50');
+        button.classList.add('text-green-600','border-green-400','bg-green-50');
       }
     }
 
-    // Reset all hearing frequency buttons to plus (pass)
     function resetHearingFrequencies() {
-      const buttons = document.querySelectorAll('.hearing-freq');
-      buttons.forEach(button => {
-        button.dataset.status = 'pass';
-        button.textContent = '+';
-        button.classList.remove('text-red-600', 'border-red-500');
-        button.classList.add('text-green-600', 'border-gray-300');
+      document.querySelectorAll('.hearing-freq').forEach(button => {
+        button.dataset.status = 'pass'; button.textContent = '+';
+        button.classList.remove('text-red-600','border-red-400','bg-red-50');
+        button.classList.add('text-green-600','border-green-400','bg-green-50');
       });
     }
 
-    // Absent checkbox changed
     function absentChanged(checked) {
       const screeningTests = document.getElementById('screeningTests');
-      const sections = ['vision', 'hearing', 'acanthosis', 'scoliosis'];
-      
       if (checked) {
-        // Close all screening sections
-        sections.forEach(section => {
+        ['vision','hearing','acanthosis','scoliosis'].forEach(section => {
           const accordion = document.querySelector(`[data-section="${section}"]`);
-          if (accordion && accordion.classList.contains('open')) {
-            toggleAccordion(section);
-          }
+          if (accordion?.classList.contains('open')) toggleAccordion(section);
         });
-        
-        // Gray out the entire screening tests section
-        if (screeningTests) {
-          screeningTests.style.opacity = '0.5';
-          screeningTests.style.pointerEvents = 'none';
-          screeningTests.style.filter = 'grayscale(100%)';
-        }
-      } else {
-        // Remove gray out effect
-        if (screeningTests) {
-          screeningTests.style.opacity = '1';
-          screeningTests.style.pointerEvents = 'auto';
-          screeningTests.style.filter = 'none';
-        }
-      }
+        screeningTests.style.opacity = '0.4'; screeningTests.style.pointerEvents = 'none';
+      } else { screeningTests.style.opacity = '1'; screeningTests.style.pointerEvents = 'auto'; }
     }
 
-    // Submit screening
     async function submitScreening() {
-      if (!currentStudent) {
-        showCustomPopup('warning', 'No Student Selected', 'Please search for or create a student first');
-        return;
-      }
-
-      // Check if screener name is selected
+      if (!currentStudent) { showCustomPopup('warning', 'Error', 'Select a student first'); return; }
       const screenerName = document.getElementById('screenerName').value.trim();
-      if (!screenerName) {
-        showCustomPopup('warning', 'Missing Screener Name', 'Please select a screener name before submitting.');
-        return;
-      }
-      
-      // Check if student is absent - if so, skip screening validation
+      if (!screenerName) { showCustomPopup('warning', 'Error', 'Select a screener'); return; }
       const isAbsent = document.getElementById('absent').checked;
-      
       if (!isAbsent) {
-        // Check if at least ONE section is open and has data
-        const visionData = getVisionData();
-        const hearingData = getHearingData();
-        const acanthosisData = getAcanthosisData();
-        const scoliosisData = getScoliosisData();
-        
-        const hasAnyData = visionData || hearingData || acanthosisData || scoliosisData;
-        
-        if (!hasAnyData) {
-          showCustomPopup('warning', 'Incomplete Screening', 'Please complete at least one screening section before submitting.');
-          return;
-        }
+        const hasAnyData = getVisionData() || getHearingData() || getAcanthosisData() || getScoliosisData();
+        if (!hasAnyData) { showCustomPopup('warning', 'Error', 'Complete at least one screening'); return; }
       }
-      
-      // Check if any OPENED sections are incomplete (skip if absent)
       const incompleteSections = [];
-      const validationErrors = [];
-      
       if (!isAbsent) {
-        // Vision - if accordion is open but no result selected
-        const visionAccordion = document.querySelector('[data-section="vision"]');
-        if (visionAccordion?.classList.contains('open')) {
-          const visionResult = document.querySelector('input[name="visionResult"]:checked');
-          if (!visionResult) {
-            incompleteSections.push('Vision');
-          } else if (visionResult.value === 'fail') {
-            // When vision fails, both eye ratings are required
-            const rightEye = document.getElementById('visionRightEye').value;
-            const leftEye = document.getElementById('visionLeftEye').value;
-            if (!rightEye || rightEye === '') {
-              validationErrors.push('Vision: Please select a rating for the right eye when result is Fail');
-            }
-            if (!leftEye || leftEye === '') {
-              validationErrors.push('Vision: Please select a rating for the left eye when result is Fail');
-            }
-          }
-        }
-        
-        // Hearing - if accordion is open but no result selected
-        const hearingAccordion = document.querySelector('[data-section="hearing"]');
-        if (hearingAccordion?.classList.contains('open')) {
-          const hearingResult = document.querySelector('input[name="hearingResult"]:checked');
-          if (!hearingResult) {
-            incompleteSections.push('Hearing');
-          } else if (hearingResult.value === 'fail') {
-            // When hearing fails, at least one frequency must be marked as fail (minus)
-            const failedFrequencies = document.querySelectorAll('.hearing-freq[data-status="fail"]');
-            if (failedFrequencies.length === 0) {
-              validationErrors.push('Hearing: Please mark at least one frequency as failed (click to toggle to minus) when result is Fail');
-            }
-          }
-        }
-        
-        // Acanthosis - if accordion is open but no result selected
-        const acanthosisAccordion = document.querySelector('[data-section="acanthosis"]');
-        if (acanthosisAccordion?.classList.contains('open')) {
-          const acanthosisResult = document.querySelector('input[name="acanthosisResult"]:checked');
-          if (!acanthosisResult) {
-            incompleteSections.push('Acanthosis');
-          }
-        }
-        
-        // Scoliosis - if accordion is open but no result selected
-        const scoliosisAccordion = document.querySelector('[data-section="scoliosis"]');
-        if (scoliosisAccordion?.classList.contains('open')) {
-          const scoliosisResult = document.querySelector('input[name="scoliosisResult"]:checked');
-          if (!scoliosisResult) {
-            incompleteSections.push('Scoliosis');
-          }
-        }
+        if (document.querySelector('[data-section="vision"]')?.classList.contains('open') && !document.querySelector('input[name="visionResult"]:checked')) incompleteSections.push('Vision');
+        if (document.querySelector('[data-section="hearing"]')?.classList.contains('open') && !document.querySelector('input[name="hearingResult"]:checked')) incompleteSections.push('Hearing');
+        if (document.querySelector('[data-section="acanthosis"]')?.classList.contains('open') && !document.querySelector('input[name="acanthosisResult"]:checked')) incompleteSections.push('Acanthosis');
+        if (document.querySelector('[data-section="scoliosis"]')?.classList.contains('open') && !document.querySelector('input[name="scoliosisResult"]:checked')) incompleteSections.push('Scoliosis');
       }
-      
-      // If any opened sections are incomplete, prevent submission
-      if (incompleteSections.length > 0) {
-        showCustomPopup('warning', 'Incomplete Sections', `Please complete the following open sections or close them before submitting:\n- ${incompleteSections.join('\n- ')}`);
-        return;
-      }
-      
-      // If there are validation errors, prevent submission
-      if (validationErrors.length > 0) {
-        showCustomPopup('warning', 'Validation Error', validationErrors.join('<br>'));
-        return;
-      }
-
-      // Show confirmation dialog
-      showCustomPopup(
-        'warning',
-        'Confirm Submission',
-        'Are you sure you want to submit? Cannot undo.',
-        {
-          showCancel: true,
-          confirmText: 'Yes, Submit',
-          cancelText: 'Cancel',
-          onConfirm: async () => {
-            const payload = buildPayload();
-            
-            try {
-              const response = await fetch(`${API_BASE}/screenings${CACHE_BUST}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-              });
-              
-              const result = await response.json();
-              
-              if (result.success) {
-                // Show success message
-                showCustomPopup('success', 'Success!', 'Screening results saved successfully!');
-                
-                // Auto-reset form after 2 seconds
-                setTimeout(() => {
-                  hideCustomPopup();
-                  resetForm();
-                }, 2000);
-              } else {
-                showCustomPopup('error', 'Error', 'Error saving: ' + result.error);
-              }
-            } catch (error) {
-              showCustomPopup('error', 'Submission Error', 'Error submitting: ' + error.message);
-            }
-          },
-          onCancel: () => {
-            // User cancelled - dialog already closed by default
-          }
+      if (incompleteSections.length > 0) { showCustomPopup('warning', 'Incomplete', `Complete: ${incompleteSections.join(', ')}`); return; }
+      showCustomPopup('warning', 'Submit?', 'Confirm submission', {
+        showCancel: true, confirmText: 'Submit', cancelText: 'Cancel',
+        onConfirm: async () => {
+          const payload = buildPayload();
+          try {
+            const response = await fetch(`${API_BASE}/screenings${CACHE_BUST}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const result = await response.json();
+            if (result.success) { showCustomPopup('success', 'Saved!', 'Screening submitted'); setTimeout(() => { hideCustomPopup(); resetForm(); }, 2000); }
+            else { showCustomPopup('error', 'Error', result.error); }
+          } catch (error) { showCustomPopup('error', 'Error', error.message); }
         }
-      );
+      });
     }
 
-    // Build payload
     function buildPayload() {
       const globalScreeningType = document.getElementById('globalScreeningType').value;
       const screeningDate = document.getElementById('screeningDate').value;
       const screenerName = document.getElementById('screenerName').value;
       const wasAbsent = document.getElementById('absent').checked;
       const notes = document.getElementById('notes').value;
-      
-      const payload = {
-        uniqueId: currentStudent.unique_id,
-        screeningDate: screeningDate,
-        screeningType: globalScreeningType,
-        was_absent: wasAbsent,
-        notes: notes || null,
-        
-        // Student demographic fields (from the student object)
-        student_first_name: currentStudent.first_name,
-        student_last_name: currentStudent.last_name,
-        student_grade: currentStudent.grade,
-        student_gender: currentStudent.gender,
-        student_school: currentStudent.school,
-        student_teacher: currentStudent.teacher,
-        student_dob: currentStudent.dob,
-        student_status: currentStudent.status
-      };
-      
-      // Determine if this is initial or rescreen based on global type
-      const isInitial = globalScreeningType === 'initial';
-      const testKey = isInitial ? 'initial' : 'rescreen';
-      
-      // Vision data
+      const payload = { uniqueId: currentStudent.unique_id, screeningDate, screeningType: globalScreeningType, was_absent: wasAbsent, notes: notes || null, student_first_name: currentStudent.first_name, student_last_name: currentStudent.last_name, student_grade: currentStudent.grade, student_gender: currentStudent.gender, student_school: currentStudent.school, student_teacher: currentStudent.teacher, student_dob: currentStudent.dob, student_status: currentStudent.status };
+      const testKey = globalScreeningType === 'initial' ? 'initial' : 'rescreen';
       const visionData = getVisionData();
-      if (visionData || true) {  // Always include to preserve structure
-        payload.vision = {
-          [testKey]: visionData ? {
-            screener: screenerName,
-            date: screeningDate,
-            glasses: visionData.glasses || null,
-            rightEye: visionData.rightEye || null,
-            leftEye: visionData.leftEye || null,
-            result: visionData.result || null
-          } : null
-        };
-      }
-      
-      // Hearing data
+      payload.vision = { [testKey]: visionData ? { screener: screenerName, date: screeningDate, glasses: visionData.glasses, rightEye: visionData.rightEye, leftEye: visionData.leftEye, result: visionData.result } : null };
       const hearingData = getHearingData();
-      if (hearingData || true) {  // Always include to preserve structure
-        payload.hearing = {
-          [testKey]: hearingData ? {
-            screener: screenerName,
-            date: screeningDate,
-            result: hearingData.result || null,
-            right1000: hearingData.right1000 || null,
-            right2000: hearingData.right2000 || null,
-            right4000: hearingData.right4000 || null,
-            left1000: hearingData.left1000 || null,
-            left2000: hearingData.left2000 || null,
-            left4000: hearingData.left4000 || null
-          } : null
-        };
-      }
-      
-      // Acanthosis data
+      payload.hearing = { [testKey]: hearingData ? { screener: screenerName, date: screeningDate, result: hearingData.result, right1000: hearingData.right1000, right2000: hearingData.right2000, right4000: hearingData.right4000, left1000: hearingData.left1000, left2000: hearingData.left2000, left4000: hearingData.left4000 } : null };
       const acanthosisData = getAcanthosisData();
-      if (acanthosisData || true) {  // Always include to preserve structure
-        payload.acanthosis = {
-          [testKey]: acanthosisData ? {
-            screener: screenerName,
-            date: screeningDate,
-            result: acanthosisData.result || null
-          } : null
-        };
-      }
-      
-      // Scoliosis data
+      payload.acanthosis = { [testKey]: acanthosisData ? { screener: screenerName, date: screeningDate, result: acanthosisData.result } : null };
       const scoliosisData = getScoliosisData();
-      if (scoliosisData || true) {  // Always include to preserve structure
-        payload.scoliosis = {
-          [testKey]: scoliosisData ? {
-            screener: screenerName,
-            date: screeningDate,
-            result: scoliosisData.result || null,
-            observations: scoliosisData.observations || null
-          } : null
-        };
-      }
-
+      payload.scoliosis = { [testKey]: scoliosisData ? { screener: screenerName, date: screeningDate, result: scoliosisData.result, observations: scoliosisData.observations } : null };
       return payload;
     }
 
     function getVisionData() {
-      const visionAccordion = document.querySelector('[data-section="vision"]');
-      if (!visionAccordion?.classList.contains('open')) return null;
-      
+      if (!document.querySelector('[data-section="vision"]')?.classList.contains('open')) return null;
       const result = document.querySelector('input[name="visionResult"]:checked');
       if (!result) return null;
-      
-      const glasses = document.querySelector('input[name="visionGlasses"]:checked')?.value || 'no';
-      
-      return {
-        glasses: glasses,
-        rightEye: document.getElementById('visionRightEye').value || '',
-        leftEye: document.getElementById('visionLeftEye').value || '',
-        result: result.value
-      };
+      return { glasses: document.querySelector('input[name="visionGlasses"]:checked')?.value || 'no', rightEye: document.getElementById('visionRightEye').value, leftEye: document.getElementById('visionLeftEye').value, result: result.value };
     }
 
     function getHearingData() {
-      const hearingAccordion = document.querySelector('[data-section="hearing"]');
-      if (!hearingAccordion?.classList.contains('open')) return null;
-      
+      if (!document.querySelector('[data-section="hearing"]')?.classList.contains('open')) return null;
       const result = document.querySelector('input[name="hearingResult"]:checked');
       if (!result) return null;
-
-      const data = {
-        result: result.value
-      };
-
-      if (result.value === 'fail') {
-        // Find all buttons with status "fail"
-        const buttons = document.querySelectorAll('.hearing-freq[data-status="fail"]');
-        // Initialize all frequencies as pass
-        data.right1000 = 'pass';
-        data.right2000 = 'pass';
-        data.right4000 = 'pass';
-        data.left1000 = 'pass';
-        data.left2000 = 'pass';
-        data.left4000 = 'pass';
-        // Mark failed frequencies
-        buttons.forEach(button => {
-          const ear = button.dataset.ear;
-          const freq = button.dataset.freq;
-          data[`${ear}${freq}`] = 'fail';
-        });
-      } else {
-        data.right1000 = 'pass';
-        data.right2000 = 'pass';
-        data.right4000 = 'pass';
-        data.left1000 = 'pass';
-        data.left2000 = 'pass';
-        data.left4000 = 'pass';
-      }
-
+      const data = { result: result.value, right1000: 'pass', right2000: 'pass', right4000: 'pass', left1000: 'pass', left2000: 'pass', left4000: 'pass' };
+      document.querySelectorAll('.hearing-freq[data-status="fail"]').forEach(btn => { data[`${btn.dataset.ear}${btn.dataset.freq}`] = 'fail'; });
       return data;
     }
 
     function getAcanthosisData() {
-      const acanthosisAccordion = document.querySelector('[data-section="acanthosis"]');
-      if (!acanthosisAccordion?.classList.contains('open')) return null;
-      
+      if (!document.querySelector('[data-section="acanthosis"]')?.classList.contains('open')) return null;
       const result = document.querySelector('input[name="acanthosisResult"]:checked');
-      if (!result) return null;
-
-      return {
-        result: result.value
-      };
+      return result ? { result: result.value } : null;
     }
 
     function getScoliosisData() {
-      const scoliosisAccordion = document.querySelector('[data-section="scoliosis"]');
-      if (!scoliosisAccordion?.classList.contains('open')) return null;
-      
+      if (!document.querySelector('[data-section="scoliosis"]')?.classList.contains('open')) return null;
       const result = document.querySelector('input[name="scoliosisResult"]:checked');
       if (!result) return null;
-      
-      const observations = Array.from(document.querySelectorAll('input[name="scoliosisObs"]:checked'))
-        .map(cb => cb.value);
-      
-      return {
-        result: result.value,
-        observations: observations.join(', ')
-      };
+      const observations = Array.from(document.querySelectorAll('input[name="scoliosisObs"]:checked')).map(cb => cb.value);
+      return { result: result.value, observations: observations.join(', ') };
     }
 
-    // Reset form
     function resetForm() {
-      // Only clear student-specific fields, NOT screening details
-      const studentFields = ['searchId', 'searchLastName', 'searchSchool', 'firstName', 'lastName', 'grade', 'gender', 'newStudentSchool', 'teacher', 'dob', 'status'];
-      studentFields.forEach(id => {
+      ['searchId','searchLastName','searchSchool','firstName','lastName','grade','gender','newStudentSchool','teacher','dob','status','visionRightEye','visionLeftEye','notes'].forEach(id => {
         const el = document.getElementById(id);
-        if (el && (el.type === 'radio' || el.type === 'checkbox')) {
-          el.checked = false;
-        } else if (el) {
-          el.value = '';
-        }
+        if (el) el.value = '';
       });
-      
-      // Clear screening test fields only
-      const screeningFields = ['visionRightEye', 'visionLeftEye', 'notes'];
-      screeningFields.forEach(id => {
-        const el = document.getElementById(id);
-        if (el && (el.type === 'radio' || el.type === 'checkbox')) {
-          el.checked = false;
-        } else if (el) {
-          el.value = '';
-        }
-      });
-      
-      // Clear radio buttons in screening tests
-      document.querySelectorAll('input[name="visionResult"], input[name="visionGlasses"], input[name="hearingResult"], input[name="acanthosisResult"], input[name="scoliosisResult"]').forEach(el => el.checked = false);
-      // Reset hearing frequency buttons to plus (pass)
+      document.querySelectorAll('input[name="visionResult"],input[name="visionGlasses"],input[name="hearingResult"],input[name="acanthosisResult"],input[name="scoliosisResult"]').forEach(el => el.checked = false);
       resetHearingFrequencies();
-      
-      // Clear scoliosis observation checkboxes
       document.querySelectorAll('input[name="scoliosisObs"]').forEach(el => el.checked = false);
-      
-      // Clear notes
-      document.getElementById('notes').value = '';
-      
-      // Reset absent checkbox
       document.getElementById('absent').checked = false;
       absentChanged(false);
-      
-      // Close ALL accordion sections (collapse them)
-      const sections = ['vision', 'hearing', 'acanthosis', 'scoliosis'];
-      sections.forEach(section => {
-        const accordion = document.querySelector(`[data-section="${section}"]`);
-        if (accordion && accordion.classList.contains('open')) {
-          toggleAccordion(section); // This will close it
-        }
-      });
-      
-      // Reset to search tab
+      ['vision','hearing','acanthosis','scoliosis'].forEach(section => closeAccordion(section));
       switchTab('search');
-      
-      // Hide sections except student search and screening details
-      document.getElementById('studentInfo').classList.add('hidden');
-      document.getElementById('absentSection').classList.add('hidden');
-      document.getElementById('screeningTests').classList.add('hidden');
-      document.getElementById('notesSection').classList.add('hidden');
-      document.getElementById('submitSection').classList.add('hidden');
-      // NOTE: screeningDetails stays visible and keeps its values (screener name, date, type)
-      
-      // Hide all required and complete badges
-      document.getElementById('visionBadge').style.display = 'none';
-      document.getElementById('hearingBadge').style.display = 'none';
-      document.getElementById('acanthosisBadge').style.display = 'none';
-      document.getElementById('scoliosisBadge').style.display = 'none';
-      document.getElementById('visionCompleteBadge').style.display = 'none';
-      document.getElementById('hearingCompleteBadge').style.display = 'none';
-      document.getElementById('acanthosisCompleteBadge').style.display = 'none';
-      document.getElementById('scoliosisCompleteBadge').style.display = 'none';
-      
-      // Clear current student
+      ['studentInfo','absentSection','screeningTests','notesSection','submitSection'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      ['visionBadge','hearingBadge','acanthosisBadge','scoliosisBadge','visionCompleteBadge','hearingCompleteBadge','acanthosisCompleteBadge','scoliosisCompleteBadge'].forEach(id => document.getElementById(id).style.display = 'none');
       currentStudent = null;
-      
-      // Clear student info display elements
-      document.getElementById('displayStudentId').textContent = '';
-      document.getElementById('displayName').textContent = '';
-      document.getElementById('displayDetails').textContent = '';
-      document.getElementById('displayAdditional').textContent = '';
-      
-      // Clear search results
+      ['displayStudentId','displayName','displayDetails','displayAdditional'].forEach(id => document.getElementById(id).textContent = '');
       document.getElementById('searchResults').classList.add('hidden');
       document.getElementById('multipleResults').classList.add('hidden');
       document.getElementById('studentList').innerHTML = '';
-      
-      // Scroll to top
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Custom Popup Functions
     function showCustomPopup(type, title, message, options = {}) {
       const modal = document.getElementById('customModal');
       const modalIcon = document.getElementById('modalIcon');
@@ -2064,143 +1415,28 @@
       const modalMessage = document.getElementById('modalMessage');
       const modalCancelBtn = document.getElementById('modalCancelBtn');
       const modalConfirmBtn = document.getElementById('modalConfirmBtn');
-
-      // Set icon based on type
-      modalIcon.className = 'w-8 h-8 mr-3';
-      switch(type) {
-        case 'success':
-          modalIcon.classList.add('modal-success-icon');
-          modalIcon.innerHTML = '✓';
-          break;
-        case 'error':
-          modalIcon.classList.add('modal-error-icon');
-          modalIcon.innerHTML = '✕';
-          break;
-        case 'warning':
-          modalIcon.classList.add('modal-warning-icon');
-          modalIcon.innerHTML = '⚠';
-          break;
-        case 'info':
-        default:
-          modalIcon.classList.add('modal-info-icon');
-          modalIcon.innerHTML = 'ℹ';
-          break;
-      }
-
-      // Set content
+      modalIcon.className = 'w-10 h-10 rounded-full flex items-center justify-center text-white text-xl mr-3';
+      const icons = { success: ['bg-green-500', '✓'], error: ['bg-red-500', '✕'], warning: ['bg-amber-500', '⚠'], info: ['bg-blue-500', 'ℹ'] };
+      const [bg, icon] = icons[type] || icons.info;
+      modalIcon.classList.add(bg);
+      modalIcon.innerHTML = icon;
       modalTitle.textContent = title;
       modalMessage.innerHTML = message;
-
-      // Handle buttons
       if (options.showCancel) {
         modalCancelBtn.classList.remove('hidden');
         modalCancelBtn.textContent = options.cancelText || 'Cancel';
-        modalCancelBtn.onclick = () => {
-          hideCustomPopup();
-          if (options.onCancel) options.onCancel();
-        };
-      } else {
-        modalCancelBtn.classList.add('hidden');
-      }
-
+        modalCancelBtn.onclick = () => { hideCustomPopup(); if (options.onCancel) options.onCancel(); };
+      } else { modalCancelBtn.classList.add('hidden'); }
       modalConfirmBtn.textContent = options.confirmText || 'OK';
-      modalConfirmBtn.onclick = () => {
-        hideCustomPopup();
-        if (options.onConfirm) options.onConfirm();
-      };
-
-      // Show modal
+      modalConfirmBtn.onclick = () => { hideCustomPopup(); if (options.onConfirm) options.onConfirm(); };
       modal.classList.remove('hidden');
-      
-      // Auto-hide after delay if specified
-      if (options.autoHide) {
-        setTimeout(() => {
-          hideCustomPopup();
-        }, options.autoHide);
-      }
     }
 
-    function hideCustomPopup() {
-      const modal = document.getElementById('customModal');
-      if (modal) {
-        modal.classList.add('hidden');
-      }
-    }
+    function hideCustomPopup() { document.getElementById('customModal').classList.add('hidden'); }
 
-    // Close modal when clicking outside
-    const customModal = document.getElementById('customModal');
-    if (customModal) {
-      customModal.addEventListener('click', (e) => {
-        if (e.target === e.currentTarget) {
-          hideCustomPopup();
-        }
-      });
-    }
-
-    // Close modal with Escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        hideCustomPopup();
-      }
-    });
+    document.getElementById('customModal')?.addEventListener('click', (e) => { if (e.target === e.currentTarget) hideCustomPopup(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideCustomPopup(); });
   </script>
 
-  <!-- Custom Popup Modal -->
-  <div id="customModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-      <div class="flex items-center mb-4">
-        <div id="modalIcon" class="w-8 h-8 mr-3"></div>
-        <h3 id="modalTitle" class="text-lg font-semibold text-gray-900"></h3>
-      </div>
-      <p id="modalMessage" class="text-gray-700 mb-6"></p>
-      <div class="flex justify-end space-x-3">
-        <button id="modalCancelBtn" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 hidden">
-          Cancel
-        </button>
-        <button id="modalConfirmBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-          OK
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <style>
-    #customModal {
-      backdrop-filter: blur(4px);
-    }
-    
-    .modal-success-icon {
-      background: #10B981;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .modal-error-icon {
-      background: #EF4444;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .modal-warning-icon {
-      background: #F59E0B;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .modal-info-icon {
-      background: #3B82F6;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-  </style>
-  
 </body>
 </html>
