@@ -962,6 +962,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
+      console.log('Page loaded, API_BASE:', API_BASE);
       await loadSchools();
       await loadScreeners();
       setDefaultDate();
@@ -972,32 +973,67 @@
       try {
         const response = await fetch(`${API_BASE}/schools${CACHE_BUST}`);
         const data = await response.json();
-        if (!response.ok || data.error) { schools = []; return; }
+        
+        if (!response.ok || data.error) {
+          console.error('Failed to load schools:', data.error || response.status);
+          schools = [];
+          return;
+        }
+        
         schools = data;
         const searchSelect = document.getElementById('searchSchool');
         const newSelect = document.getElementById('newStudentSchool');
-        if (Array.isArray(schools)) {
+        
+        if (!searchSelect || !newSelect) {
+          console.error('School select elements not found');
+          return;
+        }
+        
+        if (Array.isArray(schools) && schools.length > 0) {
           schools.forEach(school => {
             searchSelect.add(new Option(school.name, school.name));
             newSelect.add(new Option(school.name, school.name));
           });
+          console.log(`Loaded ${schools.length} schools`);
         }
+        
         searchSelect.add(new Option('Other', 'other'));
         newSelect.add(new Option('Other', 'other'));
-      } catch (error) { schools = []; }
+      } catch (error) {
+        console.error('Error loading schools:', error);
+        schools = [];
+      }
     }
 
     async function loadScreeners() {
       try {
         const response = await fetch(`${API_BASE}/screeners${CACHE_BUST}`);
         const data = await response.json();
-        if (!response.ok || data.error) { screeners = []; } else { screeners = data; }
-        const select = document.getElementById('screenerName');
-        if (Array.isArray(screeners)) {
-          screeners.forEach(s => select.add(new Option(s.name, s.name)));
+        
+        if (!response.ok || data.error) {
+          console.error('Failed to load screeners:', data.error || response.status);
+          screeners = [];
+        } else {
+          screeners = data;
         }
+        
+        const select = document.getElementById('screenerName');
+        
+        if (!select) {
+          console.error('Screener select element not found');
+          return;
+        }
+        
+        if (Array.isArray(screeners) && screeners.length > 0) {
+          screeners.forEach(s => select.add(new Option(s.name, s.name)));
+          console.log(`Loaded ${screeners.length} screeners`);
+        }
+        
         select.add(new Option('Other', 'other'));
-      } catch (error) { screeners = []; }
+      } catch (error) {
+        console.error('Error loading screeners:', error);
+        screeners = [];
+      }
     }
 
     function autoFillScreener() { }
