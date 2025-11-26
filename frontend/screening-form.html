@@ -121,6 +121,16 @@
       margin-left: 10px;
     }
     
+    .complete-badge {
+      background-color: #4CAF50;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+    
     .accordion-header {
       display: flex;
       align-items: center;
@@ -385,6 +395,7 @@
           <span class="accordion-header-text">
             Vision Screening
             <span class="required-badge" id="visionBadge" style="display: none;">Required</span>
+            <span class="complete-badge" id="visionCompleteBadge" style="display: none;">✓ Complete</span>
           </span>
           <span class="accordion-icon">▼</span>
         </button>
@@ -454,6 +465,7 @@
           <span class="accordion-header-text">
             Hearing Screening
             <span class="required-badge" id="hearingBadge" style="display: none;">Required</span>
+            <span class="complete-badge" id="hearingCompleteBadge" style="display: none;">✓ Complete</span>
           </span>
           <span class="accordion-icon">▼</span>
         </button>
@@ -515,6 +527,7 @@
           <span class="accordion-header-text">
             Acanthosis Screening
             <span class="required-badge" id="acanthosisBadge" style="display: none;">Required</span>
+            <span class="complete-badge" id="acanthosisCompleteBadge" style="display: none;">✓ Complete</span>
           </span>
           <span class="accordion-icon">▼</span>
         </button>
@@ -537,6 +550,7 @@
           <span class="accordion-header-text">
             Scoliosis Screening
             <span class="required-badge" id="scoliosisBadge" style="display: none;">Required</span>
+            <span class="complete-badge" id="scoliosisCompleteBadge" style="display: none;">✓ Complete</span>
           </span>
           <span class="accordion-icon">▼</span>
         </button>
@@ -760,8 +774,6 @@
     
     // Add cache-busting parameter for API calls
     const CACHE_BUST = `?v=${Date.now()}`;
-    // Add debugging information
-    console.log('Page loaded, API_BASE:', API_BASE);
 
     // Helper function for title case formatting
     function toTitleCase(str) {
@@ -776,22 +788,6 @@
         })
         .join(' ');
     }
-    console.log('Cache bust parameter:', CACHE_BUST);
-    
-    // Test API connection immediately
-    fetch(`${API_BASE}/health${CACHE_BUST}`)
-      .then(response => response.json())
-      .then(data => {
-        console.log('Health check response:', data);
-        if (data.supabase === 'connected') {
-          console.log('✅ Database connection confirmed');
-        } else {
-          console.log('❌ Database connection issue:', data);
-        }
-      })
-      .catch(error => {
-        console.error('❌ Health check failed:', error);
-      });
 
     // AUTHENTICATION REMOVED - App is now fully accessible without login
     // All auth functions (checkAuth, clearAuth, handleLogout) have been removed
@@ -957,25 +953,18 @@
 
     // Search by student ID
     async function searchById() {
-      console.log('🔍 searchById function called');
       const studentId = document.getElementById('searchId').value.trim().toLowerCase();
-      console.log('🔍 Student ID:', studentId);
       
       if (!studentId) {
         showCustomPopup('warning', 'Missing Student ID', 'Please enter a student ID');
         return;
       }
-
-      console.log('🔍 Making API call to:', `${API_BASE}/students/${studentId}${CACHE_BUST}`);
       
       try {
         const response = await fetch(`${API_BASE}/students/${studentId}${CACHE_BUST}`);
-        console.log('🔍 Response status:', response.status);
         const data = await response.json();
-        console.log('🔍 Response data:', data);
         
         if (!response.ok) {
-          console.error('❌ API Error:', response.status, data);
           showCustomPopup('error', 'API Error', `Error: ${response.status} - ${data.error || 'Unknown error'}`);
           return;
         }
@@ -985,11 +974,8 @@
           return;
         }
         
-        console.log('🔍 Loading student data:', data.student);
-        console.log('🔍 Required screenings from API:', data.requiredScreenings);
-        loadStudentData(data.student, data.requiredScreenings);
+        loadStudentData(data.student, data.requiredScreenings, data.completedScreenings);
       } catch (error) {
-        console.error('💥 Error searching for student:', error);
         showCustomPopup('error', 'Connection Error', 'Error connecting to the database. Please try again later.');
       }
     }
@@ -998,8 +984,6 @@
     async function searchByName() {
       const lastName = document.getElementById('searchLastName').value.trim();
       const school = document.getElementById('searchSchool').value;
-      
-      console.log('🔍 searchByName called with:', { lastName, school });
       
       if (!lastName) {
         showCustomPopup('warning', 'Missing Information', 'Please enter a last name');
@@ -1012,35 +996,23 @@
       }
       
       try {
-        console.log('🔍 Searching for:', lastName, 'at', school);
-        
         const url = `${API_BASE}/students/search?lastName=${encodeURIComponent(lastName)}&school=${encodeURIComponent(school)}&v=${Date.now()}`;
-        console.log('🔍 API URL:', url);
-        
         const response = await fetch(url);
-        console.log('🔍 Response status:', response.status);
         
         if (!response.ok) {
           const errorData = await response.json();
-          console.error('❌ API Error:', response.status, errorData);
           showCustomPopup('error', 'API Error', `Error: ${response.status} - ${errorData.error || 'Unknown error'}`);
           return;
         }
         
         const data = await response.json();
-        console.log('🔍 Response data:', data);
-        console.log('🔍 data.found:', data.found);
-        console.log('🔍 typeof data.found:', typeof data.found);
-        console.log('🔍 !data.found:', !data.found);
         
         if (!data.found) {
-          console.log('❌ Student not found - showing popup');
           showCustomPopup('warning', 'Student Not Found', 'No students found with that name at this school');
           return;
         }
         
         if (data.multiple) {
-          console.log('🔍 Multiple students found:', data.students.length);
           // Show multiple results
           document.getElementById('searchResults').classList.remove('hidden');
           document.getElementById('multipleResults').classList.remove('hidden');
@@ -1058,8 +1030,7 @@
             listDiv.appendChild(div);
           });
         } else {
-          console.log('🔍 Single student found:', data.student);
-          loadStudentData(data.student, data.requiredScreenings);
+          loadStudentData(data.student, data.requiredScreenings, data.completedScreenings);
           document.getElementById('searchResults').classList.add('hidden');
           document.getElementById('multipleResults').classList.add('hidden');
         }
@@ -1461,11 +1432,7 @@
     }
 
     // Load student data
-    function loadStudentData(student, requiredScreenings) {
-      console.log('=== LOAD STUDENT DATA ===');
-      console.log('Student:', student);
-      console.log('Required Screenings:', requiredScreenings);
-      
+    function loadStudentData(student, requiredScreenings, completedScreenings) {
       // Validate student data completeness
       const validation = validateStudentData(student);
       
@@ -1476,6 +1443,9 @@
       }
       
       currentStudent = student;
+      
+      // Default completedScreenings if not provided
+      const completed = completedScreenings || { vision: false, hearing: false, acanthosis: false, scoliosis: false };
       
       // Display student info
       document.getElementById('displayStudentId').textContent = student.unique_id;
@@ -1490,8 +1460,7 @@
       document.getElementById('notesSection').classList.remove('hidden');
       document.getElementById('submitSection').classList.remove('hidden');
       
-      // First, close ALL accordions and hide ALL badges
-      console.log('Processing accordions - closing all first');
+      // First, close ALL accordions and hide ALL badges (required and complete)
       closeAccordion('vision');
       closeAccordion('hearing');
       closeAccordion('acanthosis');
@@ -1500,49 +1469,56 @@
       document.getElementById('hearingBadge').style.display = 'none';
       document.getElementById('acanthosisBadge').style.display = 'none';
       document.getElementById('scoliosisBadge').style.display = 'none';
+      document.getElementById('visionCompleteBadge').style.display = 'none';
+      document.getElementById('hearingCompleteBadge').style.display = 'none';
+      document.getElementById('acanthosisCompleteBadge').style.display = 'none';
+      document.getElementById('scoliosisCompleteBadge').style.display = 'none';
       
-      // Now show/hide required badges and auto-open required sections
-      console.log('Processing badges and accordions, requiredScreenings:', requiredScreenings);
+      // Now show badges and auto-open sections based on required AND completion status
       if (requiredScreenings) {
-        console.log('Required screenings found, processing...');
-        
-        // Vision
+        // Vision: required + not complete = open, required + complete = show complete badge
         if (requiredScreenings.vision) {
-          console.log('✅ Vision is REQUIRED - showing badge and opening accordion');
-          document.getElementById('visionBadge').style.display = 'inline-block';
-          openAccordion('vision');
-        } else {
-          console.log('❌ Vision is NOT required');
+          if (completed.vision) {
+            document.getElementById('visionCompleteBadge').style.display = 'inline-block';
+            // Don't auto-open - it's complete
+          } else {
+            document.getElementById('visionBadge').style.display = 'inline-block';
+            openAccordion('vision');
+          }
         }
         
-        // Hearing
+        // Hearing: required + not complete = open, required + complete = show complete badge
         if (requiredScreenings.hearing) {
-          console.log('✅ Hearing is REQUIRED - showing badge and opening accordion');
-          document.getElementById('hearingBadge').style.display = 'inline-block';
-          openAccordion('hearing');
-        } else {
-          console.log('❌ Hearing is NOT required');
+          if (completed.hearing) {
+            document.getElementById('hearingCompleteBadge').style.display = 'inline-block';
+            // Don't auto-open - it's complete
+          } else {
+            document.getElementById('hearingBadge').style.display = 'inline-block';
+            openAccordion('hearing');
+          }
         }
         
-        // Acanthosis
+        // Acanthosis: required + not complete = open, required + complete = show complete badge
         if (requiredScreenings.acanthosis) {
-          console.log('✅ Acanthosis is REQUIRED - showing badge and opening accordion');
-          document.getElementById('acanthosisBadge').style.display = 'inline-block';
-          openAccordion('acanthosis');
-        } else {
-          console.log('❌ Acanthosis is NOT required');
+          if (completed.acanthosis) {
+            document.getElementById('acanthosisCompleteBadge').style.display = 'inline-block';
+            // Don't auto-open - it's complete
+          } else {
+            document.getElementById('acanthosisBadge').style.display = 'inline-block';
+            openAccordion('acanthosis');
+          }
         }
         
-        // Scoliosis
+        // Scoliosis: required + not complete = open, required + complete = show complete badge
         if (requiredScreenings.scoliosis) {
-          console.log('✅ Scoliosis is REQUIRED - showing badge and opening accordion');
-          document.getElementById('scoliosisBadge').style.display = 'inline-block';
-          openAccordion('scoliosis');
-        } else {
-          console.log('❌ Scoliosis is NOT required');
+          if (completed.scoliosis) {
+            document.getElementById('scoliosisCompleteBadge').style.display = 'inline-block';
+            // Don't auto-open - it's complete
+          } else {
+            document.getElementById('scoliosisBadge').style.display = 'inline-block';
+            openAccordion('scoliosis');
+          }
         }
-      } else {
-        console.error('❌ No requiredScreenings object provided!');
       }
       
       // Scroll to student info
@@ -1568,32 +1544,20 @@
     }
 
     function openAccordion(section) {
-      console.log(`openAccordion called for: ${section}`);
-      const accordion = document.querySelector(`[data-section="${section}"]`);
-      if (!accordion) {
-        console.error(`Accordion not found for section: ${section}`);
-        return;
-      }
-      const content = accordion.querySelector('.accordion-content');
-      if (!content) {
-        console.error(`Content not found for section: ${section}`);
-        return;
-      }
-      console.log(`Opening accordion ${section}, content exists:`, content);
-      // Remove any inline display style (cleanup)
-      content.style.display = '';
-      content.classList.add('open');
-      accordion.classList.add('open');
-      console.log(`Accordion ${section} is now open`);
-    }
-    
-    function closeAccordion(section) {
-      console.log(`closeAccordion called for: ${section}`);
       const accordion = document.querySelector(`[data-section="${section}"]`);
       if (!accordion) return;
       const content = accordion.querySelector('.accordion-content');
       if (!content) return;
-      // Remove inline display style if it exists (cleanup)
+      content.style.display = '';
+      content.classList.add('open');
+      accordion.classList.add('open');
+    }
+    
+    function closeAccordion(section) {
+      const accordion = document.querySelector(`[data-section="${section}"]`);
+      if (!accordion) return;
+      const content = accordion.querySelector('.accordion-content');
+      if (!content) return;
       content.style.display = '';
       content.classList.remove('open');
       accordion.classList.remove('open');
@@ -1797,12 +1761,6 @@
           cancelText: 'Cancel',
           onConfirm: async () => {
             const payload = buildPayload();
-            console.log('=== FRONTEND PAYLOAD BEING SENT ===');
-            console.log('Full payload:', JSON.stringify(payload, null, 2));
-            console.log('Vision structure:', payload.vision);
-            console.log('Hearing structure:', payload.hearing);
-            console.log('Vision result:', payload.vision?.initial?.result || payload.vision?.rescreen?.result);
-            console.log('Hearing result:', payload.hearing?.initial?.result || payload.hearing?.rescreen?.result);
             
             try {
               const response = await fetch(`${API_BASE}/screenings${CACHE_BUST}`, {
@@ -2070,11 +2028,15 @@
       document.getElementById('submitSection').classList.add('hidden');
       // NOTE: screeningDetails stays visible and keeps its values (screener name, date, type)
       
-      // Hide all required badges
+      // Hide all required and complete badges
       document.getElementById('visionBadge').style.display = 'none';
       document.getElementById('hearingBadge').style.display = 'none';
       document.getElementById('acanthosisBadge').style.display = 'none';
       document.getElementById('scoliosisBadge').style.display = 'none';
+      document.getElementById('visionCompleteBadge').style.display = 'none';
+      document.getElementById('hearingCompleteBadge').style.display = 'none';
+      document.getElementById('acanthosisCompleteBadge').style.display = 'none';
+      document.getElementById('scoliosisCompleteBadge').style.display = 'none';
       
       // Clear current student
       currentStudent = null;

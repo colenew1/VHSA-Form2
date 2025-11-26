@@ -53,7 +53,6 @@ router.post('/search', async (req, res) => {
 router.get('/:uniqueId', async (req, res) => {
   try {
     const { uniqueId } = req.params;
-    console.log('Searching for student:', uniqueId);
     
     const { data: student, error: studentError } = await supabase
       .from('students')

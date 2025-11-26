@@ -1,12 +1,17 @@
-// AUTHENTICATION REMOVED - This file is disabled while auth system is rebuilt
-// All auth routes have been commented out. Auth will be rebuilt as a separate standalone system.
-// To re-enable: Restore the import in server.js (line 10) and uncomment the route (line 52)
+/**
+ * ARCHIVED: Authentication routes for magic link login
+ * 
+ * Original location: backend/routes/auth.js
+ * Archived on: 2024-11-26
+ * Reason: Auth system being rebuilt as standalone system
+ * 
+ * To restore: Move to backend/routes/auth.js and update server.js imports
+ */
 
-// DISABLED - File kept for reference but not imported in server.js
-// import express from 'express';
-// import { supabase } from '../utils/supabase.js';
-// 
-// const router = express.Router();
+import express from 'express';
+import { supabase } from '../utils/supabase.js';
+
+const router = express.Router();
 
 // GET /api/auth/config
 // Returns Supabase configuration for frontend (anon key only, safe to expose)
@@ -34,23 +39,13 @@ router.post('/request-magic-link', async (req, res) => {
     const normalizedEmail = email.toLowerCase().trim();
 
     // Optional: Check if email exists in screener_users table
-    // For now, we'll allow any email (can be restricted later)
     const { data: existingUser, error: checkError } = await supabase
       .from('screener_users')
       .select('email')
       .eq('email', normalizedEmail)
       .single();
 
-    // If you want to restrict to only emails in screener_users table, uncomment:
-    // if (checkError || !existingUser) {
-    //   return res.status(403).json({
-    //     success: false,
-    //     error: 'Email not authorized to access screening form'
-    //   });
-    // }
-
     // Send magic link via Supabase Auth REST API
-    // Note: This requires Supabase Auth to be configured with email provider
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
     
@@ -96,14 +91,13 @@ router.post('/request-magic-link', async (req, res) => {
         .from('screener_users')
         .insert({
           email: normalizedEmail,
-          name: null // Can be updated later
+          name: null
         })
         .select()
         .single();
 
       if (insertError) {
         console.error('Error creating screener user:', insertError);
-        // Don't fail the request, just log it
       }
     }
 
@@ -122,7 +116,6 @@ router.post('/request-magic-link', async (req, res) => {
 
 // GET /api/auth/callback
 // Handles magic link redirect from Supabase
-// Redirects to frontend with token_hash for client-side exchange
 router.get('/callback', async (req, res) => {
   try {
     const { token_hash, type, email } = req.query;
@@ -148,7 +141,10 @@ router.get('/callback', async (req, res) => {
     if (email) redirectUrl.searchParams.set('email', email);
 
     res.redirect(redirectUrl.toString());
-
+  } catch (error) {
+    console.error('Error in callback:', error);
+    res.status(500).send('Authentication error');
+  }
 });
 
 // POST /api/auth/verify-session
@@ -192,10 +188,6 @@ router.post('/verify-session', async (req, res) => {
         .eq('email', user.email.toLowerCase());
     }
 
-    if (dbError) {
-      console.error('Error fetching screener user:', dbError);
-    }
-
     res.json({
       success: true,
       user: {
@@ -219,7 +211,6 @@ router.post('/verify-session', async (req, res) => {
 // Returns current user info (protected route)
 router.get('/me', async (req, res) => {
   try {
-    // Get token from Authorization header
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
@@ -229,8 +220,6 @@ router.get('/me', async (req, res) => {
     }
 
     const access_token = authHeader.substring(7);
-
-    // Verify the session with Supabase
     const { data: { user }, error } = await supabase.auth.getUser(access_token);
 
     if (error || !user) {
@@ -240,27 +229,11 @@ router.get('/me', async (req, res) => {
       });
     }
 
-    // Get user info from screener_users table and update last_login
-    const { data: screenerUser, error: dbError } = await supabase
+    const { data: screenerUser } = await supabase
       .from('screener_users')
       .select('id, email, name, created_at, last_login')
       .eq('email', user.email?.toLowerCase())
       .single();
-
-    // Update last_login timestamp
-    if (user.email) {
-      await supabase
-        .from('screener_users')
-        .update({ 
-          last_login: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('email', user.email.toLowerCase());
-    }
-
-    if (dbError) {
-      console.error('Error fetching screener user:', dbError);
-    }
 
     res.json({
       success: true,
@@ -282,13 +255,11 @@ router.get('/me', async (req, res) => {
 });
 
 // POST /api/auth/logout
-// Clears session (client-side should also clear localStorage)
 router.post('/logout', async (req, res) => {
   try {
     const { access_token } = req.body;
 
     if (access_token) {
-      // Sign out from Supabase
       await supabase.auth.signOut();
     }
 
@@ -305,5 +276,5 @@ router.post('/logout', async (req, res) => {
   }
 });
 
-// export default router; // DISABLED - File not imported in server.js
+export default router;
 

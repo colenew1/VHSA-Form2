@@ -5,7 +5,6 @@ const router = express.Router();
 
 router.get('/', async (req, res) => {
   try {
-    console.log('Fetching active schools...');
     const { data, error } = await supabase
       .from('schools')
       .select('*')

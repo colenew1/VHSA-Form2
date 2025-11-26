@@ -5,7 +5,6 @@ const router = express.Router();
 
 router.get('/', async (req, res) => {
   try {
-    console.log('Fetching active screeners...');
     const { data, error } = await supabase
       .from('screeners')
       .select('*')
