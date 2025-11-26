@@ -133,6 +133,11 @@
     .badge-complete {
       background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
       color: white;
+    }
+    
+    .badge-rescreen {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
       padding: 4px 12px;
       border-radius: 20px;
       font-size: 11px;
@@ -483,7 +488,7 @@
       <!-- Info Box -->
       <div class="bg-blue-50 border-l-4 border-blue-500 rounded-r-xl p-4">
         <p class="text-sm text-blue-800">
-          <span class="font-bold">Tip:</span> Sections marked <span class="badge-required ml-1">Required</span> are based on student's grade & status.
+          <span class="font-bold">Tip:</span> <span class="badge-required">Required</span> = needs initial screening. <span class="badge-rescreen ml-1">⟳ Rescreen</span> = failed initial, needs rescreen.
         </p>
       </div>
       
@@ -495,6 +500,7 @@
             <span class="font-bold text-gray-900 text-lg">Vision</span>
             <span class="badge-required" id="visionBadge" style="display: none;">Required</span>
             <span class="badge-complete" id="visionCompleteBadge" style="display: none;">✓ Done</span>
+            <span class="badge-rescreen" id="visionRescreenBadge" style="display: none;">⟳ Rescreen</span>
           </span>
           <span class="accordion-icon text-gray-400 text-xl">▼</span>
         </button>
@@ -587,6 +593,7 @@
             <span class="font-bold text-gray-900 text-lg">Hearing</span>
             <span class="badge-required" id="hearingBadge" style="display: none;">Required</span>
             <span class="badge-complete" id="hearingCompleteBadge" style="display: none;">✓ Done</span>
+            <span class="badge-rescreen" id="hearingRescreenBadge" style="display: none;">⟳ Rescreen</span>
           </span>
           <span class="accordion-icon text-gray-400 text-xl">▼</span>
         </button>
@@ -663,6 +670,7 @@
             <span class="font-bold text-gray-900 text-lg">Acanthosis</span>
             <span class="badge-required" id="acanthosisBadge" style="display: none;">Required</span>
             <span class="badge-complete" id="acanthosisCompleteBadge" style="display: none;">✓ Done</span>
+            <span class="badge-rescreen" id="acanthosisRescreenBadge" style="display: none;">⟳ Rescreen</span>
           </span>
           <span class="accordion-icon text-gray-400 text-xl">▼</span>
         </button>
@@ -695,6 +703,7 @@
             <span class="font-bold text-gray-900 text-lg">Scoliosis</span>
             <span class="badge-required" id="scoliosisBadge" style="display: none;">Required</span>
             <span class="badge-complete" id="scoliosisCompleteBadge" style="display: none;">✓ Done</span>
+            <span class="badge-rescreen" id="scoliosisRescreenBadge" style="display: none;">⟳ Rescreen</span>
           </span>
           <span class="accordion-icon text-gray-400 text-xl">▼</span>
         </button>
@@ -1283,12 +1292,20 @@
       document.getElementById('notesSection').classList.remove('hidden');
       document.getElementById('submitSection').classList.remove('hidden');
       closeAccordion('vision'); closeAccordion('hearing'); closeAccordion('acanthosis'); closeAccordion('scoliosis');
-      ['visionBadge','hearingBadge','acanthosisBadge','scoliosisBadge','visionCompleteBadge','hearingCompleteBadge','acanthosisCompleteBadge','scoliosisCompleteBadge'].forEach(id => document.getElementById(id).style.display = 'none');
+      ['visionBadge','hearingBadge','acanthosisBadge','scoliosisBadge','visionCompleteBadge','hearingCompleteBadge','acanthosisCompleteBadge','scoliosisCompleteBadge','visionRescreenBadge','hearingRescreenBadge','acanthosisRescreenBadge','scoliosisRescreenBadge'].forEach(id => document.getElementById(id).style.display = 'none');
       if (requiredScreenings) {
         ['vision','hearing','acanthosis','scoliosis'].forEach(test => {
           if (requiredScreenings[test]) {
-            if (completed[test]) { document.getElementById(`${test}CompleteBadge`).style.display = 'inline-block'; }
-            else { document.getElementById(`${test}Badge`).style.display = 'inline-block'; openAccordion(test); }
+            if (completed[test]) { 
+              document.getElementById(`${test}CompleteBadge`).style.display = 'inline-block'; 
+            } else if (currentNeedsRescreen[test]) {
+              // Failed initial, needs rescreen
+              document.getElementById(`${test}RescreenBadge`).style.display = 'inline-block';
+              openAccordion(test);
+            } else { 
+              document.getElementById(`${test}Badge`).style.display = 'inline-block'; 
+              openAccordion(test); 
+            }
           }
         });
       }
@@ -1410,12 +1427,18 @@
       const screenerName = document.getElementById('screenerName').value.trim();
       if (!screenerName) { showCustomPopup('warning', 'Error', 'Select a screener'); return; }
       const isAbsent = document.getElementById('absent').checked;
-      if (!isAbsent) {
-        const hasAnyData = getVisionData() || getHearingData() || getAcanthosisData() || getScoliosisData();
-        if (!hasAnyData) { showCustomPopup('warning', 'Error', 'Complete at least one screening'); return; }
+      const hasNotes = document.getElementById('notes').value.trim().length > 0;
+      const hasAnyData = getVisionData() || getHearingData() || getAcanthosisData() || getScoliosisData();
+      
+      // Allow submission if: absent OR has notes OR has screening data
+      if (!isAbsent && !hasNotes && !hasAnyData) { 
+        showCustomPopup('warning', 'Error', 'Complete at least one screening or add a note'); 
+        return; 
       }
+      
+      // Only check for incomplete open sections if we have screening data (not just notes)
       const incompleteSections = [];
-      if (!isAbsent) {
+      if (!isAbsent && hasAnyData) {
         if (document.querySelector('[data-section="vision"]')?.classList.contains('open') && !document.querySelector('input[name="visionResult"]:checked')) incompleteSections.push('Vision');
         if (document.querySelector('[data-section="hearing"]')?.classList.contains('open') && !document.querySelector('input[name="hearingResult"]:checked')) incompleteSections.push('Hearing');
         if (document.querySelector('[data-section="acanthosis"]')?.classList.contains('open') && !document.querySelector('input[name="acanthosisResult"]:checked')) incompleteSections.push('Acanthosis');
@@ -1498,7 +1521,7 @@
       ['vision','hearing','acanthosis','scoliosis'].forEach(section => closeAccordion(section));
       switchTab('search');
       ['studentInfo','absentSection','screeningTests','notesSection','submitSection'].forEach(id => document.getElementById(id).classList.add('hidden'));
-      ['visionBadge','hearingBadge','acanthosisBadge','scoliosisBadge','visionCompleteBadge','hearingCompleteBadge','acanthosisCompleteBadge','scoliosisCompleteBadge'].forEach(id => document.getElementById(id).style.display = 'none');
+      ['visionBadge','hearingBadge','acanthosisBadge','scoliosisBadge','visionCompleteBadge','hearingCompleteBadge','acanthosisCompleteBadge','scoliosisCompleteBadge','visionRescreenBadge','hearingRescreenBadge','acanthosisRescreenBadge','scoliosisRescreenBadge'].forEach(id => document.getElementById(id).style.display = 'none');
       currentStudent = null;
       currentNeedsRescreen = { vision: false, hearing: false, acanthosis: false, scoliosis: false };
       currentRequiredScreenings = { vision: false, hearing: false, acanthosis: false, scoliosis: false };
