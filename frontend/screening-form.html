@@ -954,6 +954,9 @@
     
     const CACHE_BUST = `?v=${Date.now()}`;
     let currentStudent = null;
+    let currentNeedsRescreen = { vision: false, hearing: false, acanthosis: false, scoliosis: false };
+    let currentRequiredScreenings = { vision: false, hearing: false, acanthosis: false, scoliosis: false };
+    let currentCompletedScreenings = { vision: false, hearing: false, acanthosis: false, scoliosis: false };
     let schools = [];
     let screeners = [];
 
@@ -1076,7 +1079,7 @@
         const data = await response.json();
         if (!response.ok) { showCustomPopup('error', 'Error', `Error: ${response.status}`); return; }
         if (!data.found) { showCustomPopup('warning', 'Not Found', 'Student not found'); return; }
-        loadStudentData(data.student, data.requiredScreenings, data.completedScreenings);
+        loadStudentData(data.student, data.requiredScreenings, data.completedScreenings, data.needsRescreen);
       } catch (error) { showCustomPopup('error', 'Error', 'Connection error'); }
     }
 
@@ -1104,7 +1107,7 @@
             listDiv.appendChild(div);
           });
         } else {
-          loadStudentData(data.student, data.requiredScreenings, data.completedScreenings);
+          loadStudentData(data.student, data.requiredScreenings, data.completedScreenings, data.needsRescreen);
           document.getElementById('searchResults').classList.add('hidden');
           document.getElementById('multipleResults').classList.add('hidden');
         }
@@ -1260,11 +1263,16 @@
       return { isComplete: missingFields.length === 0, missingFields };
     }
 
-    function loadStudentData(student, requiredScreenings, completedScreenings) {
+    function loadStudentData(student, requiredScreenings, completedScreenings, needsRescreen) {
       const validation = validateStudentData(student);
       if (!validation.isComplete) { showEditStudentModal(student, validation.missingFields); return; }
       currentStudent = student;
-      const completed = completedScreenings || { vision: false, hearing: false, acanthosis: false, scoliosis: false };
+      currentRequiredScreenings = requiredScreenings || { vision: false, hearing: false, acanthosis: false, scoliosis: false };
+      currentNeedsRescreen = needsRescreen || { vision: false, hearing: false, acanthosis: false, scoliosis: false };
+      currentCompletedScreenings = completedScreenings || { vision: false, hearing: false, acanthosis: false, scoliosis: false };
+      const completed = currentCompletedScreenings;
+      // Reset to Initial screening type when loading new student
+      document.getElementById('globalScreeningType').value = 'initial';
       document.getElementById('displayStudentId').textContent = student.unique_id;
       document.getElementById('displayName').textContent = `${student.first_name} ${student.last_name}`;
       document.getElementById('displayDetails').textContent = `${student.grade} • ${student.gender}`;
@@ -1310,7 +1318,28 @@
       content.classList.remove('open'); accordion.classList.remove('open');
     }
 
-    function applyGlobalScreeningType() { }
+    function applyGlobalScreeningType() {
+      const screeningType = document.getElementById('globalScreeningType').value;
+      // Close all accordions first
+      closeAccordion('vision'); closeAccordion('hearing'); closeAccordion('acanthosis'); closeAccordion('scoliosis');
+      
+      if (screeningType === 'rescreen') {
+        // Only open sections that need rescreening (failed initial + no rescreen yet)
+        if (currentNeedsRescreen.vision) openAccordion('vision');
+        if (currentNeedsRescreen.hearing) openAccordion('hearing');
+        if (currentNeedsRescreen.acanthosis) openAccordion('acanthosis');
+        if (currentNeedsRescreen.scoliosis) openAccordion('scoliosis');
+      } else {
+        // Initial screening: open required sections that aren't completed yet
+        ['vision', 'hearing', 'acanthosis', 'scoliosis'].forEach(section => {
+          const isRequired = currentRequiredScreenings[section];
+          const isCompleted = currentCompletedScreenings[section];
+          if (isRequired && !isCompleted) {
+            openAccordion(section);
+          }
+        });
+      }
+    }
     function visionResultChanged(result) { document.getElementById('visionRightEye').value = result === 'pass' ? '20' : ''; document.getElementById('visionLeftEye').value = result === 'pass' ? '20' : ''; }
     function hearingResultChanged(result) { resetHearingFrequencies(); }
 
@@ -1471,6 +1500,9 @@
       ['studentInfo','absentSection','screeningTests','notesSection','submitSection'].forEach(id => document.getElementById(id).classList.add('hidden'));
       ['visionBadge','hearingBadge','acanthosisBadge','scoliosisBadge','visionCompleteBadge','hearingCompleteBadge','acanthosisCompleteBadge','scoliosisCompleteBadge'].forEach(id => document.getElementById(id).style.display = 'none');
       currentStudent = null;
+      currentNeedsRescreen = { vision: false, hearing: false, acanthosis: false, scoliosis: false };
+      currentRequiredScreenings = { vision: false, hearing: false, acanthosis: false, scoliosis: false };
+      currentCompletedScreenings = { vision: false, hearing: false, acanthosis: false, scoliosis: false };
       ['displayStudentId','displayName','displayDetails','displayAdditional'].forEach(id => document.getElementById(id).textContent = '');
       document.getElementById('searchResults').classList.add('hidden');
       document.getElementById('multipleResults').classList.add('hidden');

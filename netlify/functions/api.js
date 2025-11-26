@@ -94,6 +94,26 @@ function calculateCompletionStatus(screeningRecord) {
   return completion;
 }
 
+// Returns which screenings failed initial and need a rescreen (failed initial + no rescreen yet)
+function calculateNeedsRescreen(screeningRecord) {
+  const needsRescreen = { vision: false, hearing: false, acanthosis: false, scoliosis: false };
+  if (!screeningRecord) return needsRescreen;
+  
+  const visionInitialResult = screeningRecord.vision_initial_result?.toLowerCase();
+  if (visionInitialResult === 'fail' && !screeningRecord.vision_rescreen_result) needsRescreen.vision = true;
+  
+  const hearingInitialResult = screeningRecord.hearing_initial_result?.toLowerCase();
+  if (hearingInitialResult === 'fail' && !screeningRecord.hearing_rescreen_result) needsRescreen.hearing = true;
+  
+  const acanthosisInitialResult = screeningRecord.acanthosis_initial_result?.toLowerCase();
+  if (acanthosisInitialResult === 'fail' && !screeningRecord.acanthosis_rescreen_result) needsRescreen.acanthosis = true;
+  
+  const scoliosisInitialResult = screeningRecord.scoliosis_initial_result?.toLowerCase();
+  if (scoliosisInitialResult === 'fail' && !screeningRecord.scoliosis_rescreen_result) needsRescreen.scoliosis = true;
+  
+  return needsRescreen;
+}
+
 function extractOverallResults(payload) {
   const results = { vision_overall: null, hearing_overall: null };
   
@@ -426,12 +446,14 @@ app.get('/api/students/search', async (req, res) => {
       
       // Calculate which screenings are already complete
       const completedScreenings = calculateCompletionStatus(screeningRecord);
+      const needsRescreen = calculateNeedsRescreen(screeningRecord);
       
       return res.json({
         found: true,
         student: student,
         requiredScreenings: requiredScreenings,
-        completedScreenings: completedScreenings
+        completedScreenings: completedScreenings,
+        needsRescreen: needsRescreen
       });
     }
     
@@ -482,12 +504,14 @@ app.get('/api/students/:uniqueId', async (req, res) => {
     
     // Calculate which screenings are already complete
     const completedScreenings = calculateCompletionStatus(screeningRecord);
+    const needsRescreen = calculateNeedsRescreen(screeningRecord);
     
     res.json({
       found: true,
       student: student,
       requiredScreenings: requiredScreenings,
-      completedScreenings: completedScreenings
+      completedScreenings: completedScreenings,
+      needsRescreen: needsRescreen
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
