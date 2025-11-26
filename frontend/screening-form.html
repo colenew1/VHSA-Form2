@@ -1281,8 +1281,20 @@
       currentNeedsRescreen = needsRescreen || { vision: false, hearing: false, acanthosis: false, scoliosis: false };
       currentCompletedScreenings = completedScreenings || { vision: false, hearing: false, acanthosis: false, scoliosis: false };
       const completed = currentCompletedScreenings;
-      // Reset to Initial screening type when loading new student
-      document.getElementById('globalScreeningType').value = 'initial';
+      
+      // Auto-switch screening type based on student needs
+      const anyNeedsRescreen = Object.values(currentNeedsRescreen).some(v => v);
+      const anyNeedsInitial = ['vision','hearing','acanthosis','scoliosis'].some(test => 
+        currentRequiredScreenings[test] && !completed[test] && !currentNeedsRescreen[test]
+      );
+      
+      if (anyNeedsRescreen && !anyNeedsInitial) {
+        // Only rescreens needed - auto-switch to rescreen
+        document.getElementById('globalScreeningType').value = 'rescreen';
+      } else {
+        // Default to initial
+        document.getElementById('globalScreeningType').value = 'initial';
+      }
       document.getElementById('displayStudentId').textContent = student.unique_id;
       document.getElementById('displayName').textContent = `${student.first_name} ${student.last_name}`;
       document.getElementById('displayDetails').textContent = `${student.grade} • ${student.gender}`;
@@ -1446,6 +1458,41 @@
         if (document.querySelector('[data-section="scoliosis"]')?.classList.contains('open') && !document.querySelector('input[name="scoliosisResult"]:checked')) incompleteSections.push('Scoliosis');
       }
       if (incompleteSections.length > 0) { showCustomPopup('warning', 'Incomplete', `Complete: ${incompleteSections.join(', ')}`); return; }
+      
+      // Validate screeningType matches student needs
+      const selectedType = document.getElementById('globalScreeningType').value;
+      const anyNeedsRescreen = Object.values(currentNeedsRescreen).some(v => v);
+      const anyNeedsInitial = ['vision','hearing','acanthosis','scoliosis'].some(test => 
+        currentRequiredScreenings[test] && !currentCompletedScreenings[test] && !currentNeedsRescreen[test]
+      );
+      
+      // Check for mismatch
+      if (selectedType === 'initial' && anyNeedsRescreen && !anyNeedsInitial) {
+        showCustomPopup('warning', 'Wrong Type?', 'This student needs a <b>Rescreen</b>, but Initial is selected.<br><br>Switch to Rescreen?', {
+          showCancel: true, confirmText: 'Switch & Submit', cancelText: 'Cancel',
+          onConfirm: () => {
+            document.getElementById('globalScreeningType').value = 'rescreen';
+            doSubmit();
+          }
+        });
+        return;
+      }
+      
+      if (selectedType === 'rescreen' && !anyNeedsRescreen && anyNeedsInitial) {
+        showCustomPopup('warning', 'Wrong Type?', 'This student needs an <b>Initial</b> screening, but Rescreen is selected.<br><br>Switch to Initial?', {
+          showCancel: true, confirmText: 'Switch & Submit', cancelText: 'Cancel',
+          onConfirm: () => {
+            document.getElementById('globalScreeningType').value = 'initial';
+            doSubmit();
+          }
+        });
+        return;
+      }
+      
+      doSubmit();
+    }
+    
+    function doSubmit() {
       showCustomPopup('warning', 'Submit?', 'Confirm submission', {
         showCancel: true, confirmText: 'Submit', cancelText: 'Cancel',
         onConfirm: async () => {
