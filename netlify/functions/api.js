@@ -3,14 +3,246 @@ const express = require('express');
 const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
 
-// Import shared logic - single source of truth for screening logic
-const {
-  toTitleCase,
-  calculateRequirements,
-  calculateCompletionStatus,
-  buildScreeningData,
-  mergeScreeningData
-} = require('../../shared/screening-logic.js');
+// ============================================================================
+// SHARED LOGIC (inlined because Netlify can't resolve paths outside functions)
+// If you update this, also update shared/screening-logic.js
+// ============================================================================
+
+function toTitleCase(str) {
+  if (!str) return '';
+  return str
+    .trim()
+    .toLowerCase()
+    .split(' ')
+    .map(word => {
+      if (word.length === 0) return '';
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' ');
+}
+
+function calculateRequirements(gradeOrStudent, gender, status, dob) {
+  let grade, genderValue, statusValue, dobValue;
+  
+  if (arguments.length === 1 && typeof gradeOrStudent === 'object') {
+    const student = gradeOrStudent;
+    grade = student.grade;
+    genderValue = student.gender;
+    statusValue = student.status;
+    dobValue = student.dob;
+  } else {
+    grade = gradeOrStudent;
+    genderValue = gender;
+    statusValue = status;
+    dobValue = dob;
+  }
+  
+  const requirements = { vision: false, hearing: false, acanthosis: false, scoliosis: false };
+  const gradeStr = (grade || '').toLowerCase();
+  const isNewStudent = statusValue?.toLowerCase() === 'new';
+  
+  if (gradeStr.includes('pre-k (3)') || gradeStr === 'pk3') return requirements;
+  
+  if (gradeStr.includes('pre-k (4)') || gradeStr === 'pk4') {
+    if (dobValue) {
+      const birthDate = new Date(dobValue);
+      const septFirst = new Date(birthDate.getFullYear(), 8, 1);
+      if (birthDate <= septFirst) {
+        requirements.vision = true;
+        requirements.hearing = true;
+      }
+    }
+    return requirements;
+  }
+  
+  if (gradeStr.includes('kindergarten') || gradeStr === 'k' || 
+      ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'].includes(gradeStr)) {
+    requirements.vision = true;
+    requirements.hearing = true;
+  }
+  
+  if (['1st', '3rd', '5th', '7th'].includes(gradeStr)) requirements.acanthosis = true;
+  if (isNewStudent && ['2nd', '4th', '6th', '8th', '9th', '10th', '11th', '12th'].includes(gradeStr)) requirements.acanthosis = true;
+  
+  const isFemale = genderValue?.toLowerCase() === 'female';
+  const isMale = genderValue?.toLowerCase() === 'male';
+  
+  if (gradeStr === '5th' && isFemale) requirements.scoliosis = true;
+  if (gradeStr === '7th' && isFemale) requirements.scoliosis = true;
+  if (gradeStr === '8th' && isMale && !isNewStudent) requirements.scoliosis = true;
+  if (gradeStr === '8th' && isNewStudent) requirements.scoliosis = true;
+  
+  return requirements;
+}
+
+function calculateCompletionStatus(screeningRecord) {
+  const completion = { vision: false, hearing: false, acanthosis: false, scoliosis: false };
+  if (!screeningRecord) return completion;
+  
+  const visionInitialResult = screeningRecord.vision_initial_result?.toLowerCase();
+  if (visionInitialResult === 'pass' || screeningRecord.vision_rescreen_result) completion.vision = true;
+  
+  const hearingInitialResult = screeningRecord.hearing_initial_result?.toLowerCase();
+  if (hearingInitialResult === 'pass' || screeningRecord.hearing_rescreen_result) completion.hearing = true;
+  
+  const acanthosisInitialResult = screeningRecord.acanthosis_initial_result?.toLowerCase();
+  if (acanthosisInitialResult === 'pass' || screeningRecord.acanthosis_rescreen_result) completion.acanthosis = true;
+  
+  const scoliosisInitialResult = screeningRecord.scoliosis_initial_result?.toLowerCase();
+  if (scoliosisInitialResult === 'pass' || screeningRecord.scoliosis_rescreen_result) completion.scoliosis = true;
+  
+  return completion;
+}
+
+function extractOverallResults(payload) {
+  const results = { vision_overall: null, hearing_overall: null };
+  
+  if (payload.vision) {
+    const visionResult = payload.vision.initial?.result || payload.vision.rescreen?.result;
+    if (visionResult) {
+      const result = String(visionResult).toLowerCase().trim();
+      if (result === 'pass') results.vision_overall = 'PASS';
+      else if (result === 'fail') results.vision_overall = 'FAIL';
+    }
+  }
+  
+  if (payload.hearing) {
+    const hearingResult = payload.hearing.initial?.result || payload.hearing.rescreen?.result;
+    if (hearingResult) {
+      const result = String(hearingResult).toLowerCase().trim();
+      if (result === 'pass') results.hearing_overall = 'PASS';
+      else if (result === 'fail') results.hearing_overall = 'FAIL';
+    }
+  }
+  
+  return results;
+}
+
+function buildScreeningData(payload, existingRecord, student) {
+  const screeningData = {
+    student_id: student.id,
+    unique_id: payload.uniqueId,
+    student_first_name: payload.student_first_name || null,
+    student_last_name: payload.student_last_name || null,
+    student_grade: payload.student_grade || null,
+    student_gender: payload.student_gender || null,
+    student_school: payload.student_school || student.school,
+    student_teacher: payload.student_teacher || null,
+    student_dob: payload.student_dob || null,
+    student_status: payload.student_status || null,
+    screening_year: new Date().getFullYear(),
+    initial_screening_date: payload.screeningDate || new Date().toISOString().split('T')[0],
+    was_absent: payload.was_absent || false
+  };
+  
+  if (payload.notes) {
+    if (payload.screeningType === 'initial') screeningData.initial_notes = payload.notes;
+    else if (payload.screeningType === 'rescreen') screeningData.rescreen_notes = payload.notes;
+  }
+  
+  if (!existingRecord || !existingRecord.id) {
+    const requiredScreenings = calculateRequirements({
+      grade: payload.student_grade || 'Unknown',
+      gender: payload.student_gender || 'Unknown',
+      status: payload.student_status || 'New',
+      dob: payload.student_dob || null
+    });
+    screeningData.vision_required = requiredScreenings.vision;
+    screeningData.hearing_required = requiredScreenings.hearing;
+    screeningData.acanthosis_required = requiredScreenings.acanthosis;
+    screeningData.scoliosis_required = requiredScreenings.scoliosis;
+  }
+  
+  if (payload.vision) {
+    if (payload.vision.initial) {
+      screeningData.vision_initial_screener = payload.vision.initial.screener || null;
+      screeningData.vision_initial_date = payload.vision.initial.date || null;
+      screeningData.vision_initial_glasses = payload.vision.initial.glasses || null;
+      screeningData.vision_initial_right_eye = payload.vision.initial.rightEye || null;
+      screeningData.vision_initial_left_eye = payload.vision.initial.leftEye || null;
+      screeningData.vision_initial_result = payload.vision.initial.result || null;
+    }
+    if (payload.vision.rescreen) {
+      screeningData.vision_rescreen_screener = payload.vision.rescreen.screener || null;
+      screeningData.vision_rescreen_date = payload.vision.rescreen.date || null;
+      screeningData.vision_rescreen_glasses = payload.vision.rescreen.glasses || null;
+      screeningData.vision_rescreen_right_eye = payload.vision.rescreen.rightEye || null;
+      screeningData.vision_rescreen_left_eye = payload.vision.rescreen.leftEye || null;
+      screeningData.vision_rescreen_result = payload.vision.rescreen.result || null;
+    }
+  }
+  
+  if (payload.hearing) {
+    if (payload.hearing.initial) {
+      screeningData.hearing_initial_screener = payload.hearing.initial.screener || null;
+      screeningData.hearing_initial_date = payload.hearing.initial.date || null;
+      screeningData.hearing_initial_result = payload.hearing.initial.result || null;
+      screeningData.hearing_initial_right_1000 = payload.hearing.initial.right1000 || null;
+      screeningData.hearing_initial_right_2000 = payload.hearing.initial.right2000 || null;
+      screeningData.hearing_initial_right_4000 = payload.hearing.initial.right4000 || null;
+      screeningData.hearing_initial_left_1000 = payload.hearing.initial.left1000 || null;
+      screeningData.hearing_initial_left_2000 = payload.hearing.initial.left2000 || null;
+      screeningData.hearing_initial_left_4000 = payload.hearing.initial.left4000 || null;
+    }
+    if (payload.hearing.rescreen) {
+      screeningData.hearing_rescreen_screener = payload.hearing.rescreen.screener || null;
+      screeningData.hearing_rescreen_date = payload.hearing.rescreen.date || null;
+      screeningData.hearing_rescreen_result = payload.hearing.rescreen.result || null;
+      screeningData.hearing_rescreen_right_1000 = payload.hearing.rescreen.right1000 || null;
+      screeningData.hearing_rescreen_right_2000 = payload.hearing.rescreen.right2000 || null;
+      screeningData.hearing_rescreen_right_4000 = payload.hearing.rescreen.right4000 || null;
+      screeningData.hearing_rescreen_left_1000 = payload.hearing.rescreen.left1000 || null;
+      screeningData.hearing_rescreen_left_2000 = payload.hearing.rescreen.left2000 || null;
+      screeningData.hearing_rescreen_left_4000 = payload.hearing.rescreen.left4000 || null;
+    }
+  }
+  
+  const overallResults = extractOverallResults(payload);
+  screeningData.vision_overall = overallResults.vision_overall;
+  screeningData.hearing_overall = overallResults.hearing_overall;
+  
+  if (payload.acanthosis) {
+    if (payload.acanthosis.initial) {
+      screeningData.acanthosis_initial_screener = payload.acanthosis.initial.screener || null;
+      screeningData.acanthosis_initial_date = payload.acanthosis.initial.date || null;
+      screeningData.acanthosis_initial_result = payload.acanthosis.initial.result || null;
+    }
+    if (payload.acanthosis.rescreen) {
+      screeningData.acanthosis_rescreen_screener = payload.acanthosis.rescreen.screener || null;
+      screeningData.acanthosis_rescreen_date = payload.acanthosis.rescreen.date || null;
+      screeningData.acanthosis_rescreen_result = payload.acanthosis.rescreen.result || null;
+    }
+  }
+  
+  if (payload.scoliosis) {
+    if (payload.scoliosis.initial) {
+      screeningData.scoliosis_initial_screener = payload.scoliosis.initial.screener || null;
+      screeningData.scoliosis_initial_date = payload.scoliosis.initial.date || null;
+      screeningData.scoliosis_initial_observations = payload.scoliosis.initial.observations || null;
+      screeningData.scoliosis_initial_result = payload.scoliosis.initial.result || null;
+    }
+    if (payload.scoliosis.rescreen) {
+      screeningData.scoliosis_rescreen_screener = payload.scoliosis.rescreen.screener || null;
+      screeningData.scoliosis_rescreen_date = payload.scoliosis.rescreen.date || null;
+      screeningData.scoliosis_rescreen_observations = payload.scoliosis.rescreen.observations || null;
+      screeningData.scoliosis_rescreen_result = payload.scoliosis.rescreen.result || null;
+    }
+  }
+  
+  return screeningData;
+}
+
+function mergeScreeningData(existingRecord, screeningData) {
+  const { vision_complete, hearing_complete, acanthosis_complete, scoliosis_complete, ...existingDataWithoutGenerated } = existingRecord;
+  return {
+    ...existingDataWithoutGenerated,
+    ...Object.fromEntries(Object.entries(screeningData).filter(([key, value]) => value !== null && value !== undefined))
+  };
+}
+
+// ============================================================================
+// EXPRESS APP
+// ============================================================================
 
 const app = express();
 
