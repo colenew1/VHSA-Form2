@@ -1248,8 +1248,9 @@
       if (gradeStr.includes('pre-k (3)')) return requirements;
       if (gradeStr.includes('pre-k (4)') && student.dob) {
         const birthDate = new Date(student.dob);
-        const septFirst = new Date(birthDate.getFullYear(), 8, 1);
-        if (birthDate <= septFirst) { requirements.vision = true; requirements.hearing = true; }
+        const septFirst = new Date(birthDate.getFullYear(), 8, 1); // Sept 1 of birth year
+        // If born ON or AFTER Sept 1 → require vision & hearing
+        if (birthDate >= septFirst) { requirements.vision = true; requirements.hearing = true; }
         return requirements;
       }
       if (gradeStr.includes('kindergarten') || ['1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th'].includes(gradeStr)) {

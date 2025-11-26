@@ -68,15 +68,15 @@ function calculateRequirements(gradeOrStudent, gender, status, dob) {
     return requirements; // All false
   }
   
-  // Pre-K 4: Vision & Hearing ONLY if DOB on/before Sept 1
+  // Pre-K 4: Vision & Hearing ONLY if DOB on/after Sept 1
   if (gradeStr.includes('pre-k (4)') || gradeStr === 'pk4') {
     if (dobValue) {
       const birthDate = new Date(dobValue);
       const birthYear = birthDate.getFullYear();
       const septFirst = new Date(birthYear, 8, 1); // Sept 1 of birth year
       
-      // If born on or before Sept 1, they're "old" 4s - screening required
-      if (birthDate <= septFirst) {
+      // If born on or AFTER Sept 1, screening required
+      if (birthDate >= septFirst) {
         requirements.vision = true;
         requirements.hearing = true;
       }
