@@ -50,18 +50,22 @@ function calculateRequirements(gradeOrStudent, gender, status, dob) {
   }
   
   // Pre-K 4 - check DOB for Sept 1 cutoff
+  // Rule: If child turned 4 BY Sept 1 (born BEFORE Sept 1) → requires vision & hearing
   if (gradeStr.includes('pre-k (4)') || gradeStr.includes('pre-k(4)') || gradeStr === 'pk4' || gradeStr === 'prek4') {
     console.log('Pre-K4 detected, checking DOB:', dobValue);
     if (dobValue && dobValue.trim && dobValue.trim() !== '') {
       const birthDate = new Date(dobValue);
       if (!isNaN(birthDate.getTime())) {
         const septFirst = new Date(birthDate.getFullYear(), 8, 1); // Sept 1 of birth year
-        console.log('Pre-K4 DOB check:', { birthDate: birthDate.toISOString(), septFirst: septFirst.toISOString(), needsScreening: birthDate >= septFirst });
-        // If born ON or AFTER Sept 1 → require vision & hearing
-        if (birthDate >= septFirst) {
+        const needsScreening = birthDate < septFirst; // Born BEFORE Sept 1 = turned 4 BY Sept 1
+        console.log('Pre-K4 DOB check:', { birthDate: birthDate.toISOString(), septFirst: septFirst.toISOString(), needsScreening });
+        // If born BEFORE Sept 1 → turned 4 BY Sept 1 → require vision & hearing
+        if (needsScreening) {
           requirements.vision = true;
           requirements.hearing = true;
-          console.log('Pre-K4 requires vision & hearing');
+          console.log('Pre-K4 requires vision & hearing (born before Sept 1)');
+        } else {
+          console.log('Pre-K4 NO requirements (born on/after Sept 1)');
         }
       } else {
         console.log('Pre-K4 DOB invalid date');
