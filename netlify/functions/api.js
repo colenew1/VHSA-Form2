@@ -481,7 +481,7 @@ app.get('/api/students/:uniqueId', async (req, res) => {
     const { data: student, error } = await supabase
       .from('students')
       .select('*')
-      .eq('unique_id', uniqueId)
+      .ilike('unique_id', uniqueId)
       .single();
     
     if (error || !student) {
@@ -548,7 +548,7 @@ app.put('/api/students/:uniqueId', async (req, res) => {
     const { data, error } = await supabase
       .from('students')
       .update(updates)
-      .eq('unique_id', uniqueId)
+      .ilike('unique_id', uniqueId)
       .select()
       .single();
     
@@ -696,7 +696,7 @@ app.post('/api/screenings', async (req, res) => {
     const { data: student, error: studentError } = await supabase
       .from('students')
       .select('id, school')
-      .eq('unique_id', payload.uniqueId)
+      .ilike('unique_id', payload.uniqueId)
       .single();
     
     if (studentError || !student) {

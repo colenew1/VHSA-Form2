@@ -57,7 +57,7 @@ router.get('/:uniqueId', async (req, res) => {
     const { data: student, error: studentError } = await supabase
       .from('students')
       .select('*')
-      .eq('unique_id', uniqueId)
+      .ilike('unique_id', uniqueId)
       .single();
     
     if (studentError || !student) {
