@@ -38,20 +38,36 @@ function calculateRequirements(gradeOrStudent, gender, status, dob) {
   }
   
   const requirements = { vision: false, hearing: false, acanthosis: false, scoliosis: false };
-  const gradeStr = (grade || '').toLowerCase();
+  const gradeStr = (grade || '').toLowerCase().trim();
   const isNewStudent = statusValue?.toLowerCase() === 'new';
   
-  if (gradeStr.includes('pre-k (3)') || gradeStr === 'pk3') return requirements;
+  console.log('calculateRequirements called:', { grade, gradeStr, dobValue, statusValue });
   
-  if (gradeStr.includes('pre-k (4)') || gradeStr === 'pk4') {
-    if (dobValue) {
+  // Pre-K 3 - no screenings required
+  if (gradeStr.includes('pre-k (3)') || gradeStr.includes('pre-k(3)') || gradeStr === 'pk3' || gradeStr === 'prek3') {
+    console.log('Pre-K3 detected - no requirements');
+    return requirements;
+  }
+  
+  // Pre-K 4 - check DOB for Sept 1 cutoff
+  if (gradeStr.includes('pre-k (4)') || gradeStr.includes('pre-k(4)') || gradeStr === 'pk4' || gradeStr === 'prek4') {
+    console.log('Pre-K4 detected, checking DOB:', dobValue);
+    if (dobValue && dobValue.trim && dobValue.trim() !== '') {
       const birthDate = new Date(dobValue);
-      const septFirst = new Date(birthDate.getFullYear(), 8, 1); // Sept 1 of birth year
-      // If born ON or AFTER Sept 1 → require vision & hearing
-      if (birthDate >= septFirst) {
-        requirements.vision = true;
-        requirements.hearing = true;
+      if (!isNaN(birthDate.getTime())) {
+        const septFirst = new Date(birthDate.getFullYear(), 8, 1); // Sept 1 of birth year
+        console.log('Pre-K4 DOB check:', { birthDate: birthDate.toISOString(), septFirst: septFirst.toISOString(), needsScreening: birthDate >= septFirst });
+        // If born ON or AFTER Sept 1 → require vision & hearing
+        if (birthDate >= septFirst) {
+          requirements.vision = true;
+          requirements.hearing = true;
+          console.log('Pre-K4 requires vision & hearing');
+        }
+      } else {
+        console.log('Pre-K4 DOB invalid date');
       }
+    } else {
+      console.log('Pre-K4 no valid DOB provided');
     }
     return requirements;
   }

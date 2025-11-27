@@ -486,9 +486,10 @@
     <section id="screeningTests" class="hidden space-y-3">
       
       <!-- Info Box -->
-      <div class="bg-blue-50 border-l-4 border-blue-500 rounded-r-xl p-4">
-        <p class="text-sm text-blue-800">
-          <span class="font-bold">Tip:</span> <span class="badge-required">Required</span> = needs initial screening. <span class="badge-rescreen ml-1">⟳ Rescreen</span> = failed initial, needs rescreen.
+      <div class="bg-blue-50 border-l-4 border-blue-500 rounded-r-xl p-3">
+        <p class="text-xs sm:text-sm text-blue-800 leading-relaxed">
+          <span class="font-bold">Tip:</span> <span class="badge-required">Required</span> = initial screening needed<br class="sm:hidden">
+          <span class="hidden sm:inline"> · </span><span class="badge-rescreen">⟳ Rescreen</span> = failed initial
         </p>
       </div>
       
@@ -1086,10 +1087,11 @@
       try {
         const response = await fetch(`${API_BASE}/students/${studentId}${CACHE_BUST}`);
         const data = await response.json();
+        console.log('searchById response:', data);
         if (!response.ok) { showCustomPopup('error', 'Error', `Error: ${response.status}`); return; }
         if (!data.found) { showCustomPopup('warning', 'Not Found', 'Student not found'); return; }
         loadStudentData(data.student, data.requiredScreenings, data.completedScreenings, data.needsRescreen);
-      } catch (error) { showCustomPopup('error', 'Error', 'Connection error'); }
+      } catch (error) { console.error('searchById error:', error); showCustomPopup('error', 'Error', 'Connection error'); }
     }
 
     async function searchByName() {
@@ -1274,6 +1276,7 @@
     }
 
     function loadStudentData(student, requiredScreenings, completedScreenings, needsRescreen) {
+      console.log('loadStudentData called:', { student, requiredScreenings, completedScreenings, needsRescreen });
       const validation = validateStudentData(student);
       if (!validation.isComplete) { showEditStudentModal(student, validation.missingFields); return; }
       currentStudent = student;
@@ -1281,6 +1284,7 @@
       currentNeedsRescreen = needsRescreen || { vision: false, hearing: false, acanthosis: false, scoliosis: false };
       currentCompletedScreenings = completedScreenings || { vision: false, hearing: false, acanthosis: false, scoliosis: false };
       const completed = currentCompletedScreenings;
+      console.log('Requirements after processing:', { currentRequiredScreenings, currentNeedsRescreen, currentCompletedScreenings });
       
       // Auto-switch screening type based on student needs
       const anyNeedsRescreen = Object.values(currentNeedsRescreen).some(v => v);
