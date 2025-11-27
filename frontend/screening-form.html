@@ -530,18 +530,18 @@
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-3">Result</label>
               <div class="flex gap-3">
-                <label class="flex-1">
-                  <input type="radio" name="visionResult" value="pass" onchange="visionResultChanged('pass')" class="sr-only peer">
+                <div class="flex-1" onclick="toggleResultButton('visionResult', 'pass', visionResultChanged)">
+                  <input type="radio" name="visionResult" value="pass" class="sr-only peer">
                   <div class="result-btn pass text-center cursor-pointer flex items-center justify-center">
                     ✓ PASS
                   </div>
-                </label>
-                <label class="flex-1">
-                  <input type="radio" name="visionResult" value="fail" onchange="visionResultChanged('fail')" class="sr-only">
+                </div>
+                <div class="flex-1" onclick="toggleResultButton('visionResult', 'fail', visionResultChanged)">
+                  <input type="radio" name="visionResult" value="fail" class="sr-only peer">
                   <div class="result-btn fail text-center cursor-pointer flex items-center justify-center">
                     ✕ FAIL
                   </div>
-                </label>
+                </div>
               </div>
             </div>
             
@@ -604,18 +604,18 @@
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-3">Result</label>
               <div class="flex gap-3">
-                <label class="flex-1">
-                  <input type="radio" name="hearingResult" value="pass" onchange="hearingResultChanged('pass')" class="sr-only">
+                <div class="flex-1" onclick="toggleResultButton('hearingResult', 'pass', hearingResultChanged)">
+                  <input type="radio" name="hearingResult" value="pass" class="sr-only peer">
                   <div class="result-btn pass text-center cursor-pointer flex items-center justify-center">
                     ✓ PASS
                   </div>
-                </label>
-                <label class="flex-1">
-                  <input type="radio" name="hearingResult" value="fail" onchange="hearingResultChanged('fail')" class="sr-only">
+                </div>
+                <div class="flex-1" onclick="toggleResultButton('hearingResult', 'fail', hearingResultChanged)">
+                  <input type="radio" name="hearingResult" value="fail" class="sr-only peer">
                   <div class="result-btn fail text-center cursor-pointer flex items-center justify-center">
                     ✕ FAIL
                   </div>
-                </label>
+                </div>
               </div>
             </div>
             
@@ -679,18 +679,18 @@
           <div class="p-4 pt-0">
             <label class="block text-sm font-semibold text-gray-700 mb-3">Result</label>
             <div class="flex gap-3">
-              <label class="flex-1">
-                <input type="radio" name="acanthosisResult" value="pass" class="sr-only">
+              <div class="flex-1" onclick="toggleResultButton('acanthosisResult', 'pass')">
+                <input type="radio" name="acanthosisResult" value="pass" class="sr-only peer">
                 <div class="result-btn pass text-center cursor-pointer flex items-center justify-center">
                   ✓ PASS
                 </div>
-              </label>
-              <label class="flex-1">
-                <input type="radio" name="acanthosisResult" value="fail" class="sr-only">
+              </div>
+              <div class="flex-1" onclick="toggleResultButton('acanthosisResult', 'fail')">
+                <input type="radio" name="acanthosisResult" value="fail" class="sr-only peer">
                 <div class="result-btn fail text-center cursor-pointer flex items-center justify-center">
                   ✕ FAIL
                 </div>
-              </label>
+              </div>
             </div>
           </div>
         </div>
@@ -757,18 +757,18 @@
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-3">Result</label>
               <div class="flex gap-3">
-                <label class="flex-1">
-                  <input type="radio" name="scoliosisResult" value="pass" class="sr-only">
+                <div class="flex-1" onclick="toggleResultButton('scoliosisResult', 'pass')">
+                  <input type="radio" name="scoliosisResult" value="pass" class="sr-only peer">
                   <div class="result-btn pass text-center cursor-pointer flex items-center justify-center">
                     ✓ PASS
                   </div>
-                </label>
-                <label class="flex-1">
-                  <input type="radio" name="scoliosisResult" value="fail" class="sr-only">
+                </div>
+                <div class="flex-1" onclick="toggleResultButton('scoliosisResult', 'fail')">
+                  <input type="radio" name="scoliosisResult" value="fail" class="sr-only peer">
                   <div class="result-btn fail text-center cursor-pointer flex items-center justify-center">
                     ✕ FAIL
                   </div>
-                </label>
+                </div>
               </div>
             </div>
           </div>
@@ -1374,8 +1374,37 @@
         });
       }
     }
-    function visionResultChanged(result) { document.getElementById('visionRightEye').value = result === 'pass' ? '20' : ''; document.getElementById('visionLeftEye').value = result === 'pass' ? '20' : ''; }
-    function hearingResultChanged(result) { resetHearingFrequencies(); }
+    // Toggle result buttons - click again to uncheck
+    function toggleResultButton(name, value, callback) {
+      const radio = document.querySelector(`input[name="${name}"][value="${value}"]`);
+      if (radio.checked) {
+        // Already selected - uncheck it
+        radio.checked = false;
+        if (callback) callback(null); // null means unchecked
+      } else {
+        // Not selected - select it
+        radio.checked = true;
+        if (callback) callback(value);
+      }
+    }
+    
+    function visionResultChanged(result) {
+      if (result === 'pass') {
+        document.getElementById('visionRightEye').value = '20';
+        document.getElementById('visionLeftEye').value = '20';
+      } else {
+        // fail or null (unchecked) - clear the values
+        document.getElementById('visionRightEye').value = '';
+        document.getElementById('visionLeftEye').value = '';
+      }
+    }
+    
+    function hearingResultChanged(result) {
+      if (result === null) {
+        // Unchecked - reset frequencies to pass state
+        resetHearingFrequencies();
+      }
+    }
 
     function toggleHearingFreq(button) {
       if (button.dataset.status === 'pass') {
