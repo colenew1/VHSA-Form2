@@ -1601,20 +1601,34 @@
             incompleteDetails.push(`Vision: missing ${missing.join(', ')}`);
           }
         }
-        // Hearing: need result (frequencies have defaults)
-        if (document.querySelector('[data-section="hearing"]')?.classList.contains('open') && !document.querySelector('input[name="hearingResult"]:checked')) {
-          incompleteSections.push('hearing');
-          incompleteDetails.push('Hearing: missing pass/fail');
+        // Hearing: need result, and if fail then at least one frequency must be failed
+        if (document.querySelector('[data-section="hearing"]')?.classList.contains('open')) {
+          const hearingResult = document.querySelector('input[name="hearingResult"]:checked')?.value;
+          const anyFreqFailed = document.querySelector('.hearing-freq[data-status="fail"]');
+          if (!hearingResult) {
+            incompleteSections.push('hearing');
+            incompleteDetails.push('Hearing: missing pass/fail');
+          } else if (hearingResult === 'fail' && !anyFreqFailed) {
+            incompleteSections.push('hearing');
+            incompleteDetails.push('Hearing: marked FAIL but no frequencies selected - tap at least one frequency to fail it');
+          }
         }
         // Acanthosis: need result
         if (document.querySelector('[data-section="acanthosis"]')?.classList.contains('open') && !document.querySelector('input[name="acanthosisResult"]:checked')) {
           incompleteSections.push('acanthosis');
           incompleteDetails.push('Acanthosis: missing pass/fail');
         }
-        // Scoliosis: need result (observations optional)
-        if (document.querySelector('[data-section="scoliosis"]')?.classList.contains('open') && !document.querySelector('input[name="scoliosisResult"]:checked')) {
-          incompleteSections.push('scoliosis');
-          incompleteDetails.push('Scoliosis: missing pass/fail');
+        // Scoliosis: need result, and if fail then at least one observation should be checked
+        if (document.querySelector('[data-section="scoliosis"]')?.classList.contains('open')) {
+          const scoliosisResult = document.querySelector('input[name="scoliosisResult"]:checked')?.value;
+          const anyObsChecked = document.querySelector('input[name="scoliosisObs"]:checked');
+          if (!scoliosisResult) {
+            incompleteSections.push('scoliosis');
+            incompleteDetails.push('Scoliosis: missing pass/fail');
+          } else if (scoliosisResult === 'fail' && !anyObsChecked) {
+            incompleteSections.push('scoliosis');
+            incompleteDetails.push('Scoliosis: marked FAIL but no observations selected - check at least one observation');
+          }
         }
       }
       if (incompleteSections.length > 0) {
