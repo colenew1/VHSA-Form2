@@ -460,6 +460,11 @@
             <div id="displayStudentId" class="text-2xl font-black text-teal-100"></div>
           </div>
         </div>
+        <!-- DOB prominently displayed -->
+        <div class="bg-white/15 rounded-xl px-3 py-2 mb-2 flex items-center justify-center gap-2">
+          <span class="text-teal-200 text-xs font-semibold uppercase">DOB:</span>
+          <span id="displayDOB" class="text-2xl font-black text-white tracking-wide"></span>
+        </div>
         <div class="flex justify-between items-center text-sm">
           <div id="displayDetails" class="text-teal-100"></div>
           <button type="button" onclick="openEditStudentInfo()" 
@@ -977,6 +982,17 @@
         .join(' ');
     }
 
+    function formatDOB(dob) {
+      if (!dob) return '—';
+      // Handle both YYYY-MM-DD and other formats
+      const date = new Date(dob + 'T00:00:00'); // Add time to prevent timezone issues
+      if (isNaN(date.getTime())) return dob; // Return as-is if parsing fails
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${month}/${day}/${year}`;
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       console.log('Page loaded, API_BASE:', API_BASE);
       await loadSchools();
@@ -1301,6 +1317,7 @@
       }
       document.getElementById('displayStudentId').textContent = student.unique_id;
       document.getElementById('displayName').textContent = `${student.first_name} ${student.last_name}`;
+      document.getElementById('displayDOB').textContent = formatDOB(student.dob);
       document.getElementById('displayDetails').textContent = `${student.grade} • ${student.gender}`;
       document.getElementById('displayAdditional').textContent = `${student.school} • ${student.status}`;
       document.getElementById('studentInfo').classList.remove('hidden');
@@ -1468,6 +1485,90 @@
       } else { screeningTests.style.opacity = '1'; screeningTests.style.pointerEvents = 'auto'; }
     }
 
+    // Check for discrepancies between pass/fail selection and actual data
+    function checkDataDiscrepancies() {
+      const discrepancies = [];
+      
+      // Vision discrepancy check
+      const visionSection = document.querySelector('[data-section="vision"]');
+      if (visionSection?.classList.contains('open')) {
+        const visionResult = document.querySelector('input[name="visionResult"]:checked')?.value;
+        const rightEye = document.getElementById('visionRightEye').value;
+        const leftEye = document.getElementById('visionLeftEye').value;
+        
+        if (visionResult && rightEye && leftEye) {
+          const rightVal = parseInt(rightEye);
+          const leftVal = parseInt(leftEye);
+          // Pass = 20/30 or better (lower number is better)
+          const shouldPass = rightVal <= 30 && leftVal <= 30;
+          
+          if (visionResult === 'pass' && !shouldPass) {
+            discrepancies.push({
+              test: 'Vision',
+              issue: `Marked as PASS but eye readings (20/${rightEye}, 20/${leftEye}) indicate a fail`
+            });
+          } else if (visionResult === 'fail' && shouldPass) {
+            discrepancies.push({
+              test: 'Vision', 
+              issue: `Marked as FAIL but eye readings (20/${rightEye}, 20/${leftEye}) look like a pass`
+            });
+          }
+        }
+      }
+      
+      // Hearing discrepancy check
+      const hearingSection = document.querySelector('[data-section="hearing"]');
+      if (hearingSection?.classList.contains('open')) {
+        const hearingResult = document.querySelector('input[name="hearingResult"]:checked')?.value;
+        const anyFreqFailed = document.querySelector('.hearing-freq[data-status="fail"]');
+        
+        if (hearingResult) {
+          if (hearingResult === 'pass' && anyFreqFailed) {
+            const failedFreqs = [];
+            document.querySelectorAll('.hearing-freq[data-status="fail"]').forEach(btn => {
+              failedFreqs.push(`${btn.dataset.ear} ${btn.dataset.freq}Hz`);
+            });
+            discrepancies.push({
+              test: 'Hearing',
+              issue: `Marked as PASS but frequencies are failed: ${failedFreqs.join(', ')}`
+            });
+          } else if (hearingResult === 'fail' && !anyFreqFailed) {
+            discrepancies.push({
+              test: 'Hearing',
+              issue: 'Marked as FAIL but all frequencies are passing'
+            });
+          }
+        }
+      }
+      
+      // Scoliosis discrepancy check
+      const scoliosisSection = document.querySelector('[data-section="scoliosis"]');
+      if (scoliosisSection?.classList.contains('open')) {
+        const scoliosisResult = document.querySelector('input[name="scoliosisResult"]:checked')?.value;
+        const anyObsChecked = document.querySelector('input[name="scoliosisObs"]:checked');
+        
+        if (scoliosisResult) {
+          if (scoliosisResult === 'pass' && anyObsChecked) {
+            const checkedObs = [];
+            document.querySelectorAll('input[name="scoliosisObs"]:checked').forEach(cb => {
+              checkedObs.push(cb.value);
+            });
+            discrepancies.push({
+              test: 'Scoliosis',
+              issue: `Marked as PASS but observations are checked: ${checkedObs.join(', ')}`
+            });
+          } else if (scoliosisResult === 'fail' && !anyObsChecked) {
+            discrepancies.push({
+              test: 'Scoliosis',
+              issue: 'Marked as FAIL but no observations are checked'
+            });
+          }
+        }
+      }
+      
+      return discrepancies;
+    }
+
     async function submitScreening() {
       if (!currentStudent) { showCustomPopup('warning', 'Error', 'Select a student first'); return; }
       const screenerName = document.getElementById('screenerName').value.trim();
@@ -1484,14 +1585,86 @@
       
       // Only check for incomplete open sections if we have screening data (not just notes)
       const incompleteSections = [];
+      const incompleteDetails = [];
       if (!isAbsent && hasAnyData) {
-        if (document.querySelector('[data-section="vision"]')?.classList.contains('open') && !document.querySelector('input[name="visionResult"]:checked')) incompleteSections.push('Vision');
-        if (document.querySelector('[data-section="hearing"]')?.classList.contains('open') && !document.querySelector('input[name="hearingResult"]:checked')) incompleteSections.push('Hearing');
-        if (document.querySelector('[data-section="acanthosis"]')?.classList.contains('open') && !document.querySelector('input[name="acanthosisResult"]:checked')) incompleteSections.push('Acanthosis');
-        if (document.querySelector('[data-section="scoliosis"]')?.classList.contains('open') && !document.querySelector('input[name="scoliosisResult"]:checked')) incompleteSections.push('Scoliosis');
+        // Vision: need result AND both eye readings
+        if (document.querySelector('[data-section="vision"]')?.classList.contains('open')) {
+          const hasResult = document.querySelector('input[name="visionResult"]:checked');
+          const hasRightEye = document.getElementById('visionRightEye').value;
+          const hasLeftEye = document.getElementById('visionLeftEye').value;
+          if (!hasResult || !hasRightEye || !hasLeftEye) {
+            incompleteSections.push('vision');
+            const missing = [];
+            if (!hasResult) missing.push('pass/fail');
+            if (!hasRightEye) missing.push('right eye');
+            if (!hasLeftEye) missing.push('left eye');
+            incompleteDetails.push(`Vision: missing ${missing.join(', ')}`);
+          }
+        }
+        // Hearing: need result (frequencies have defaults)
+        if (document.querySelector('[data-section="hearing"]')?.classList.contains('open') && !document.querySelector('input[name="hearingResult"]:checked')) {
+          incompleteSections.push('hearing');
+          incompleteDetails.push('Hearing: missing pass/fail');
+        }
+        // Acanthosis: need result
+        if (document.querySelector('[data-section="acanthosis"]')?.classList.contains('open') && !document.querySelector('input[name="acanthosisResult"]:checked')) {
+          incompleteSections.push('acanthosis');
+          incompleteDetails.push('Acanthosis: missing pass/fail');
+        }
+        // Scoliosis: need result (observations optional)
+        if (document.querySelector('[data-section="scoliosis"]')?.classList.contains('open') && !document.querySelector('input[name="scoliosisResult"]:checked')) {
+          incompleteSections.push('scoliosis');
+          incompleteDetails.push('Scoliosis: missing pass/fail');
+        }
       }
-      if (incompleteSections.length > 0) { showCustomPopup('warning', 'Incomplete', `Complete: ${incompleteSections.join(', ')}`); return; }
+      if (incompleteSections.length > 0) {
+        const detailsList = incompleteDetails.map(d => `• ${d}`).join('<br>');
+        showCustomPopup('warning', 'Incomplete Data', 
+          `Please complete the following:<br><br>${detailsList}<br><br>Or close the tabs to skip them.`, {
+          showCancel: true,
+          confirmText: 'Close Tabs & Submit',
+          cancelText: 'Go Back & Fill In',
+          onConfirm: () => {
+            // Close the incomplete sections
+            incompleteSections.forEach(section => closeAccordion(section));
+            // Continue with validation
+            checkDiscrepanciesAndContinue();
+          }
+        });
+        return;
+      }
       
+      checkDiscrepanciesAndContinue();
+    }
+    
+    function checkDiscrepanciesAndContinue() {
+      const isAbsent = document.getElementById('absent').checked;
+      
+      // Check for data discrepancies (pass/fail doesn't match actual data)
+      if (!isAbsent) {
+        const discrepancies = checkDataDiscrepancies();
+        if (discrepancies.length > 0) {
+          const discrepancyList = discrepancies.map(d => 
+            `<b>${d.test}:</b> ${d.issue}`
+          ).join('<br><br>');
+          
+          showCustomPopup('warning', '⚠️ Data Discrepancy', 
+            `The following doesn't match:<br><br>${discrepancyList}<br><br>Please review or submit anyway.`, {
+            showCancel: true, 
+            confirmText: 'Submit Anyway', 
+            cancelText: 'Go Back & Fix',
+            onConfirm: () => {
+              continueSubmitValidation();
+            }
+          });
+          return;
+        }
+      }
+      
+      continueSubmitValidation();
+    }
+    
+    function continueSubmitValidation() {
       // Validate screeningType matches student needs
       const selectedType = document.getElementById('globalScreeningType').value;
       const anyNeedsRescreen = Object.values(currentNeedsRescreen).some(v => v);
@@ -1511,11 +1684,22 @@
         return;
       }
       
-      if (selectedType === 'rescreen' && !anyNeedsRescreen && anyNeedsInitial) {
-        showCustomPopup('warning', 'Wrong Type?', 'This student needs an <b>Initial</b> screening, but Rescreen is selected.<br><br>Switch to Initial?', {
-          showCancel: true, confirmText: 'Switch & Submit', cancelText: 'Cancel',
+      // If rescreen selected but there are still initial screens pending
+      if (selectedType === 'rescreen' && anyNeedsInitial) {
+        showCustomPopup('warning', 'Initial Screens Pending', 'This student still needs <b>initial screenings</b>.<br><br>Please complete initial screens before rescreen.', {
+          showCancel: true, confirmText: 'Submit Anyway', cancelText: 'Go Back',
           onConfirm: () => {
-            document.getElementById('globalScreeningType').value = 'initial';
+            doSubmit();
+          }
+        });
+        return;
+      }
+      
+      if (selectedType === 'rescreen' && !anyNeedsRescreen && !anyNeedsInitial) {
+        // All screenings complete - no rescreens or initials needed
+        showCustomPopup('warning', 'Already Complete', 'This student has no pending screenings. Are you sure you want to submit?', {
+          showCancel: true, confirmText: 'Submit Anyway', cancelText: 'Cancel',
+          onConfirm: () => {
             doSubmit();
           }
         });
@@ -1607,7 +1791,7 @@
       currentNeedsRescreen = { vision: false, hearing: false, acanthosis: false, scoliosis: false };
       currentRequiredScreenings = { vision: false, hearing: false, acanthosis: false, scoliosis: false };
       currentCompletedScreenings = { vision: false, hearing: false, acanthosis: false, scoliosis: false };
-      ['displayStudentId','displayName','displayDetails','displayAdditional'].forEach(id => document.getElementById(id).textContent = '');
+      ['displayStudentId','displayName','displayDOB','displayDetails','displayAdditional'].forEach(id => document.getElementById(id).textContent = '');
       document.getElementById('searchResults').classList.add('hidden');
       document.getElementById('multipleResults').classList.add('hidden');
       document.getElementById('studentList').innerHTML = '';
